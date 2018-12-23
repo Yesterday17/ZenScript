@@ -1,0 +1,106 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "ZenScript",
+  "patterns": [
+    {
+      "include": "#blockcomment"
+    },
+    {
+      "include": "#linecomment"
+    },
+    {
+      "include": "#preprocessor"
+    },
+    {
+      "include": "#brackethandlers"
+    },
+    {
+      "include": "#keywords"
+    },
+    {
+      "include": "#singlestrings"
+    },
+    {
+      "include": "#doublestrings"
+    }
+  ],
+  "repository": {
+    "keywords": {
+      "patterns": [
+        {
+          "name": "keyword.control.zenscript",
+          "match": "\\b(any|bool|byte|short|int|long|float|double|string|function|in|has|void|as|version|for|return|var|val|while|break|null|true|false|global|static|instanceof)\\b"
+        },
+        {
+          "name": "keyword.control.import.zenscript",
+          "match": "\\bimport\\b"
+        },
+        {
+          "name": "keyword.control.conditional.zenscript",
+          "match": "\\b(if|else)\\b"
+        },
+        {
+          "name": "keyword.operator",
+          "match": "(\\.\\.|\\+=|\\+|-=|-|\\*=|\\*|\\/=|\\/|%=|%|\\|=|\\||\\|\\||&=|&&|&|\\^=|\\^|\\?|:|~=|~|;|<=|<|>=|>|==|=|!=|!|\\$)"
+        }
+      ]
+    },
+    "doublestrings": {
+      "name": "string.quoted.double.zenscript",
+      "begin": "\"",
+      "end": "\"",
+      "patterns": [
+        {
+          "name": "constant.character.escape.unicode.zenscript",
+          "match": "\\\\u[0-9A-F]{4}"
+        },
+        {
+          "name": "constant.character.escape.zenscript",
+          "match": "\\\\."
+        }
+      ]
+    },
+    "singlestrings": {
+      "name": "string.quoted.single.zenscript",
+      "begin": "'",
+      "end": "'",
+      "patterns": [
+        {
+          "name": "constant.character.escape.unicode.zenscript",
+          "match": "\\\\u[0-9A-F]{4}"
+        },
+        {
+          "name": "constant.character.escape.zenscript",
+          "match": "\\\\."
+        }
+      ]
+    },
+    "brackethandlers": {
+      "name": "variable.language.brackethandler.zenscript",
+      "begin": "<",
+      "end": ">",
+      "patterns": [
+        {
+          "name": "variable.parameter.brackethandler.zenscript",
+          "match": "(?<=\\<)(.*?)(?=\\:)"
+        }
+      ]
+    },
+    "blockcomment": {
+      "name": "comment.blockcomment.zenscript",
+      "begin": "/\\*",
+      "end": "\\*/"
+    },
+    "linecomment": {
+      "name": "comment.linecomment.zenscript",
+      "begin": "//",
+      "end": "\\n"
+    },
+    "preprocessor": {
+      "name": "keyword.control.preprocessor",
+      "begin": "#",
+      "end": "\\n"
+    }
+  },
+  "scopeName": "source.zenscript"
+}

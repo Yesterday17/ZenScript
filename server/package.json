@@ -1,0 +1,14 @@
+{
+  "name": "zenscript-language-server",
+  "description": "Zenscript Language Server.",
+  "version": "1.0.0",
+  "author": "Yesterday17",
+  "license": "MIT",
+  "engines": {
+    "node": "*"
+  },
+  "dependencies": {
+    "vscode-languageserver": "^4.1.3"
+  },
+  "scripts": {}
+}

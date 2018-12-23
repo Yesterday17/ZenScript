@@ -1,0 +1,80 @@
+{
+  "name": "zenscript",
+  "displayName": "ZenScript",
+  "description": "For Modpack makers.",
+  "version": "0.0.1",
+  "engines": {
+    "vscode": "^1.30.0"
+  },
+  "categories": [
+    "Programming Languages"
+  ],
+  "activationEvents": [
+    "onCommand:extension.helloWorld"
+  ],
+  "main": "./client/out/extension",
+  "contributes": {
+    "configuration": {
+      "type": "object",
+      "title": "Example configuration",
+      "properties": {
+        "languageServerExample.maxNumberOfProblems": {
+          "scope": "resource",
+          "type": "number",
+          "default": 100,
+          "description": "Controls the maximum number of problems produced by the server."
+        },
+        "languageServerExample.trace.server": {
+          "scope": "window",
+          "type": "string",
+          "enum": [
+            "off",
+            "messages",
+            "verbose"
+          ],
+          "default": "off",
+          "description": "Traces the communication between VS Code and the language server."
+        }
+      }
+    },
+    "languages": [
+      {
+        "id": "zenscript",
+        "aliases": [
+          "ZenScript",
+          "zenscript"
+        ],
+        "extensions": [
+          ".zs"
+        ],
+        "configuration": "./language/language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "zenscript",
+        "scopeName": "source.zenscript",
+        "path": "./language/syntaxes/zenscript.tmLanguage.json"
+      }
+    ],
+    "snippets": [
+      {
+        "language": "zenscript",
+        "path": "./language/snippets/global.json"
+      }
+    ]
+  },
+  "scripts": {
+    "vscode:prepublish": "cd client && yarn run update-vscode && cd .. && yarn run compile",
+    "compile": "tsc -b",
+    "watch": "tsc -b -w",
+    "postinstall": "cd ./client && yarn && cd  ../server && yarn && cd ..",
+    "test": "sh ./scripts/e2e.sh"
+  },
+  "devDependencies": {
+    "@types/mocha": "^2.2.42",
+    "@types/node": "^10.12.18",
+    "tslint": "^5.12.0",
+    "typescript": "^3.2.2"
+  }
+}
