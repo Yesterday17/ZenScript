@@ -1,8 +1,3 @@
-/* --------------------------------------------------------------------------------------------
- * Copyright (c) Microsoft Corporation. All rights reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- * ------------------------------------------------------------------------------------------ */
-
 import * as path from "path";
 import { workspace, ExtensionContext, window } from "vscode";
 
@@ -16,16 +11,16 @@ import {
 let client: LanguageClient;
 
 export function activate(context: ExtensionContext) {
-  // The server is implemented in node
+  // Server 是以 Node 实现的
   let serverModule = context.asAbsolutePath(
     path.join("server", "out", "server.js")
   );
-  // The debug options for the server
+
+  // Server 的 Debug 配置
   // --inspect=6009: runs the server in Node's Inspector mode so VS Code can attach to the server for debugging
   let debugOptions = { execArgv: ["--nolazy", "--inspect=6009"] };
 
-  // If the extension is launched in debug mode then the debug server options are used
-  // Otherwise the run options are used
+  // 当处于 Debug 状态时使用 Debug, 通常情况使用 run
   let serverOptions: ServerOptions = {
     run: { module: serverModule, transport: TransportKind.ipc },
     debug: {
@@ -35,27 +30,25 @@ export function activate(context: ExtensionContext) {
     }
   };
 
-  window.showInformationMessage("Hello World!");
-
-  // Options to control the language client
+  // 控制 Language Client 的选项
   let clientOptions: LanguageClientOptions = {
-    // Register the server for plain text documents
-    documentSelector: [{ scheme: "file", language: "plaintext" }],
+    // 为 Language Server 注册文件类型为 ZenScript
+    documentSelector: [{ language: "zenscript" }],
     synchronize: {
-      // Notify the server about file changes to '.clientrc files contained in the workspace
+      // 当工作空间中的'.clientrc'文件改变时通知服务
       fileEvents: workspace.createFileSystemWatcher("**/.clientrc")
     }
   };
 
-  // Create the language client and start the client.
+  // 创建并启动 Client
   client = new LanguageClient(
-    "languageServerExample",
-    "Language Server Example",
+    "zenscript",
+    "Zenscript Language Server",
     serverOptions,
     clientOptions
   );
 
-  // Start the client. This will also launch the server
+  // 启动 Client, 同时也会启动 Server
   client.start();
 }
 

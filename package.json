@@ -10,21 +10,21 @@
     "Programming Languages"
   ],
   "activationEvents": [
-    "onCommand:extension.helloWorld"
+    "onLanguage:zenscript"
   ],
   "main": "./client/out/extension",
   "contributes": {
     "configuration": {
       "type": "object",
-      "title": "Example configuration",
+      "title": "ZenScript Configuration",
       "properties": {
-        "languageServerExample.maxNumberOfProblems": {
+        "zenscript.maxNumberOfProblems": {
           "scope": "resource",
           "type": "number",
           "default": 100,
           "description": "Controls the maximum number of problems produced by the server."
         },
-        "languageServerExample.trace.server": {
+        "zenscript.trace.server": {
           "scope": "window",
           "type": "string",
           "enum": [
@@ -68,8 +68,7 @@
     "vscode:prepublish": "cd client && yarn run update-vscode && cd .. && yarn run compile",
     "compile": "tsc -b",
     "watch": "tsc -b -w",
-    "postinstall": "cd ./client && yarn && cd  ../server && yarn && cd ..",
-    "test": "sh ./scripts/e2e.sh"
+    "postinstall": "cd ./client && yarn && cd  ../server && yarn && cd .."
   },
   "devDependencies": {
     "@types/mocha": "^2.2.42",
