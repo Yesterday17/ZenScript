@@ -28,7 +28,7 @@ vscode-languageserver@^4.1.3:
     vscode-languageserver-protocol "^3.10.3"
     vscode-uri "^1.0.5"
 
-vscode-uri@^1.0.5:
+vscode-uri@^1.0.5, vscode-uri@^1.0.6:
   version "1.0.6"
   resolved "http://registry.npm.taobao.org/vscode-uri/download/vscode-uri-1.0.6.tgz#6b8f141b0bbc44ad7b07e94f82f168ac7608ad4d"
   integrity sha1-a48UGwu8RK17B+lPgvForHYIrU0=

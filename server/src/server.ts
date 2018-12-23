@@ -11,9 +11,11 @@ import {
   CompletionItemKind,
   TextDocumentPositionParams
 } from "vscode-languageserver";
+import { BrewingCompletionInstance } from "./completion/brewing";
+import { textPositionToLocation } from "./utils/path";
 
-// 创建一个服务的连接，连接使用Node的IPC作为传输
-// Also include all preview / proposed LSP features.
+// 创建一个服务的连接，连接使用 Node 的 IPC 作为传输
+// 并且引入所有 LSP 特性, 包括 preview / proposed
 let connection = createConnection(ProposedFeatures.all);
 
 // 创建一个简单的文本文档管理器，这个管理器仅仅支持同步所有文档
@@ -45,7 +47,8 @@ connection.onInitialize((params: InitializeParams) => {
       textDocumentSync: documents.syncKind,
       // 告知客户端服务端支持代码补全
       completionProvider: {
-        resolveProvider: true
+        resolveProvider: true,
+        triggerCharacters: [".", ":"]
       }
     }
   };
@@ -67,25 +70,25 @@ connection.onInitialized(() => {
 });
 
 // The example settings
-interface ExampleSettings {
+interface ZenScriptSettings {
   maxNumberOfProblems: number;
 }
 
 // The global settings, used when the `workspace/configuration` request is not supported by the client.
 // Please note that this is not the case when using this server with the client provided in this example
 // but could happen with other clients.
-const defaultSettings: ExampleSettings = { maxNumberOfProblems: 1000 };
-let globalSettings: ExampleSettings = defaultSettings;
+const defaultSettings: ZenScriptSettings = { maxNumberOfProblems: 1000 };
+let globalSettings: ZenScriptSettings = defaultSettings;
 
 // Cache the settings of all open documents
-let documentSettings: Map<string, Thenable<ExampleSettings>> = new Map();
+let documentSettings: Map<string, Thenable<ZenScriptSettings>> = new Map();
 
 connection.onDidChangeConfiguration(change => {
   if (hasConfigurationCapability) {
     // Reset all cached document settings
     documentSettings.clear();
   } else {
-    globalSettings = <ExampleSettings>(
+    globalSettings = <ZenScriptSettings>(
       (change.settings.zenscript || defaultSettings)
     );
   }
@@ -94,7 +97,7 @@ connection.onDidChangeConfiguration(change => {
   documents.all().forEach(validateTextDocument);
 });
 
-function getDocumentSettings(resource: string): Thenable<ExampleSettings> {
+function getDocumentSettings(resource: string): Thenable<ZenScriptSettings> {
   if (!hasConfigurationCapability) {
     return Promise.resolve(globalSettings);
   }
@@ -172,24 +175,13 @@ connection.onDidChangeWatchedFiles(_change => {
   connection.console.log("We received an file change event");
 });
 
+// 负责处理一级自动补全的条目
 // This handler provides the initial list of the completion items.
 connection.onCompletion(
-  (_textDocumentPosition: TextDocumentPositionParams): CompletionItem[] => {
-    // The pass parameter contains the position of the text document in
-    // which code complete got requested. For the example we ignore this
-    // info and always provide the same completion items.
-    return [
-      {
-        label: "TypeScript",
-        kind: CompletionItemKind.Text,
-        data: 1
-      },
-      {
-        label: "JavaScript",
-        kind: CompletionItemKind.Text,
-        data: 2
-      }
-    ];
+  (position: TextDocumentPositionParams): CompletionItem[] => {
+    // TODO: Add Intelligense, integrate with ZSlang
+    const location = textPositionToLocation(position);
+    return [BrewingCompletionInstance.base.simple];
   }
 );
 
@@ -198,35 +190,32 @@ connection.onCompletion(
 connection.onCompletionResolve(
   (item: CompletionItem): CompletionItem => {
     if (item.data === 1) {
-      item.detail = "TypeScript details";
-      item.documentation = "TypeScript documentation";
-    } else if (item.data === 2) {
-      item.detail = "JavaScript details";
-      item.documentation = "JavaScript documentation";
+      return BrewingCompletionInstance.base.detail;
     }
-    return item;
   }
 );
 
-/*
-connection.onDidOpenTextDocument((params) => {
-    // A text document got opened in VS Code.
-    // params.uri uniquely identifies the document. For documents store on disk this is a file URI.
-    // params.text the initial full content of the document.
-    connection.console.log(`${params.textDocument.uri} opened.`);
+connection.onDidOpenTextDocument(params => {
+  // A text document got opened in VS Code.
+  // params.uri uniquely identifies the document. For documents store on disk this is a file URI.
+  // params.text the initial full content of the document.
+  connection.console.log(`${params.textDocument.uri} opened.`);
 });
-connection.onDidChangeTextDocument((params) => {
-    // The content of a text document did change in VS Code.
-    // params.uri uniquely identifies the document.
-    // params.contentChanges describe the content changes to the document.
-    connection.console.log(`${params.textDocument.uri} changed: ${JSON.stringify(params.contentChanges)}`);
+connection.onDidChangeTextDocument(params => {
+  // The content of a text document did change in VS Code.
+  // params.uri uniquely identifies the document.
+  // params.contentChanges describe the content changes to the document.
+  connection.console.log(
+    `${params.textDocument.uri} changed: ${JSON.stringify(
+      params.contentChanges
+    )}`
+  );
 });
-connection.onDidCloseTextDocument((params) => {
-    // A text document got closed in VS Code.
-    // params.uri uniquely identifies the document.
-    connection.console.log(`${params.textDocument.uri} closed.`);
+connection.onDidCloseTextDocument(params => {
+  // A text document got closed in VS Code.
+  // params.uri uniquely identifies the document.
+  connection.console.log(`${params.textDocument.uri} closed.`);
 });
-*/
 
 // Make the text document manager listen on the connection
 // for open, change and close text document events
