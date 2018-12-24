@@ -9,10 +9,13 @@ import {
   DidChangeConfigurationNotification,
   CompletionItem,
   CompletionItemKind,
-  TextDocumentPositionParams
+  TextDocumentPositionParams,
+  Hover
 } from "vscode-languageserver";
 import { BrewingCompletionInstance } from "./completion/brewing";
 import { textPositionToLocation } from "./utils/path";
+import { ZSLexer } from "./parser/zsLexer";
+import { IToken } from "chevrotain";
 
 // 创建一个服务的连接，连接使用 Node 的 IPC 作为传输
 // 并且引入所有 LSP 特性, 包括 preview / proposed
@@ -27,6 +30,9 @@ let hasConfigurationCapability: boolean = false;
 let hasWorkspaceFolderCapability: boolean = false;
 //
 let hasDiagnosticRelatedInformationCapability: boolean = false;
+
+// Lex
+let tokens: IToken[] = [];
 
 connection.onInitialize((params: InitializeParams) => {
   let capabilities = params.capabilities;
@@ -49,7 +55,10 @@ connection.onInitialize((params: InitializeParams) => {
       completionProvider: {
         resolveProvider: true,
         triggerCharacters: [".", ":"]
-      }
+      },
+      hoverProvider: true,
+      // TODO: Support ZenScript Formatting
+      documentFormattingProvider: false
     }
   };
 });
@@ -132,6 +141,8 @@ async function validateTextDocument(textDocument: TextDocument): Promise<void> {
   let pattern = /\b[A-Z]{2,}\b/g;
   let m: RegExpExecArray;
 
+  tokens = ZSLexer.tokenize(text).tokens;
+
   let problems = 0;
   let diagnostics: Diagnostic[] = [];
   while ((m = pattern.exec(text)) && problems < settings.maxNumberOfProblems) {
@@ -173,6 +184,7 @@ async function validateTextDocument(textDocument: TextDocument): Promise<void> {
 connection.onDidChangeWatchedFiles(_change => {
   // 当 Watch 的文件确实发生变动
   connection.console.log("We received an file change event");
+  connection.console.log(`${_change.changes[0].uri}`);
 });
 
 // 负责处理一级自动补全的条目
@@ -181,6 +193,7 @@ connection.onCompletion(
   (position: TextDocumentPositionParams): CompletionItem[] => {
     // TODO: Add Intelligense, integrate with ZSlang
     const location = textPositionToLocation(position);
+    console.log(documents.get(position.textDocument.uri).getText());
     return [BrewingCompletionInstance.base.simple];
   }
 );
@@ -194,6 +207,34 @@ connection.onCompletionResolve(
     }
   }
 );
+
+connection.onHover(textDocumentPositionParams => {
+  const document = documents.get(textDocumentPositionParams.textDocument.uri);
+  const position = textDocumentPositionParams.position;
+
+  if (!document) {
+    return Promise.resolve(void 0);
+  }
+
+  const offset = document.offsetAt(position);
+
+  for (const token of tokens) {
+    if (token.startOffset <= offset && token.endOffset >= offset) {
+      return Promise.resolve({
+        contents: {
+          kind: "plaintext",
+          value: token.tokenType.tokenName
+        },
+        range: {
+          start: document.positionAt(token.startOffset),
+          end: document.positionAt(token.endOffset + 1)
+        }
+      } as Hover);
+    }
+  }
+
+  return Promise.resolve(void 0);
+});
 
 connection.onDidOpenTextDocument(params => {
   // A text document got opened in VS Code.

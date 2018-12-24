@@ -36,7 +36,7 @@ export function activate(context: ExtensionContext) {
     documentSelector: [{ language: "zenscript" }],
     synchronize: {
       // 当工作空间中的'.clientrc'文件改变时通知服务
-      fileEvents: workspace.createFileSystemWatcher("**/.clientrc")
+      fileEvents: workspace.createFileSystemWatcher("**/.zsrc")
     }
   };
 
