@@ -37,6 +37,8 @@ let tokens: IToken[] = [];
 connection.onInitialize((params: InitializeParams) => {
   let capabilities = params.capabilities;
 
+  const folders = params.workspaceFolders;
+
   // Does the client support the `workspace/configuration` request?
   // If not, we will fall back using global settings
   hasConfigurationCapability =
@@ -86,10 +88,10 @@ interface ZenScriptSettings {
 // The global settings, used when the `workspace/configuration` request is not supported by the client.
 // Please note that this is not the case when using this server with the client provided in this example
 // but could happen with other clients.
-const defaultSettings: ZenScriptSettings = { maxNumberOfProblems: 1000 };
+const defaultSettings: ZenScriptSettings = { maxNumberOfProblems: 100 };
 let globalSettings: ZenScriptSettings = defaultSettings;
 
-// Cache the settings of all open documents
+// 为所有打开的文档缓存配置
 let documentSettings: Map<string, Thenable<ZenScriptSettings>> = new Map();
 
 connection.onDidChangeConfiguration(change => {
@@ -121,7 +123,7 @@ function getDocumentSettings(resource: string): Thenable<ZenScriptSettings> {
   return result;
 }
 
-// Only keep settings for open documents
+// 只保留打开文档的设置
 documents.onDidClose(e => {
   documentSettings.delete(e.document.uri);
 });
@@ -187,39 +189,43 @@ connection.onDidChangeWatchedFiles(_change => {
   connection.console.log(`${_change.changes[0].uri}`);
 });
 
-// 负责处理一级自动补全的条目
-// This handler provides the initial list of the completion items.
+// 负责处理自动补全的条目, 发送较为简单的消息
 connection.onCompletion(
   (position: TextDocumentPositionParams): CompletionItem[] => {
-    // TODO: Add Intelligense, integrate with ZSlang
+    // TODO: 完成自动补全
     const location = textPositionToLocation(position);
     console.log(documents.get(position.textDocument.uri).getText());
     return [BrewingCompletionInstance.base.simple];
   }
 );
 
-// This handler resolves additional information for the item selected in
-// the completion list.
+// 负责处理自动补全条目选中时的信息, 将完整的信息发送至 Client
 connection.onCompletionResolve(
   (item: CompletionItem): CompletionItem => {
-    if (item.data === 1) {
-      return BrewingCompletionInstance.base.detail;
-    }
+    // TODO: 发送正确的信息
+    return BrewingCompletionInstance.base.detail;
   }
 );
 
+// 负责处理鼠标 Hover 时的处理模式
 connection.onHover(textDocumentPositionParams => {
+  // 获得当前正在修改的 document
   const document = documents.get(textDocumentPositionParams.textDocument.uri);
+  // 当前鼠标指向的位置
   const position = textDocumentPositionParams.position;
 
+  // 当 document 不存在时, 返回空
   if (!document) {
     return Promise.resolve(void 0);
   }
 
+  // 获得当前位置的 offset
   const offset = document.offsetAt(position);
 
+  // 对所有 token 进行遍历, 确定悬浮位置所在 token
   for (const token of tokens) {
     if (token.startOffset <= offset && token.endOffset >= offset) {
+      // 返回该 token 的 tokenName
       return Promise.resolve({
         contents: {
           kind: "plaintext",
@@ -233,34 +239,13 @@ connection.onHover(textDocumentPositionParams => {
     }
   }
 
+  // 当前位置未找到有效 token
   return Promise.resolve(void 0);
 });
 
-connection.onDidOpenTextDocument(params => {
-  // A text document got opened in VS Code.
-  // params.uri uniquely identifies the document. For documents store on disk this is a file URI.
-  // params.text the initial full content of the document.
-  connection.console.log(`${params.textDocument.uri} opened.`);
-});
-connection.onDidChangeTextDocument(params => {
-  // The content of a text document did change in VS Code.
-  // params.uri uniquely identifies the document.
-  // params.contentChanges describe the content changes to the document.
-  connection.console.log(
-    `${params.textDocument.uri} changed: ${JSON.stringify(
-      params.contentChanges
-    )}`
-  );
-});
-connection.onDidCloseTextDocument(params => {
-  // A text document got closed in VS Code.
-  // params.uri uniquely identifies the document.
-  connection.console.log(`${params.textDocument.uri} closed.`);
-});
-
-// Make the text document manager listen on the connection
-// for open, change and close text document events
+// 使得 documents 监听 connection
+// 以触发相应事件
 documents.listen(connection);
 
-// Listen on the connection
+// 开始 listen
 connection.listen();
