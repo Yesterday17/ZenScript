@@ -33,7 +33,7 @@ export function activate(context: ExtensionContext) {
   // 控制 Language Client 的选项
   let clientOptions: LanguageClientOptions = {
     // 为 Language Server 注册文件类型为 ZenScript
-    documentSelector: [{ language: "zenscript" }],
+    documentSelector: [{ scheme: "file", language: "zenscript" }],
     synchronize: {
       // 当工作空间中的'.clientrc'文件改变时通知服务
       fileEvents: workspace.createFileSystemWatcher("**/.zsrc")

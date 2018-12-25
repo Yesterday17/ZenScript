@@ -16,6 +16,7 @@ import { BrewingCompletionInstance } from "./completion/brewing";
 import { textPositionToLocation } from "./utils/path";
 import { ZSLexer } from "./parser/zsLexer";
 import { IToken } from "chevrotain";
+import { ZenScriptParser } from "./parser/zsParser";
 
 // 创建一个服务的连接，连接使用 Node 的 IPC 作为传输
 // 并且引入所有 LSP 特性, 包括 preview / proposed
@@ -134,53 +135,30 @@ documents.onDidChangeContent(change => {
   validateTextDocument(change.document);
 });
 
+function parseInput(text: string) {
+  const parser = new ZenScriptParser();
+  const lexResult = ZSLexer.tokenize(text);
+
+  parser.input = lexResult.tokens;
+  const cst = parser.zsFile();
+
+  connection.console.error(JSON.stringify(parser.errors));
+  return {
+    lexResult,
+    cst
+  };
+}
+
 async function validateTextDocument(textDocument: TextDocument): Promise<void> {
   // In this simple example we get the settings for every validate run.
   let settings = await getDocumentSettings(textDocument.uri);
 
   // The validator creates diagnostics for all uppercase words length 2 and more
   let text = textDocument.getText();
-  let pattern = /\b[A-Z]{2,}\b/g;
-  let m: RegExpExecArray;
 
-  tokens = ZSLexer.tokenize(text).tokens;
-
-  let problems = 0;
-  let diagnostics: Diagnostic[] = [];
-  while ((m = pattern.exec(text)) && problems < settings.maxNumberOfProblems) {
-    problems++;
-    let diagnostic: Diagnostic = {
-      severity: DiagnosticSeverity.Warning,
-      range: {
-        start: textDocument.positionAt(m.index),
-        end: textDocument.positionAt(m.index + m[0].length)
-      },
-      message: `${m[0]} is all uppercase.`,
-      source: "ex"
-    };
-    if (hasDiagnosticRelatedInformationCapability) {
-      diagnostic.relatedInformation = [
-        {
-          location: {
-            uri: textDocument.uri,
-            range: Object.assign({}, diagnostic.range)
-          },
-          message: "Spelling matters"
-        },
-        {
-          location: {
-            uri: textDocument.uri,
-            range: Object.assign({}, diagnostic.range)
-          },
-          message: "Particularly for names"
-        }
-      ];
-    }
-    diagnostics.push(diagnostic);
-  }
-
-  // Send the computed diagnostics to VS Code.
-  connection.sendDiagnostics({ uri: textDocument.uri, diagnostics });
+  const result = parseInput(text);
+  tokens = result.lexResult.tokens;
+  connection.console.log(JSON.stringify(tokens));
 }
 
 connection.onDidChangeWatchedFiles(_change => {

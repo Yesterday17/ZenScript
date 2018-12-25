@@ -4,7 +4,8 @@ const createToken = chevrotain.createToken;
 
 const EOL = createToken({
   name: "EOL",
-  pattern: /\r/
+  pattern: /\r?\n/,
+  group: chevrotain.Lexer.SKIPPED
 });
 const WHITE_SPACE = createToken({
   name: "WHITE_SPACE",
@@ -14,11 +15,13 @@ const WHITE_SPACE = createToken({
 
 const LINE_COMMENT = createToken({
   name: "LINE_COMMENT",
-  pattern: /\/\/.*/
+  pattern: /\/\/.*/,
+  group: chevrotain.Lexer.SKIPPED
 });
 const BLOCK_COMMENT = createToken({
   name: "BLOCK_COMMENT",
-  pattern: /\/\*([^*]|\*+[^*/])*(\*+\/)?/
+  pattern: /\/\*([^*]|\*+[^*/])*(\*+\/)?/,
+  group: chevrotain.Lexer.SKIPPED
 });
 const DOUBLE_QUOTED_STRING = createToken({
   name: "DOUBLE_QUOTED_STRING",
@@ -86,36 +89,128 @@ const SEMICOLON = createToken({ name: "SEMICOLON", pattern: /\;/ });
 const COMMA = createToken({ name: "COMMA", pattern: /\,/ });
 const DOT = createToken({ name: "DOT", pattern: /\./ });
 const DOTDOT = createToken({ name: "DOTDOT", pattern: /\.\./ });
-const EQEQ = createToken({ name: "L_ROUND_BRACKET", pattern: /\=\=/ });
+const EQEQ = createToken({ name: "EQEQ", pattern: /\=\=/ });
 const NOT_EQUAL = createToken({ name: "NOT_EQUAL", pattern: /\!\=/ });
 const LESS_EQUAL = createToken({ name: "LESS_EQUAL", pattern: /\<\=/ });
 const GREATER_EQUAL = createToken({ name: "GREATER_EQUAL", pattern: /\>\=/ });
-const ANY = createToken({ name: "ANY", pattern: /any/ });
-const BOOL = createToken({ name: "BOOL", pattern: /bool/ });
-const BYTE = createToken({ name: "BYTE", pattern: /byte/ });
-const SHORT = createToken({ name: "SHORT", pattern: /short/ });
-const INT = createToken({ name: "INT", pattern: /int/ });
-const LONG = createToken({ name: "LONG", pattern: /long/ });
-const FLOAT = createToken({ name: "FLOAT", pattern: /float/ });
-const DOUBLE = createToken({ name: "DOUBLE", pattern: /double/ });
-const STRING = createToken({ name: "STRING", pattern: /string/ });
-const FUNCTION = createToken({ name: "FUNCTION", pattern: /function/ });
-const TO = createToken({ name: "TO", pattern: /to/ });
-const VOID = createToken({ name: "VOID", pattern: /void/ });
-const AS = createToken({ name: "AS", pattern: /as/ });
-const VERSION = createToken({ name: "VERSION", pattern: /version/ });
-const IF = createToken({ name: "IF", pattern: /if/ });
-const ELSE = createToken({ name: "ELSE", pattern: /else/ });
-const FOR = createToken({ name: "FOR", pattern: /for/ });
-const RETURN = createToken({ name: "RETURN", pattern: /return/ });
-const IMPORT = createToken({ name: "IMPORT", pattern: /import/ });
-const VAR = createToken({ name: "VAR", pattern: /var/ });
-const VAL = createToken({ name: "VAL", pattern: /val/ });
-const STATIC = createToken({ name: "STATIC", pattern: /static/ });
-const GLOBAL_ZS = createToken({ name: "GLOBAL", pattern: /global/ });
-const NULL = createToken({ name: "NULL", pattern: /null/ });
-const TRUE = createToken({ name: "TRUE", pattern: /true/ });
-const FALSE = createToken({ name: "FALSE", pattern: /false/ });
+const ANY = createToken({
+  name: "ANY",
+  pattern: /any/,
+  longer_alt: IDENTIFIER
+});
+const BOOL = createToken({
+  name: "BOOL",
+  pattern: /bool/,
+  longer_alt: IDENTIFIER
+});
+const BYTE = createToken({
+  name: "BYTE",
+  pattern: /byte/,
+  longer_alt: IDENTIFIER
+});
+const SHORT = createToken({
+  name: "SHORT",
+  pattern: /short/,
+  longer_alt: IDENTIFIER
+});
+const INT = createToken({
+  name: "INT",
+  pattern: /int/,
+  longer_alt: IDENTIFIER
+});
+const LONG = createToken({
+  name: "LONG",
+  pattern: /long/,
+  longer_alt: IDENTIFIER
+});
+const FLOAT = createToken({
+  name: "FLOAT",
+  pattern: /float/,
+  longer_alt: IDENTIFIER
+});
+const DOUBLE = createToken({
+  name: "DOUBLE",
+  pattern: /double/,
+  longer_alt: IDENTIFIER
+});
+const STRING = createToken({
+  name: "STRING",
+  pattern: /string/,
+  longer_alt: IDENTIFIER
+});
+const FUNCTION = createToken({
+  name: "FUNCTION",
+  pattern: /function/,
+  longer_alt: IDENTIFIER
+});
+const TO = createToken({ name: "TO", pattern: /to/, longer_alt: IDENTIFIER });
+const VOID = createToken({
+  name: "VOID",
+  pattern: /void/,
+  longer_alt: IDENTIFIER
+});
+const AS = createToken({ name: "AS", pattern: /as/, longer_alt: IDENTIFIER });
+const VERSION = createToken({
+  name: "VERSION",
+  pattern: /version/,
+  longer_alt: IDENTIFIER
+});
+const IF = createToken({ name: "IF", pattern: /if/, longer_alt: IDENTIFIER });
+const ELSE = createToken({
+  name: "ELSE",
+  pattern: /else/,
+  longer_alt: IDENTIFIER
+});
+const FOR = createToken({
+  name: "FOR",
+  pattern: /for/,
+  longer_alt: IDENTIFIER
+});
+const RETURN = createToken({
+  name: "RETURN",
+  pattern: /return/,
+  longer_alt: IDENTIFIER
+});
+const IMPORT = createToken({
+  name: "IMPORT",
+  pattern: /import/,
+  longer_alt: IDENTIFIER
+});
+const VAR = createToken({
+  name: "VAR",
+  pattern: /var/,
+  longer_alt: IDENTIFIER
+});
+const VAL = createToken({
+  name: "VAL",
+  pattern: /val/,
+  longer_alt: IDENTIFIER
+});
+const STATIC = createToken({
+  name: "STATIC",
+  pattern: /static/,
+  longer_alt: IDENTIFIER
+});
+const GLOBAL_ZS = createToken({
+  name: "GLOBAL_ZS",
+  pattern: /global/,
+  longer_alt: IDENTIFIER
+});
+const NULL = createToken({
+  name: "NULL",
+  pattern: /null/,
+  longer_alt: IDENTIFIER
+});
+const TRUE = createToken({
+  name: "TRUE",
+  pattern: /true/,
+  longer_alt: IDENTIFIER
+});
+const FALSE = createToken({
+  name: "FALSE",
+  pattern: /false/,
+  longer_alt: IDENTIFIER
+});
 
 const zsAllTokens = [
   WHITE_SPACE,

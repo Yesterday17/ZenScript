@@ -71,24 +71,60 @@ import {
   DOTDOT
 } from "./zsLexer";
 
-class ZSParser extends Parser {
+export class ZenScriptParser extends Parser {
+  zsFile;
+  preprocessor_list;
+  import_list;
+  import_statement;
+  statement;
+  bracket_keywords;
+  bracketHandler;
+  variable;
+  class_name;
+  number;
+  validCallable;
+  validVariable;
+  field_reference;
+  moduloType;
+  assignStatement;
+  map_declaration;
+  map_entry;
+  functionCall;
+  arrayDeclaration;
+  arrayMapRead;
+  castExpression;
+  statement_body;
+  return_statement;
+  for_loop;
+  condition;
+  if_statement;
+  function_declaration;
+  lambda_function_declaration;
+  parameter_list;
+  parameter_variable;
+  function_body;
+  equation;
+  valid_calculation_variable;
+  binary_math_signs;
+  unary_math_signs;
+
   constructor() {
     super(zsAllTokens);
     const $ = this;
 
     $.RULE("zsFile", () => {
-      $.OPTION($["preprocessor_list"]);
-      $.SUBRULE($["import_list"]);
-      $.MANY(() => {
-        $.OR([
-          {
-            ALT: () => $.SUBRULE($["statement"])
-          },
-          {
-            ALT: () => $.SUBRULE($["function_declaration"])
-          }
-        ]);
-      });
+      $.SUBRULE($.preprocessor_list);
+      $.SUBRULE($.import_list);
+      // $.MANY(() => {
+      //   $.OR([
+      //     {
+      //       ALT: () => $.SUBRULE($.statement)
+      //     },
+      //     {
+      //       ALT: () => $.SUBRULE($.function_declaration)
+      //     }
+      //   ]);
+      // });
     });
 
     $.RULE("preprocessor_list", () => {
@@ -98,7 +134,9 @@ class ZSParser extends Parser {
     });
 
     $.RULE("import_list", () => {
-      $.MANY($.SUBRULE($["import_statement"]));
+      $.MANY(() => {
+        $.SUBRULE($.import_statement);
+      });
     });
 
     $.RULE("import_statement", () => {
@@ -106,11 +144,11 @@ class ZSParser extends Parser {
       $.CONSUME(IDENTIFIER);
       $.MANY(() => {
         $.CONSUME(DOT);
-        $.CONSUME(IDENTIFIER);
+        $.CONSUME2(IDENTIFIER);
       });
       $.OPTION(() => {
         $.CONSUME(AS);
-        $.CONSUME(IDENTIFIER);
+        $.CONSUME3(IDENTIFIER);
       });
       $.CONSUME(SEMICOLON);
     });
@@ -119,19 +157,19 @@ class ZSParser extends Parser {
       $.OR([
         {
           ALT: () => {
-            $.SUBRULE($["assignStatement"]);
+            $.SUBRULE($.assignStatement);
             $.CONSUME(SEMICOLON);
           }
         },
         { ALT: () => $.CONSUME(EOL) },
         {
           ALT: () => {
-            $.SUBRULE($["functionCall"]);
-            $.CONSUME(SEMICOLON);
+            $.SUBRULE($.functionCall);
+            $.CONSUME2(SEMICOLON);
           }
         },
-        { ALT: () => $.SUBRULE($["for_loop"]) },
-        { ALT: () => $.SUBRULE($["if_statement"]) }
+        { ALT: () => $.SUBRULE($.for_loop) },
+        { ALT: () => $.SUBRULE($.if_statement) }
       ]);
     });
 
@@ -141,7 +179,9 @@ class ZSParser extends Parser {
     $.RULE("bracket_keywords", () => {
       $.OR([
         { ALT: () => $.CONSUME(IDENTIFIER) },
-        { ALT: () => $.SUBRULE($["number"]) },
+        { ALT: () => $.CONSUME(DIGITS) },
+        { ALT: () => $.CONSUME(FLOATING_POINT) },
+        { ALT: () => $.CONSUME(EXP_NUMBER) },
         { ALT: () => $.CONSUME(L_ROUND_BRACKET) },
         { ALT: () => $.CONSUME(R_ROUND_BRACKET) },
         {
@@ -206,7 +246,7 @@ class ZSParser extends Parser {
 
     $.RULE("bracketHandler", () => {
       $.CONSUME(L_ANGLE_BRACKET);
-      $.MANY(() => $.SUBRULE($["bracket_keywords"]));
+      $.MANY(() => $.SUBRULE($.bracket_keywords));
       $.CONSUME(R_ANGLE_BRACKET);
     });
 
@@ -226,7 +266,7 @@ class ZSParser extends Parser {
       ]);
       $.MANY(() => {
         $.CONSUME(L_SQUARE_BRACKET);
-        $.OPTION($.SUBRULE($["class_name"]));
+        $.OPTION($.SUBRULE($.class_name));
         $.CONSUME(R_SQUARE_BRACKET);
       });
     });
@@ -242,9 +282,9 @@ class ZSParser extends Parser {
     $.RULE("validCallable", () => {
       $.OR([
         {
-          ALT: () => $.SUBRULE($["bracketHandler"])
+          ALT: () => $.SUBRULE($.bracketHandler)
         },
-        { ALT: () => $.SUBRULE($["variable"]) },
+        { ALT: () => $.SUBRULE($.variable) },
         {
           ALT: () => $.CONSUME(DOUBLE_QUOTED_STRING)
         },
@@ -252,12 +292,12 @@ class ZSParser extends Parser {
           ALT: () => $.CONSUME(SINGLE_QUOTED_STRING)
         },
         {
-          ALT: () => $.SUBRULE($["arrayMapRead"])
+          ALT: () => $.SUBRULE($.arrayMapRead)
         },
         {
           ALT: () => {
             $.CONSUME(L_ROUND_BRACKET);
-            $.SUBRULE($["validVariable"]);
+            $.SUBRULE($.validVariable);
             $.CONSUME(R_ROUND_BRACKET);
           }
         }
@@ -267,27 +307,27 @@ class ZSParser extends Parser {
     $.RULE("validVariable", () => {
       $.OR([
         {
-          ALT: () => $.SUBRULE($["lambda_function_declaration"])
+          ALT: () => $.SUBRULE($.lambda_function_declaration)
         },
-        { ALT: () => $.SUBRULE($["moduloType"]) },
+        { ALT: () => $.SUBRULE($.moduloType) },
         {
-          ALT: () => $.SUBRULE($["arrayMapRead"])
-        },
-        {
-          ALT: () => $.SUBRULE($["castExpression"])
-        },
-        { ALT: () => $.SUBRULE($["equation"]) },
-        {
-          ALT: () => $.SUBRULE($["functionCall"])
+          ALT: () => $.SUBRULE($.arrayMapRead)
         },
         {
-          ALT: () => $.SUBRULE($["field_reference"])
+          ALT: () => $.SUBRULE($.castExpression)
+        },
+        { ALT: () => $.SUBRULE($.equation) },
+        {
+          ALT: () => $.SUBRULE($.functionCall)
         },
         {
-          ALT: () => $.SUBRULE($["bracketHandler"])
+          ALT: () => $.SUBRULE($.field_reference)
         },
-        { ALT: () => $.SUBRULE($["variable"]) },
-        { ALT: () => $.SUBRULE($["number"]) },
+        {
+          ALT: () => $.SUBRULE($.bracketHandler)
+        },
+        { ALT: () => $.SUBRULE($.variable) },
+        { ALT: () => $.SUBRULE($.number) },
         { ALT: () => $.CONSUME(NULL) },
         {
           ALT: () => $.CONSUME(DOUBLE_QUOTED_STRING)
@@ -296,18 +336,18 @@ class ZSParser extends Parser {
           ALT: () => $.CONSUME(SINGLE_QUOTED_STRING)
         },
         {
-          ALT: () => $.SUBRULE($["arrayDeclaration"])
+          ALT: () => $.SUBRULE($.arrayDeclaration)
         },
         { ALT: () => $.CONSUME(TRUE) },
         { ALT: () => $.CONSUME(FALSE) },
         {
-          ALT: () => $.SUBRULE($["map_declaration"])
+          ALT: () => $.SUBRULE($.map_declaration)
         }
       ]);
     });
 
     $.RULE("field_reference", () => {
-      $.SUBRULE($["validCallable"]);
+      $.SUBRULE($.validCallable);
       $.MANY(() => {
         $.CONSUME(DOT);
         $.CONSUME(IDENTIFIER);
@@ -316,8 +356,8 @@ class ZSParser extends Parser {
 
     $.RULE("moduloType", () => {
       $.OR([
-        { ALT: $.SUBRULE($["bracketHandler"]) },
-        { ALT: $.SUBRULE($["variable"]) }
+        { ALT: $.SUBRULE($.bracketHandler) },
+        { ALT: $.SUBRULE($.variable) }
       ]);
       $.CONSUME(PERC);
       $.CONSUME(DIGITS);
@@ -329,33 +369,33 @@ class ZSParser extends Parser {
           { ALT: () => $.CONSUME(STATIC) },
           { ALT: () => $.CONSUME(GLOBAL_ZS) }
         ]);
-        $.OR([{ ALT: () => $.CONSUME(VAR) }, { ALT: () => $.CONSUME(VAL) }]);
-        $.SUBRULE($["field_reference"]);
+        $.OR2([{ ALT: () => $.CONSUME(VAR) }, { ALT: () => $.CONSUME(VAL) }]);
+        $.SUBRULE($.field_reference);
       });
     });
 
     $.RULE("map_declaration", () => {
       $.CONSUME(L_CURLY_BRACKET);
       $.MANY(() => {
-        $.SUBRULE($["map_entry"]);
+        $.SUBRULE($.map_entry);
         $.CONSUME(COMMA);
       });
-      $.OPTION($.SUBRULE($["map_entry"]));
+      $.OPTION($.SUBRULE2($.map_entry));
       $.CONSUME(R_CURLY_BRACKET);
-      $.OPTION(() => {
+      $.OPTION2(() => {
         $.CONSUME(AS);
-        $.SUBRULE($["class_name"]);
+        $.SUBRULE($.class_name);
       });
     });
 
     $.RULE("map_entry", () => {
-      $.SUBRULE($["validVariable"]);
+      $.SUBRULE($.validVariable);
       $.CONSUME(COLON);
-      $.SUBRULE($["validVariable"]);
+      $.SUBRULE2($.validVariable);
     });
 
     $.RULE("functionCall", () => {
-      $.SUBRULE($["validCallable"]);
+      $.SUBRULE($.validCallable);
       $.AT_LEAST_ONE(() => {
         $.MANY(() => {
           $.CONSUME(DOT);
@@ -370,13 +410,13 @@ class ZSParser extends Parser {
           },
           {
             ALT: () => {
-              $.CONSUME(L_ROUND_BRACKET);
-              $.SUBRULE($["validVariable"]);
-              $.MANY(() => {
+              $.CONSUME2(L_ROUND_BRACKET);
+              $.SUBRULE($.validVariable);
+              $.MANY2(() => {
                 $.CONSUME(COMMA);
-                $.SUBRULE($["validVariable"]);
+                $.SUBRULE2($.validVariable);
               });
-              $.CONSUME(R_ROUND_BRACKET);
+              $.CONSUME2(R_ROUND_BRACKET);
             }
           }
         ]);
@@ -386,12 +426,12 @@ class ZSParser extends Parser {
     $.RULE("arrayDeclaration", () => {
       $.CONSUME(L_SQUARE_BRACKET);
       $.OPTION(() => {
-        $.SUBRULE($["validVariable"]);
+        $.SUBRULE($.validVariable);
         $.MANY(() => {
           $.CONSUME(COMMA);
-          $.SUBRULE($["validVariable"]);
+          $.SUBRULE2($.validVariable);
         });
-        $.OPTION(() => $.CONSUME(COMMA));
+        $.OPTION2(() => $.CONSUME2(COMMA));
       });
       $.CONSUME(R_SQUARE_BRACKET);
     });
@@ -400,11 +440,11 @@ class ZSParser extends Parser {
       $.CONSUME(IDENTIFIER);
       $.MANY(() => {
         $.CONSUME(DOT);
-        $.CONSUME(IDENTIFIER);
+        $.CONSUME2(IDENTIFIER);
       });
       $.AT_LEAST_ONE(() => {
         $.CONSUME(L_SQUARE_BRACKET);
-        $.SUBRULE($["validVariable"]);
+        $.SUBRULE($.validVariable);
         $.CONSUME(R_SQUARE_BRACKET);
       });
     });
@@ -412,21 +452,21 @@ class ZSParser extends Parser {
     $.RULE("castExpression", () => {
       $.OR([
         {
-          ALT: () => $.SUBRULE($["arrayDeclaration"])
+          ALT: () => $.SUBRULE($.arrayDeclaration)
         },
         {
-          ALT: () => $.SUBRULE($["functionCall"])
+          ALT: () => $.SUBRULE($.functionCall)
         },
         {
-          ALT: () => $.SUBRULE($["field_reference"])
+          ALT: () => $.SUBRULE($.field_reference)
         },
-        { ALT: () => $.SUBRULE($["number"]) },
+        { ALT: () => $.SUBRULE($.number) },
         {
-          ALT: () => $.SUBRULE($["validCallable"])
+          ALT: () => $.SUBRULE($.validCallable)
         }
       ]);
       $.CONSUME(AS);
-      $.SUBRULE($["class_name"]);
+      $.SUBRULE($.class_name);
     });
 
     // CONTROL STATEMENTS
@@ -435,17 +475,17 @@ class ZSParser extends Parser {
         {
           ALT: () => {
             $.CONSUME(L_CURLY_BRACKET);
-            $.MANY($.SUBRULE($["statement"]));
+            $.MANY($.SUBRULE($.statement));
             $.CONSUME(R_CURLY_BRACKET);
           }
         },
-        { ALT: () => $.SUBRULE($["function_body"]) }
+        { ALT: () => $.SUBRULE($.function_body) }
       ]);
     });
 
     $.RULE("return_statement", () => {
       $.CONSUME(RETURN);
-      $.SUBRULE($["validVariable"]);
+      $.SUBRULE($.validVariable);
       $.CONSUME(SEMICOLON);
     });
 
@@ -454,45 +494,45 @@ class ZSParser extends Parser {
       $.OR([
         {
           ALT: () => {
-            $.SUBRULE($["variable"]);
+            $.SUBRULE($.variable);
             $.CONSUME(IN);
             $.CONSUME(DIGITS);
-            $.OR([
+            $.OR2([
               { ALT: () => $.CONSUME(DOTDOT) },
               { ALT: () => $.CONSUME(TO) }
             ]);
-            $.CONSUME(DIGITS);
+            $.CONSUME2(DIGITS);
           }
         },
         {
           ALT: () => {
             $.OPTION(() => {
-              $.SUBRULE($["variable"]);
+              $.SUBRULE2($.variable);
               $.CONSUME(COMMA);
             });
-            $.SUBRULE($["variable"]);
-            $.CONSUME(IN);
-            $.SUBRULE($["validVariable"]);
+            $.SUBRULE3($.variable);
+            $.CONSUME2(IN);
+            $.SUBRULE($.validVariable);
           }
         }
       ]);
-      $.SUBRULE($["statement_body"]);
+      $.SUBRULE($.statement_body);
     });
 
     $.RULE("condition", () => {
-      $.OPTION($.SUBRULE($["unary_math_signs"]));
-      $.SUBRULE($["validVariable"]);
+      $.OPTION($.SUBRULE($.unary_math_signs));
+      $.SUBRULE($.validVariable);
       $.OR([
         {
           ALT: () => {
             $.CONSUME(IN);
-            $.SUBRULE($["validVariable"]);
+            $.SUBRULE2($.validVariable);
           }
         },
         {
           ALT: () =>
             $.MANY(() => {
-              $.OR([
+              $.OR2([
                 { ALT: () => $.CONSUME(EQEQ) },
                 {
                   ALT: () => $.CONSUME(NOT_EQUAL)
@@ -510,7 +550,7 @@ class ZSParser extends Parser {
                   ALT: () => $.CONSUME(R_ANGLE_BRACKET)
                 }
               ]);
-              $.SUBRULE($["validVariable"]);
+              $.SUBRULE3($.validVariable);
             })
         }
       ]);
@@ -521,31 +561,31 @@ class ZSParser extends Parser {
     // Todo: check unary ! in the front
     $.RULE("if_statement", () => {
       $.CONSUME(IF);
-      $.OPTION($.SUBRULE($["unary_math_signs"]));
+      $.OPTION($.SUBRULE($.unary_math_signs));
       $.CONSUME(L_ROUND_BRACKET);
-      $.SUBRULE($["condition"]);
+      $.SUBRULE($.condition);
       $.MANY(() => {
         $.OR([
           { ALT: () => $.CONSUME(OR) },
           { ALT: () => $.CONSUME(AND) },
           { ALT: () => $.CONSUME(XOR) }
         ]);
-        $.SUBRULE($["condition"]);
+        $.SUBRULE2($.condition);
       });
       $.CONSUME(R_ROUND_BRACKET);
-      $.OR([
+      $.OR2([
         {
-          ALT: () => $.SUBRULE($["statement_body"])
+          ALT: () => $.SUBRULE($.statement_body)
         },
-        { ALT: () => $.SUBRULE($["statement"]) }
+        { ALT: () => $.SUBRULE($.statement) }
       ]);
-      $.OPTION(() => {
+      $.OPTION2(() => {
         $.CONSUME(ELSE);
-        $.OR([
+        $.OR3([
           {
-            ALT: () => $.SUBRULE($["statement_body"])
+            ALT: () => $.SUBRULE2($.statement_body)
           },
-          { ALT: () => $.SUBRULE($["statement"]) }
+          { ALT: () => $.SUBRULE2($.statement) }
         ]);
       });
     });
@@ -553,72 +593,48 @@ class ZSParser extends Parser {
     $.RULE("function_declaration", () => {
       $.CONSUME(FUNCTION);
       $.CONSUME(IDENTIFIER);
-      $.OR([
-        {
-          ALT: () => {
-            $.CONSUME(L_ROUND_BRACKET);
-            $.SUBRULE($["parameter_list"]);
-            $.CONSUME(R_ROUND_BRACKET);
-          }
-        },
-        {
-          ALT: () => {
-            $.CONSUME(L_ROUND_BRACKET);
-            $.CONSUME(R_ROUND_BRACKET);
-          }
-        }
-      ]);
-      $.OPTION(() => {
+      $.CONSUME(L_ROUND_BRACKET);
+      $.OPTION(() => $.SUBRULE($.parameter_list));
+      $.CONSUME(R_ROUND_BRACKET);
+      $.OPTION2(() => {
         $.CONSUME(AS);
-        $.SUBRULE($["class_name"]);
+        $.SUBRULE($.class_name);
       });
-      $.SUBRULE($["function_body"]);
+      $.SUBRULE($.function_body);
     });
 
     $.RULE("lambda_function_declaration", () => {
       $.CONSUME(FUNCTION);
-      $.OR([
-        {
-          ALT: () => {
-            $.CONSUME(L_ROUND_BRACKET);
-            $.SUBRULE($["parameter_list"]);
-            $.CONSUME(R_ROUND_BRACKET);
-          }
-        },
-        {
-          ALT: () => {
-            $.CONSUME(L_ROUND_BRACKET);
-            $.CONSUME(R_ROUND_BRACKET);
-          }
-        }
-      ]);
-      $.OPTION(() => {
+      $.CONSUME(L_ROUND_BRACKET);
+      $.OPTION($.SUBRULE($.parameter_list));
+      $.CONSUME(R_ROUND_BRACKET);
+      $.OPTION2(() => {
         $.CONSUME(AS);
-        $.SUBRULE($["class_name"]);
+        $.SUBRULE($.class_name);
       });
-      $.SUBRULE($["function_body"]);
+      $.SUBRULE($.function_body);
     });
 
     $.RULE("parameter_list", () => {
       $.MANY(() => {
-        $.SUBRULE($["parameter_variable"]);
+        $.SUBRULE($.parameter_variable);
         $.CONSUME(COMMA);
       });
-      $.SUBRULE($["parameter_variable"]);
+      $.SUBRULE2($.parameter_variable);
     });
 
     $.RULE("parameter_variable", () => {
-      $.SUBRULE($["variable "]);
+      $.SUBRULE($.variable);
       $.OPTION(() => {
         $.CONSUME(AS);
-        $.SUBRULE($["class_name"]);
+        $.SUBRULE($.class_name);
       });
     });
 
     $.RULE("function_body", () => {
       $.CONSUME(L_CURLY_BRACKET);
-      $.MANY($.SUBRULE($["statement"]));
-      $.OPTION($.SUBRULE($["return_statement"]));
+      $.MANY($.SUBRULE($.statement));
+      $.OPTION(() => $.SUBRULE($.return_statement));
       $.CONSUME(R_CURLY_BRACKET);
     });
 
@@ -626,22 +642,22 @@ class ZSParser extends Parser {
     // In order not to highlight it, I used lowercase
     //Todo: possibly replace with external code, does not support brackets this way
     $.RULE("equation", () => {
-      $.OPTION($.SUBRULE($["unary_math_signs"]));
-      $.SUBRULE($["valid_calculation_variable"]);
+      $.OPTION($.SUBRULE($.unary_math_signs));
+      $.SUBRULE($.valid_calculation_variable);
       $.AT_LEAST_ONE(() => {
-        $.SUBRULE($["binary_math_signs"]);
-        $.OPTION($.SUBRULE($["unary_math_signs"]));
-        $.SUBRULE($["valid_calculation_variable"]);
+        $.SUBRULE($.binary_math_signs);
+        $.OPTION2($.SUBRULE2($.unary_math_signs));
+        $.SUBRULE2($.valid_calculation_variable);
       });
     });
 
     $.RULE("valid_calculation_variable", () => {
-      $.SUBRULE($["bracketHandler"]);
-      $.SUBRULE($["functionCall"]);
-      $.SUBRULE($["field_reference"]);
-      $.SUBRULE($["number"]);
-      $.SUBRULE($["arrayMapRead"]);
-      $.SUBRULE($["variable"]);
+      $.SUBRULE($.bracketHandler);
+      $.SUBRULE($.functionCall);
+      $.SUBRULE($.field_reference);
+      $.SUBRULE($.number);
+      $.SUBRULE($.arrayMapRead);
+      $.SUBRULE($.variable);
       $.CONSUME(SINGLE_QUOTED_STRING);
       $.CONSUME(DOUBLE_QUOTED_STRING);
     });
@@ -655,8 +671,10 @@ class ZSParser extends Parser {
       ])
     );
 
-    $.RULE("unary_math_signs", () => $.CONSUME(EXCL));
+    $.RULE("unary_math_signs", () => {
+      $.CONSUME(EXCL);
+    });
 
-    this.performSelfAnalysis();
+    // this.performSelfAnalysis();
   }
 }
