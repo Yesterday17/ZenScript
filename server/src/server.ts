@@ -136,13 +136,17 @@ documents.onDidChangeContent(change => {
 });
 
 function parseInput(text: string) {
-  const parser = new ZenScriptParser();
   const lexResult = ZSLexer.tokenize(text);
+  const parser = new ZenScriptParser(lexResult.tokens);
 
-  parser.input = lexResult.tokens;
-  const cst = parser.zsFile();
+  const cst = parser.Program();
 
-  connection.console.error(JSON.stringify(parser.errors));
+  if (parser.errors.length > 0) {
+    connection.console.error(JSON.stringify(parser.errors));
+  } else {
+    connection.console.log(JSON.stringify(cst));
+  }
+
   return {
     lexResult,
     cst
@@ -158,7 +162,6 @@ async function validateTextDocument(textDocument: TextDocument): Promise<void> {
 
   const result = parseInput(text);
   tokens = result.lexResult.tokens;
-  connection.console.log(JSON.stringify(tokens));
 }
 
 connection.onDidChangeWatchedFiles(_change => {

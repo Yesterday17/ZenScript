@@ -4,5 +4,5 @@
 /* 
  * Block Comment
  */
-int a = 1;
+var a = 1;
 brewing.brewing.brewing();
