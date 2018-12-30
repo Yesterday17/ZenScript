@@ -19,7 +19,7 @@ import {
   SimpleBracketHandlers,
   BracketHandlerMap
 } from "./completion/bracketHandler/bracketHandlers";
-import { Keywords } from "./completion/completion";
+import { Keywords, Preprocessors } from "./completion/completion";
 
 // 创建一个服务的连接，连接使用 Node 的 IPC 作为传输
 // 并且引入所有 LSP 特性, 包括 preview / proposed
@@ -193,7 +193,7 @@ connection.onCompletion(
     // TODO: 完成自动补全
     switch (textDocumentPositionParams.context.triggerCharacter) {
       case "#":
-        break;
+        return Preprocessors;
       case ".":
         break;
       case ":":
