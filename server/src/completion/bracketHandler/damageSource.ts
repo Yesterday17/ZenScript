@@ -3,7 +3,7 @@ import { CompletionItem } from "vscode-languageserver";
 export const DamageSourceBracketHandler: CompletionItem = {
   label: "damageSource",
   detail:
-    "The Damage Source Bracket Handler allows you to refer to IDamageSources in the game.",
+    "Refer to IDamageSources in the game.",
   documentation: {
     kind: "markdown",
     value:

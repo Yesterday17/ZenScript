@@ -2,6 +2,8 @@ import { CompletionItemKind, CompletionItem } from "vscode-languageserver";
 import { CreativeTabBracketHandler } from "./creativetab";
 import { DamageSourceBracketHandler } from "./damageSource";
 import { EnchantmentBracketHandler } from "./enchantment";
+import { EntityBracketHandler } from "./entity";
+import { LiquidBracketHandler, FluidBracketHandler } from "./liquid";
 
 const BracketHandlerKind: CompletionItemKind = CompletionItemKind.Unit;
 
@@ -9,7 +11,11 @@ const BracketHandlerKind: CompletionItemKind = CompletionItemKind.Unit;
 const BracketHandlers: CompletionItem[] = [
   CreativeTabBracketHandler,
   DamageSourceBracketHandler,
-  EnchantmentBracketHandler
+  EnchantmentBracketHandler,
+  EntityBracketHandler,
+  // The two below are the same
+  LiquidBracketHandler,
+  FluidBracketHandler
 ];
 
 export const SimpleBracketHandlers: CompletionItem[] = BracketHandlers.map(
