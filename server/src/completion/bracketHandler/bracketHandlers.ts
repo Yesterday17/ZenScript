@@ -25,7 +25,11 @@ const BracketHandlers: CompletionItem[] = [
 
 export const SimpleBracketHandlers: CompletionItem[] = BracketHandlers.map(
   (item: CompletionItem) => {
-    return { label: item.label, kind: BracketHandlerKind };
+    return {
+      label: item.label,
+      kind: BracketHandlerKind,
+      data: { triggerCharacter: "<" }
+    };
   }
 );
 

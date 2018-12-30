@@ -15,7 +15,10 @@ import { ZSLexer } from "./parser/zsLexer";
 import { IToken } from "chevrotain";
 import { ZenScriptParser } from "./parser/zsParser";
 import { keywords } from "./services/zsCompletion";
-import { DetailBracketHandlers } from "./completion/bracketHandler/bracketHandlers";
+import {
+  DetailBracketHandlers,
+  SimpleBracketHandlers
+} from "./completion/bracketHandler/bracketHandlers";
 
 // 创建一个服务的连接，连接使用 Node 的 IPC 作为传输
 // 并且引入所有 LSP 特性, 包括 preview / proposed
@@ -191,7 +194,7 @@ connection.onCompletion(
       case ":":
         break;
       case "<":
-        return [...DetailBracketHandlers];
+        return [...SimpleBracketHandlers];
       default:
         return [...keywords];
     }
@@ -199,10 +202,17 @@ connection.onCompletion(
 );
 
 // 负责处理自动补全条目选中时的信息, 将完整的信息发送至 Client
+// TODO: 发送正确的信息
 connection.onCompletionResolve(
   (item: CompletionItem): CompletionItem => {
-    // TODO: 发送正确的信息
-    return item;
+    switch (item.data.triggerCharacter) {
+      case "<":
+        return DetailBracketHandlers.find(i => {
+          return i.label === item.label;
+        });
+      default:
+        break;
+    }
   }
 );
 
