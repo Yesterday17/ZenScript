@@ -16,7 +16,8 @@ import { IToken } from "chevrotain";
 import { ZenScriptParser } from "./parser/zsParser";
 import {
   DetailBracketHandlers,
-  SimpleBracketHandlers
+  SimpleBracketHandlers,
+  BracketHandlerMap
 } from "./completion/bracketHandler/bracketHandlers";
 import { Keywords } from "./completion/completion";
 
@@ -184,6 +185,10 @@ connection.onCompletion(
     const document = documents.get(textDocumentPositionParams.textDocument.uri);
     // 当前补全的位置
     const position = textDocumentPositionParams.position;
+    // 当前补全的 offset
+    const offset = document.offsetAt(position);
+    // 当前文档的文本
+    const content = document.getText();
 
     // TODO: 完成自动补全
     switch (textDocumentPositionParams.context.triggerCharacter) {
@@ -192,7 +197,29 @@ connection.onCompletion(
       case ".":
         break;
       case ":":
-        break;
+        // 位于 <> 内的内容
+        let predecessor: string[] = [];
+
+        // 寻找 inBracket
+        for (let i = offset; i > 0; i--) {
+          // 当 : 与 < 不再同一行时直接返回 null
+          if (content[i] === "\n") {
+            return;
+          }
+
+          if (content[i] === "<") {
+            predecessor = document
+              .getText({
+                start: document.positionAt(i + 1),
+                end: document.positionAt(offset - 1)
+              })
+              .split(":");
+            break;
+          }
+        }
+        return BracketHandlerMap.get(predecessor[0])
+          ? BracketHandlerMap.get(predecessor[0]).next(predecessor)
+          : null;
       case "<":
         return [...SimpleBracketHandlers];
       default:
