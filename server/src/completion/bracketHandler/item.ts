@@ -2,7 +2,7 @@ import { CompletionItem } from "vscode-languageserver";
 
 export const ItemBracketHandler: CompletionItem = {
   label: "item",
-  detail: "Access Items in the game.",
+  detail: "Access Items.",
   documentation: {
     kind: "markdown",
     value:

@@ -3,7 +3,7 @@ import { CompletionItem } from "vscode-languageserver";
 export const EnchantmentBracketHandler: CompletionItem = {
   label: "enchantment",
   detail:
-    "Access Enchantment definitions in the game.",
+    "Access Enchantment definitions.",
   documentation: {
     kind: "markdown",
     value:

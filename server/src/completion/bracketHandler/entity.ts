@@ -2,7 +2,7 @@ import { CompletionItem } from "vscode-languageserver";
 
 export const EntityBracketHandler: CompletionItem = {
   label: "entity",
-  detail: "Access Entities (e.g. Mobs, tile ents etc.) in the game.",
+  detail: "Access Entities.",
   documentation: {
     kind: "markdown",
     value:

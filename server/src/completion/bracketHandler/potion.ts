@@ -2,7 +2,7 @@ import { CompletionItem } from "vscode-languageserver";
 
 export const PotionBracketHandler: CompletionItem = {
   label: "potion",
-  detail: "Access Potions in the game.",
+  detail: "Access Potions.",
   documentation: {
     kind: "markdown",
     value:

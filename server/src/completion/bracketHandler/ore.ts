@@ -2,7 +2,7 @@ import { CompletionItem } from "vscode-languageserver";
 
 export const OreBracketHandler: CompletionItem = {
   label: "ore",
-  detail: "Access Ore Dictionaries in the game.",
+  detail: "Access Ore Dictionaries.",
   documentation: {
     kind: "markdown",
     value:

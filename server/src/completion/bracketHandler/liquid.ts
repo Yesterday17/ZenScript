@@ -2,7 +2,7 @@ import { CompletionItem } from "vscode-languageserver";
 
 export const LiquidBracketHandler: CompletionItem = {
   label: "liquid",
-  detail: "Access liquids in the game.",
+  detail: "Access liquids.",
   documentation: {
     kind: "markdown",
     value:

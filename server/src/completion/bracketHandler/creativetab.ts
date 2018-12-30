@@ -3,7 +3,7 @@ import { CompletionItem } from "vscode-languageserver";
 export const CreativeTabBracketHandler: CompletionItem = {
   label: "creativetab",
   detail:
-    "Access creative Tabs in the game.",
+    "Access creative Tabs.",
   documentation: {
     kind: "markdown",
     value:

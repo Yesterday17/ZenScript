@@ -6,7 +6,7 @@ import { CompletionItem } from "vscode-languageserver";
 
 export const TemplateBracketHandler: CompletionItem = {
   label: "TemplateBracketHandler",
-  detail: "Access xxx in the game.",
+  detail: "Access xxx.",
   documentation: {
     kind: "markdown",
     value:
