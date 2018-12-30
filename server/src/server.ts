@@ -8,16 +8,14 @@ import {
   InitializeParams,
   DidChangeConfigurationNotification,
   CompletionItem,
-  CompletionItemKind,
   TextDocumentPositionParams,
   Hover
 } from "vscode-languageserver";
-import { BrewingCompletionInstance } from "./completion/brewing";
-import { textPositionToLocation } from "./utils/path";
 import { ZSLexer } from "./parser/zsLexer";
 import { IToken } from "chevrotain";
 import { ZenScriptParser } from "./parser/zsParser";
 import { keywords } from "./services/zsCompletion";
+import { DetailBracketHandlers } from "./completion/bracketHandler/bracketHandlers";
 
 // 创建一个服务的连接，连接使用 Node 的 IPC 作为传输
 // 并且引入所有 LSP 特性, 包括 preview / proposed
@@ -58,7 +56,12 @@ connection.onInitialize((params: InitializeParams) => {
       // 告知客户端服务端支持代码补全
       completionProvider: {
         resolveProvider: true,
-        triggerCharacters: [".", ":"]
+        triggerCharacters: [
+          "#", // #*auto_preprocessor*
+          ".", // recipes.*autocomplete*
+          ":", // ore:*Autocomplete*
+          "<" // <*autocomplete*:*autocomplete*>
+        ]
       },
       hoverProvider: true,
       // TODO: Support ZenScript Formatting
@@ -173,11 +176,25 @@ connection.onDidChangeWatchedFiles(_change => {
 
 // 负责处理自动补全的条目, 发送较为简单的消息
 connection.onCompletion(
-  (position: TextDocumentPositionParams): CompletionItem[] => {
+  (textDocumentPositionParams): CompletionItem[] => {
+    // 获得当前正在修改的 document
+    const document = documents.get(textDocumentPositionParams.textDocument.uri);
+    // 当前补全的位置
+    const position = textDocumentPositionParams.position;
+
     // TODO: 完成自动补全
-    const location = textPositionToLocation(position);
-    console.log(documents.get(position.textDocument.uri).getText());
-    return [...keywords];
+    switch (textDocumentPositionParams.context.triggerCharacter) {
+      case "#":
+        break;
+      case ".":
+        break;
+      case ":":
+        break;
+      case "<":
+        return [...DetailBracketHandlers];
+      default:
+        return [...keywords];
+    }
   }
 );
 
