@@ -81,7 +81,7 @@ export class ZenScriptParser extends Parser {
     this.MANY(() =>
       this.OR([
         { ALT: () => this.SUBRULE(this.FunctionDeclaration, Declaration) },
-        { ALT: () => this.SUBRULE(this.BlockStatement, Declaration) }
+        { ALT: () => this.SUBRULE(this.Statement, Declaration) }
       ])
     );
   });
@@ -257,7 +257,7 @@ export class ZenScriptParser extends Parser {
         ALT: () =>
           this.AT_LEAST_ONE_SEP({
             SEP: () =>
-              this.OR([
+              this.OR2([
                 { ALT: () => this.CONSUME(EQEQ) },
                 {
                   ALT: () => this.CONSUME(NOT_EQUAL)
@@ -276,7 +276,7 @@ export class ZenScriptParser extends Parser {
                 }
               ]),
             DEF: () => {
-              this.SUBRULE(this.ValidVariable);
+              this.SUBRULE3(this.ValidVariable);
             }
           })
       }
@@ -404,7 +404,7 @@ export class ZenScriptParser extends Parser {
   });
 
   protected ValidCallable = this.RULE("ValidCallable", () => {
-    this.OR([
+    this.OR2([
       {
         ALT: () => this.SUBRULE(this.Variable)
       },
@@ -559,7 +559,7 @@ export class ZenScriptParser extends Parser {
   });
 
   protected CastExpression = this.RULE("CastExpression", () => {
-    this.OR([
+    this.OR2([
       {
         ALT: () => this.SUBRULE(this.ArrayDeclaration)
       },
@@ -606,14 +606,32 @@ export class ZenScriptParser extends Parser {
   private ValidCalculationVariable = this.RULE(
     "ValidCalculationVariable",
     () => {
-      this.SUBRULE(this.BracketHandler);
-      this.SUBRULE(this.FunctionCall);
-      this.SUBRULE(this.FieldReference);
-      this.SUBRULE(this.Number);
-      this.SUBRULE(this.ArrayMapRead);
-      this.SUBRULE(this.Variable);
-      this.CONSUME(SINGLE_QUOTED_STRING);
-      this.CONSUME(DOUBLE_QUOTED_STRING);
+      this.OR([
+        {
+          ALT: () => this.SUBRULE(this.BracketHandler)
+        },
+        {
+          ALT: () => this.SUBRULE(this.FunctionCall)
+        },
+        {
+          ALT: () => this.SUBRULE(this.FieldReference)
+        },
+        {
+          ALT: () => this.SUBRULE(this.Number)
+        },
+        {
+          ALT: () => this.SUBRULE(this.ArrayMapRead)
+        },
+        {
+          ALT: () => this.SUBRULE(this.Variable)
+        },
+        {
+          ALT: () => this.CONSUME(SINGLE_QUOTED_STRING)
+        },
+        {
+          ALT: () => this.CONSUME(DOUBLE_QUOTED_STRING)
+        }
+      ]);
     }
   );
 
@@ -631,7 +649,11 @@ export class ZenScriptParser extends Parser {
   });
 
   constructor(input: IToken[]) {
-    super(zsAllTokens, {});
+    super(zsAllTokens, {
+      recoveryEnabled: false,
+      maxLookahead: 4,
+      ignoredIssues: {}
+    });
     this.input = input;
     this.performSelfAnalysis();
   }
