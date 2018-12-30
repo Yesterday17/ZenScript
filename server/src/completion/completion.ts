@@ -1,44 +1,28 @@
-import { CompletionItem } from "vscode-languageserver";
+import { CompletionItem, CompletionItemKind } from "vscode-languageserver";
 
-export class CompletionItemDetailed {
-  private _item: CompletionItem;
-  constructor(i: CompletionItem) {
-    this._item = i;
-  }
-  get simple(): CompletionItem {
-    return {
-      label: this._item.label,
-      kind: this._item.kind
-    };
-  }
-  get detail(): CompletionItem {
-    return this._item;
-  }
-}
-
-export abstract class ZenScriptCompletion {
-  private _base: CompletionItemDetailed;
-  private _completion: Map<number, CompletionItemDetailed[]>;
-
-  constructor(base: CompletionItem) {
-    this._completion = new Map();
-    this._base = new CompletionItemDetailed(base);
-  }
-
-  get base() {
-    return this._base;
-  }
-
-  add(level: number, item: CompletionItem): number {
-    if (!this._completion.has(level)) {
-      this._completion.set(level, [new CompletionItemDetailed(item)]);
-    } else {
-      this._completion.get(level).push(new CompletionItemDetailed(item));
-    }
-    return this._completion.get(level).length;
-  }
-
-  get(level: number): CompletionItemDetailed[] {
-    return this._completion.get(level);
-  }
-}
+export const Keywords: CompletionItem[] = [
+  { label: "any", kind: CompletionItemKind.Keyword },
+  { label: "bool", kind: CompletionItemKind.Keyword },
+  { label: "byte", kind: CompletionItemKind.Keyword },
+  { label: "short", kind: CompletionItemKind.Keyword },
+  { label: "int", kind: CompletionItemKind.Keyword },
+  { label: "long", kind: CompletionItemKind.Keyword },
+  { label: "float", kind: CompletionItemKind.Keyword },
+  { label: "double", kind: CompletionItemKind.Keyword },
+  { label: "string", kind: CompletionItemKind.Keyword },
+  { label: "function", kind: CompletionItemKind.Keyword },
+  { label: "in", kind: CompletionItemKind.Keyword },
+  { label: "void", kind: CompletionItemKind.Keyword },
+  { label: "as", kind: CompletionItemKind.Keyword },
+  { label: "version", kind: CompletionItemKind.Keyword },
+  { label: "if", kind: CompletionItemKind.Keyword },
+  { label: "else", kind: CompletionItemKind.Keyword },
+  { label: "for", kind: CompletionItemKind.Keyword },
+  { label: "return", kind: CompletionItemKind.Keyword },
+  { label: "var", kind: CompletionItemKind.Keyword },
+  { label: "val", kind: CompletionItemKind.Keyword },
+  { label: "null", kind: CompletionItemKind.Keyword },
+  { label: "true", kind: CompletionItemKind.Keyword },
+  { label: "false", kind: CompletionItemKind.Keyword },
+  { label: "import", kind: CompletionItemKind.Keyword }
+];

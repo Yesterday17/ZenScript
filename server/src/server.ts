@@ -14,11 +14,11 @@ import {
 import { ZSLexer } from "./parser/zsLexer";
 import { IToken } from "chevrotain";
 import { ZenScriptParser } from "./parser/zsParser";
-import { keywords } from "./services/zsCompletion";
 import {
   DetailBracketHandlers,
   SimpleBracketHandlers
 } from "./completion/bracketHandler/bracketHandlers";
+import { Keywords } from "./completion/completion";
 
 // 创建一个服务的连接，连接使用 Node 的 IPC 作为传输
 // 并且引入所有 LSP 特性, 包括 preview / proposed
@@ -196,7 +196,7 @@ connection.onCompletion(
       case "<":
         return [...SimpleBracketHandlers];
       default:
-        return [...keywords];
+        return [...Keywords];
     }
   }
 );
