@@ -17,6 +17,7 @@ import { textPositionToLocation } from "./utils/path";
 import { ZSLexer } from "./parser/zsLexer";
 import { IToken } from "chevrotain";
 import { ZenScriptParser } from "./parser/zsParser";
+import { keywords } from "./services/zsCompletion";
 
 // 创建一个服务的连接，连接使用 Node 的 IPC 作为传输
 // 并且引入所有 LSP 特性, 包括 preview / proposed
@@ -137,19 +138,19 @@ documents.onDidChangeContent(change => {
 
 function parseInput(text: string) {
   const lexResult = ZSLexer.tokenize(text);
-  const parser = new ZenScriptParser(lexResult.tokens);
+  // const parser = new ZenScriptParser(lexResult.tokens);
 
-  const cst = parser.Program();
+  // const cst = parser.Program();
 
-  if (parser.errors.length > 0) {
-    connection.console.error(JSON.stringify(parser.errors));
-  } else {
-    connection.console.log(JSON.stringify(cst));
-  }
+  // if (parser.errors.length > 0) {
+  //   connection.console.error(JSON.stringify(parser.errors));
+  // } else {
+  //   connection.console.log(JSON.stringify(cst));
+  // }
 
   return {
-    lexResult,
-    cst
+    lexResult
+    //cst
   };
 }
 
@@ -176,7 +177,7 @@ connection.onCompletion(
     // TODO: 完成自动补全
     const location = textPositionToLocation(position);
     console.log(documents.get(position.textDocument.uri).getText());
-    return [BrewingCompletionInstance.base.simple];
+    return [...keywords];
   }
 );
 
@@ -184,7 +185,7 @@ connection.onCompletion(
 connection.onCompletionResolve(
   (item: CompletionItem): CompletionItem => {
     // TODO: 发送正确的信息
-    return BrewingCompletionInstance.base.detail;
+    return item;
   }
 );
 
