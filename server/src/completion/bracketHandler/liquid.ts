@@ -1,7 +1,3 @@
-/**
- * This is a template for ANY new BracketHandlers.
- */
-
 import { CompletionItem } from "vscode-languageserver";
 
 export const LiquidBracketHandler: CompletionItem = {

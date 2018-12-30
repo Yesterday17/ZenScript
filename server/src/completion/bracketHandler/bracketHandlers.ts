@@ -4,6 +4,9 @@ import { DamageSourceBracketHandler } from "./damageSource";
 import { EnchantmentBracketHandler } from "./enchantment";
 import { EntityBracketHandler } from "./entity";
 import { LiquidBracketHandler, FluidBracketHandler } from "./liquid";
+import { OreBracketHandler } from "./ore";
+import { PotionBracketHandler } from "./potion";
+import { ItemBracketHandler } from "./item";
 
 const BracketHandlerKind: CompletionItemKind = CompletionItemKind.Unit;
 
@@ -12,10 +15,12 @@ const BracketHandlers: CompletionItem[] = [
   CreativeTabBracketHandler,
   DamageSourceBracketHandler,
   EnchantmentBracketHandler,
+  ItemBracketHandler,
   EntityBracketHandler,
-  // The two below are the same
   LiquidBracketHandler,
-  FluidBracketHandler
+  FluidBracketHandler, // fluid is an alias of liquid
+  OreBracketHandler,
+  PotionBracketHandler
 ];
 
 export const SimpleBracketHandlers: CompletionItem[] = BracketHandlers.map(
