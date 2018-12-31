@@ -4,6 +4,7 @@
     "client": true,
     "server": true,
     "language": true,
+    "i18n": true,
     "zenscript.code-workspace": true
   }
 }

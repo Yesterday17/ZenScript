@@ -1,2 +1,8 @@
 node_modules
 out
+
+# Build
+*.vsix
+
+# Autogen language files
+*.nls.*.json

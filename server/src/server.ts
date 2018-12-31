@@ -92,12 +92,17 @@ connection.onInitialized(() => {
 // The example settings
 interface ZenScriptSettings {
   maxNumberOfProblems: number;
+  maxHistoryEntries: number;
 }
 
 // The global settings, used when the `workspace/configuration` request is not supported by the client.
 // Please note that this is not the case when using this server with the client provided in this example
 // but could happen with other clients.
-const defaultSettings: ZenScriptSettings = { maxNumberOfProblems: 100 };
+const defaultSettings: ZenScriptSettings = {
+  maxNumberOfProblems: 100,
+  maxHistoryEntries: 20
+};
+
 let globalSettings: ZenScriptSettings = defaultSettings;
 
 // 为所有打开的文档缓存配置
@@ -232,6 +237,10 @@ connection.onCompletion(
 // TODO: 发送正确的信息
 connection.onCompletionResolve(
   (item: CompletionItem): CompletionItem => {
+    if (item.data === undefined) {
+      return;
+    }
+
     switch (item.data.triggerCharacter) {
       case "<":
         return DetailBracketHandlers.find(i => {
