@@ -91,6 +91,12 @@
           ".zs"
         ],
         "configuration": "./language/language-configuration.json"
+      },
+      {
+        "id": "json",
+        "extensions": [
+          ".zsrc"
+        ]
       }
     ],
     "grammars": [
