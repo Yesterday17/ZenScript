@@ -1,5 +1,7 @@
-import { CompletionItem } from "vscode-languageserver";
+import { CompletionItem, CompletionItemKind } from "vscode-languageserver";
 import { IBracketHandler } from "../../api/IBracketHandler";
+import { zGlobal } from "../../api/global";
+import { BracketHandlerKind } from "./bracketHandlers";
 
 class Item implements IBracketHandler {
   handler: CompletionItem = {
@@ -33,7 +35,29 @@ class Item implements IBracketHandler {
   };
 
   next(predecessor: string[]): CompletionItem[] {
-    return [];
+    switch (predecessor.length) {
+      case 1:
+        // item:[modid]
+        const result = Array.from(zGlobal.items.keys()).map(key => {
+          return {
+            label: key,
+            kind: BracketHandlerKind
+          } as CompletionItem;
+        });
+        return result;
+      case 2:
+        // item:modid:[item]
+        return zGlobal.items.has(predecessor[1])
+          ? zGlobal.items.get(predecessor[1]).map(item => {
+              return {
+                label: item.path,
+                kind: CompletionItemKind.Value
+              } as CompletionItem;
+            })
+          : [];
+      default:
+        return [];
+    }
   }
 }
 

@@ -9,7 +9,7 @@ import { PotionBracketHandler } from "./potion";
 import { ItemBracketHandler } from "./item";
 import { IBracketHandler } from "../../api/IBracketHandler";
 
-const BracketHandlerKind: CompletionItemKind = CompletionItemKind.Unit;
+export const BracketHandlerKind: CompletionItemKind = CompletionItemKind.Unit;
 
 // TODO: Support all the bracketHandlers here.
 const BracketHandlers: IBracketHandler[] = [

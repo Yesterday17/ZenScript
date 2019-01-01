@@ -1,10 +1,16 @@
-export const global = {
+import { ZSRCFile, ItemEntry } from "./rcFile";
+
+export const zGlobal = {
   // 是否为 Project
-  isProject: true,
+  isProject: true as boolean,
 
   // Project 的根目录
-  baseFolder: "",
+  baseFolder: "" as string,
 
   // .zsrc 文件
-  rcFile: {}
+  rcFile: {
+    items: []
+  } as ZSRCFile,
+
+  items: new Map<string, ItemEntry[]>()
 };

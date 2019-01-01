@@ -22,7 +22,7 @@ import { Keywords, Preprocessors } from "./completion/completion";
 import { HistoryEntries } from "./utilities/historyEntry";
 import { HistoryEntryRequest } from "./api/requests/HistoryEntryRequest";
 import { URL } from "url";
-import { global } from "./api/global";
+import { zGlobal } from "./api/global";
 
 // 创建一个服务的连接，连接使用 Node 的 IPC 作为传输
 // 并且引入所有 LSP 特性, 包括 preview / proposed
@@ -45,15 +45,18 @@ connection.onInitialize((params: InitializeParams) => {
   // 只打开了 zs 文件
   // 开启最低限度的语言支持
   if (folders === null || folders[0].name !== "scripts") {
-    global.isProject = false;
+    zGlobal.isProject = false;
   } else {
-    global.baseFolder = folders[0].uri;
+    zGlobal.baseFolder = folders[0].uri;
   }
 
   // Does the client support the `workspace/configuration` request?
   // If not, we will fall back using global settings
   hasConfigurationCapability =
     capabilities.workspace && !!capabilities.workspace.configuration;
+
+  // 加载 .zsrc 配置文件
+  reloadRCFile();
 
   return {
     capabilities: {
@@ -68,7 +71,7 @@ connection.onInitialize((params: InitializeParams) => {
           "<" // <*autocomplete*:*autocomplete*>
         ]
       },
-      hoverProvider: global.isProject,
+      hoverProvider: zGlobal.isProject,
       // TODO: Support ZenScript Formatting
       documentFormattingProvider: false
     }
@@ -155,20 +158,34 @@ async function validateTextDocument(textDocument: TextDocument): Promise<void> {
   tokens = lexResult.tokens;
 }
 
+function reloadRCFile() {
+  try {
+    zGlobal.rcFile = JSON.parse(
+      fs.readFileSync(new URL(zGlobal.baseFolder + "/.zsrc"), {
+        encoding: "utf-8"
+      })
+    );
+    zGlobal.items.clear();
+    zGlobal.rcFile.items.forEach(value => {
+      if (!zGlobal.items.has(value.domain)) {
+        zGlobal.items.set(value.domain, [value]);
+      } else {
+        zGlobal.items.get(value.domain).push(value);
+      }
+    });
+  } catch (e) {
+    connection.console.error(e.message);
+  }
+}
+
 // 当 Watch 的文件确实发生变动
 connection.onDidChangeWatchedFiles(_change => {
   for (const change of _change.changes) {
-    if (path.resolve(change.uri) === path.resolve(global.baseFolder, ".zsrc")) {
-      try {
-        global.rcFile = JSON.parse(
-          fs.readFileSync(new URL(change.uri), {
-            encoding: "utf-8"
-          })
-        );
-        break;
-      } catch (e) {
-        connection.console.error(e);
-      }
+    if (
+      new URL(change.uri).hash === new URL(zGlobal.baseFolder + "/.zsrc").hash
+    ) {
+      reloadRCFile();
+      break;
     }
   }
 });
@@ -213,7 +230,7 @@ connection.onCompletion(
             break;
           }
         }
-        HistoryEntries.add(predecessor[0]);
+        // HistoryEntries.add(predecessor[0]);
         return BracketHandlerMap.get(predecessor[0])
           ? BracketHandlerMap.get(predecessor[0]).next(predecessor)
           : null;

@@ -14,7 +14,7 @@
     },
     {
       "domain": "minecraft",
-      "path": "string",
+      "path": "strings",
       "unlocalizedName": "item.string",
       "localizedName": "String"
     },
