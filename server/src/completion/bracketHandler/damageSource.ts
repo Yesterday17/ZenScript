@@ -1,4 +1,4 @@
-import { CompletionItem } from "vscode-languageserver";
+import { CompletionItem, CompletionItemKind } from "vscode-languageserver";
 import { IBracketHandler } from "../../api/IBracketHandler";
 
 class DamageSource implements IBracketHandler {
@@ -10,23 +10,54 @@ class DamageSource implements IBracketHandler {
       value:
         "The Damage Source Bracket Handler allows you to refer to [IDamageSources](https://crafttweaker.readthedocs.io/en/latest/#Vanilla/Damage/IDamageSource/) in the game.  \n" +
         "If the Damage source is not one of the predefined ones, this will create a new one with the given name.  \n" +
-        // TODO: Add wiki here.
-        // https://raw.githubusercontent.com/CraftTweaker/CraftTweaker-Documentation/master/docs/Vanilla/Brackets/Bracket_DamageSource.md
         "\n" +
         "```\n" +
         "<damageSource:type>;\n" +
-        "\n" +
         "<damageSource:IN_FIRE>;\n" +
         "```"
     }
   };
 
   next(predecessor: string[]): CompletionItem[] {
+    if (predecessor.length === 1) {
+      return [
+        "IN_FIRE",
+        "LIGHTNING_BOLT",
+        "ON_FIRE",
+        "LAVA",
+        "HOT_FLOOR",
+        "IN_WALL",
+        "CRAMMING",
+        "DROWN",
+        "STARVE",
+        "CACTUS",
+        "FALL",
+        "FLY_INTO_WALL",
+        "OUT_OF_WORLD",
+        "GENERIC",
+        "MAGIC",
+        "WITHER",
+        "ANVIL",
+        "FALLING_BLOCK",
+        "DRAGON_BREATH",
+        "FIREWORKS"
+      ].map(key => {
+        return {
+          label: key,
+          kind: CompletionItemKind.Value,
+          data: {
+            triggerCharacter: ":",
+            predecessor
+          }
+        } as CompletionItem;
+      });
+    }
     return [];
   }
 
+  // TODO: Add detail here. (But there's no detail in wiki)
   detail(item: CompletionItem): CompletionItem {
-    return item;
+    return { ...item, detail: "Vanilla" };
   }
 }
 
