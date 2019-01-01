@@ -1,5 +1,5 @@
 import * as path from "path";
-import { workspace, ExtensionContext, commands } from "vscode";
+import { workspace, ExtensionContext } from "vscode";
 
 import {
   LanguageClient,
@@ -51,6 +51,8 @@ export function activate(context: ExtensionContext) {
 
   // 注册命令
   CommandHistoryEntry.register(client, context);
+
+  //TODO: 注册 zenscriptExplorer
 
   // 启动 Client, 同时也会启动 Server
   client.start();

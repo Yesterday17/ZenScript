@@ -34,6 +34,23 @@
         "when": "editorTextFocus && editorLangId == zenscript"
       }
     ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "zenscript-explorer",
+          "title": "ZenScript Explorer",
+          "icon": "assets/book.svg"
+        }
+      ]
+    },
+    "views": {
+      "zenscript-explorer": [
+        {
+          "id": "history-entries",
+          "name": "History Entries"
+        }
+      ]
+    },
     "configuration": {
       "type": "object",
       "title": "ZenScript",
