@@ -26,7 +26,7 @@ class Potion implements IBracketHandler {
   }
 
   detail(item: CompletionItem): CompletionItem {
-    return { label: "" };
+    return item;
   }
 }
 

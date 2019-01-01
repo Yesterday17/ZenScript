@@ -26,7 +26,7 @@ class DamageSource implements IBracketHandler {
   }
 
   detail(item: CompletionItem): CompletionItem {
-    return { label: "" };
+    return item;
   }
 }
 
