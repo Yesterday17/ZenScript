@@ -24,6 +24,10 @@ class Enchantment implements IBracketHandler {
   next(predecessor: string[]): CompletionItem[] {
     return [];
   }
+
+  detail(item: CompletionItem): CompletionItem {
+    return { label: "" };
+  }
 }
 
 export const EnchantmentBracketHandler = new Enchantment();

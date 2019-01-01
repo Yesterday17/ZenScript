@@ -27,6 +27,10 @@ class Liquid implements IBracketHandler {
   next(predecessor: string[]): CompletionItem[] {
     return [];
   }
+
+  detail(item: CompletionItem): CompletionItem {
+    return { label: "" };
+  }
 }
 
 export const LiquidBracketHandler = new Liquid("liquid");

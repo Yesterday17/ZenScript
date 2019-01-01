@@ -252,12 +252,21 @@ connection.onCompletionResolve(
     }
 
     switch (item.data.triggerCharacter) {
+      case ":":
+        if (
+          item.data.predecessor instanceof Array &&
+          item.data.predecessor.length > 0
+        ) {
+          return BracketHandlerMap.get(item.data.predecessor[0]).detail(item);
+        } else {
+          return;
+        }
       case "<":
         return DetailBracketHandlers.find(i => {
           return i.label === item.label;
         });
       default:
-        break;
+        return;
     }
   }
 );

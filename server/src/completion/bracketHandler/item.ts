@@ -41,7 +41,11 @@ class Item implements IBracketHandler {
         const result = Array.from(zGlobal.items.keys()).map(key => {
           return {
             label: key,
-            kind: BracketHandlerKind
+            kind: BracketHandlerKind,
+            data: {
+              triggerCharacter: ":",
+              predecessor
+            }
           } as CompletionItem;
         });
         return result;
@@ -52,11 +56,41 @@ class Item implements IBracketHandler {
               return {
                 label: item.path,
                 kind: CompletionItemKind.Value
+                data: {
+                  triggerCharacter: ":",
+                  predecessor
+                }
               } as CompletionItem;
             })
           : [];
       default:
         return [];
+    }
+  }
+
+  detail(item: CompletionItem): CompletionItem {
+    switch (item.data.predecessor.length) {
+      case 1:
+        // item:[modid]
+        // TODO: Return detailed ModName here.
+        return item;
+      case 2:
+        // item:modid:[item]
+        const itemFound = zGlobal.items.get(item.data.predecessor[1]).find(i => {
+          return i.path === item.label;
+        })
+        return {
+          ...item,
+          detail: itemFound.localizedName,
+          documentation: {
+            kind: "markdown",
+            value:
+              "#### UnlocalizedName\n" +
+              itemFound.unlocalizedName
+          }
+        };
+      default:
+        return item;
     }
   }
 }
