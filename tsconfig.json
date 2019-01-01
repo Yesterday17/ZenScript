@@ -2,11 +2,13 @@
   "compilerOptions": {
     "module": "commonjs",
     "target": "es6",
+    "rootDir": "src",
+    "outDir": "out",
     "lib": ["es6"],
     "sourceMap": true,
     "composite": true
   },
-  "exclude": ["node_modules", ".vscode-test"],
+  "exclude": ["node_modules", ".vscode-test", "out"],
   "references": [
     { "path": "./client", "composite": true },
     { "path": "./server", "composite": true }

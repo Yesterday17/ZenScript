@@ -22,6 +22,7 @@ import { Keywords, Preprocessors } from "./completion/completion";
 import { HistoryEntries } from "./utilities/historyEntry";
 import { HistoryEntryRequest } from "./api/requests/HistoryEntryRequest";
 import { URL } from "url";
+import { global } from "./api/global";
 
 // 创建一个服务的连接，连接使用 Node 的 IPC 作为传输
 // 并且引入所有 LSP 特性, 包括 preview / proposed
@@ -32,15 +33,6 @@ let documents: TextDocuments = new TextDocuments();
 
 // 不支持配置
 let hasConfigurationCapability: boolean = false;
-
-// 是否为 Project
-let isProject = true;
-
-// Project 的根目录
-let baseFolder = "";
-
-// .zsrc 文件
-let rcFile;
 
 // Lex
 let tokens: IToken[] = [];
@@ -53,9 +45,9 @@ connection.onInitialize((params: InitializeParams) => {
   // 只打开了 zs 文件
   // 开启最低限度的语言支持
   if (folders === null || folders[0].name !== "scripts") {
-    isProject = false;
+    global.isProject = false;
   } else {
-    baseFolder = folders[0].uri;
+    global.baseFolder = folders[0].uri;
   }
 
   // Does the client support the `workspace/configuration` request?
@@ -76,7 +68,7 @@ connection.onInitialize((params: InitializeParams) => {
           "<" // <*autocomplete*:*autocomplete*>
         ]
       },
-      hoverProvider: isProject,
+      hoverProvider: global.isProject,
       // TODO: Support ZenScript Formatting
       documentFormattingProvider: false
     }
@@ -166,9 +158,9 @@ async function validateTextDocument(textDocument: TextDocument): Promise<void> {
 // 当 Watch 的文件确实发生变动
 connection.onDidChangeWatchedFiles(_change => {
   for (const change of _change.changes) {
-    if (path.resolve(change.uri) === path.resolve(baseFolder, ".zsrc")) {
+    if (path.resolve(change.uri) === path.resolve(global.baseFolder, ".zsrc")) {
       try {
-        rcFile = JSON.parse(
+        global.rcFile = JSON.parse(
           fs.readFileSync(new URL(change.uri), {
             encoding: "utf-8"
           })
