@@ -52,13 +52,14 @@ class Item implements IBracketHandler {
       case 2:
         // item:modid:[item]
         return zGlobal.items.has(predecessor[1])
-          ? zGlobal.items.get(predecessor[1]).map(item => {
+          ? zGlobal.items.get(predecessor[1]).map((item, i) => {
               return {
                 label: item.path,
-                kind: CompletionItemKind.Value
+                kind: CompletionItemKind.Value,
                 data: {
                   triggerCharacter: ":",
-                  predecessor
+                  predecessor,
+                  position: i
                 }
               } as CompletionItem;
             })
@@ -76,17 +77,15 @@ class Item implements IBracketHandler {
         return item;
       case 2:
         // item:modid:[item]
-        const itemFound = zGlobal.items.get(item.data.predecessor[1]).find(i => {
-          return i.path === item.label;
-        })
+        const itemFound = zGlobal.items.get(item.data.predecessor[1])[
+          item.data.position
+        ];
         return {
           ...item,
           detail: itemFound.localizedName,
           documentation: {
             kind: "markdown",
-            value:
-              "#### UnlocalizedName\n" +
-              itemFound.unlocalizedName
+            value: "#### UnlocalizedName\n" + itemFound.unlocalizedName
           }
         };
       default:
