@@ -1,7 +1,8 @@
 {
-    "zenscript.maxNumberOfProblems.desc": "最大问题数。",
-    "zenscript.maxHistoryEntries.desc": "最多记录的历史条目数量。",
-    "zenscript.trace.server.desc": " 跟踪 VSCode 与 Language server之间的交互。",
+  "zenscript.maxNumberOfProblems.desc": "最大问题数。",
+  "zenscript.maxHistoryEntries.desc": "最多记录的历史条目数量。",
+  "zenscript.trace.server.desc": " 跟踪 VSCode 与 Language server之间的交互。",
 
-    "zenscript.command.historyentry.title": "显示历史条目"
+  "zenscript.command.historyentry.title": "显示历史条目",
+  "zenscript.command.historyentry.desc": "显示你输入的历史条目。"
 }

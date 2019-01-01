@@ -1,11 +1,8 @@
+import { HistoryEntryItem } from "../api/requests/HistoryEntryRequest";
+
 /**
  * Idea by @Snownee discussed in @TeamCovertDragon QQ Group.
  */
-
-export interface HistoryEntryItem {
-  element: string;
-  usage: number;
-}
 
 class EntryNode {
   public readonly element: string;

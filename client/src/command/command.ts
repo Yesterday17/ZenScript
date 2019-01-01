@@ -2,7 +2,7 @@ import { LanguageClient } from "vscode-languageclient";
 import { ExtensionContext, commands } from "vscode";
 
 export abstract class CommandBase {
-  private client: LanguageClient;
+  protected client: LanguageClient;
 
   protected abstract command: string;
   protected abstract handler: () => void;

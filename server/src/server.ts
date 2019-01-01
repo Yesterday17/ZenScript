@@ -20,6 +20,8 @@ import {
   BracketHandlerMap
 } from "./completion/bracketHandler/bracketHandlers";
 import { Keywords, Preprocessors } from "./completion/completion";
+import { HistoryEntries } from "./utilities/historyEntry";
+import { HistoryEntryRequest } from "./api/requests/HistoryEntryRequest";
 
 // 创建一个服务的连接，连接使用 Node 的 IPC 作为传输
 // 并且引入所有 LSP 特性, 包括 preview / proposed
@@ -222,6 +224,7 @@ connection.onCompletion(
             break;
           }
         }
+        HistoryEntries.add(predecessor[0]);
         return BracketHandlerMap.get(predecessor[0])
           ? BracketHandlerMap.get(predecessor[0]).next(predecessor)
           : null;
@@ -288,8 +291,12 @@ connection.onHover(textDocumentPositionParams => {
   return Promise.resolve(void 0);
 });
 
-// 使得 documents 监听 connection
-// 以触发相应事件
+// 负责处理 HistoryEntryRequest
+connection.onRequest(HistoryEntryRequest, () => {
+  return HistoryEntries.entries.slice(0, globalSettings.maxHistoryEntries);
+});
+
+// 使得 documents 监听 connection 以触发相应事件
 documents.listen(connection);
 
 // 开始 listen

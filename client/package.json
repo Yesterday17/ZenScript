@@ -8,18 +8,6 @@
   "engines": {
     "vscode": "^1.30.0"
   },
-  "activationEvents": [
-    "onCommand:zenscript.command.historyentry"
-  ],
-  "contributes": {
-    "commandPalette": [
-      {
-        "command": "zenscript.command.historyentry",
-        "title": "%zenscript.command.historyentry.title%",
-        "description": "2333"
-      }
-    ]
-  },
   "scripts": {
     "update-vscode": "vscode-install",
     "postinstall": "vscode-install"

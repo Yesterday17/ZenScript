@@ -18,11 +18,20 @@
   ],
   "main": "./client/out/extension",
   "contributes": {
-    "commandPalette": [
+    "commands": [
       {
         "command": "zenscript.command.historyentry",
         "title": "%zenscript.command.historyentry.title%",
-        "description": "2333"
+        "description": "%zenscript.command.historyentry.desc%",
+        "when": "editorTextFocus && editorLangId == zenscript"
+      }
+    ],
+    "keybindings": [
+      {
+        "command": "zenscript.command.historyentry",
+        "key": "alt+H",
+        "mac": "alt+H",
+        "when": "editorTextFocus && editorLangId == zenscript"
       }
     ],
     "configuration": {
