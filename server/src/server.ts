@@ -214,7 +214,7 @@ connection.onCompletion(
         let predecessor: string[] = [];
 
         // 寻找 inBracket
-        for (let i = offset; i > 0; i--) {
+        for (let i = offset; i >= 0; i--) {
           // 当 : 与 < 不再同一行时直接返回 null
           if (content[i] === "\n") {
             return;
