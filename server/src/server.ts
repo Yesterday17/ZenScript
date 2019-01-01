@@ -2,18 +2,17 @@ import {
   createConnection,
   TextDocuments,
   TextDocument,
-  Diagnostic,
-  DiagnosticSeverity,
   ProposedFeatures,
   InitializeParams,
   DidChangeConfigurationNotification,
   CompletionItem,
-  TextDocumentPositionParams,
   Hover
 } from "vscode-languageserver";
 import { ZSLexer } from "./parser/zsLexer";
 import { IToken } from "chevrotain";
 import { ZenScriptParser } from "./parser/zsParser";
+import * as path from "path";
+import * as fs from "fs";
 import {
   DetailBracketHandlers,
   SimpleBracketHandlers,
@@ -22,6 +21,7 @@ import {
 import { Keywords, Preprocessors } from "./completion/completion";
 import { HistoryEntries } from "./utilities/historyEntry";
 import { HistoryEntryRequest } from "./api/requests/HistoryEntryRequest";
+import { URL } from "url";
 
 // 创建一个服务的连接，连接使用 Node 的 IPC 作为传输
 // 并且引入所有 LSP 特性, 包括 preview / proposed
@@ -32,10 +32,15 @@ let documents: TextDocuments = new TextDocuments();
 
 // 不支持配置
 let hasConfigurationCapability: boolean = false;
-// 不支持工作区目录
-let hasWorkspaceFolderCapability: boolean = false;
-//
-let hasDiagnosticRelatedInformationCapability: boolean = false;
+
+// 是否为 Project
+let isProject = true;
+
+// Project 的根目录
+let baseFolder = "";
+
+// .zsrc 文件
+let rcFile;
 
 // Lex
 let tokens: IToken[] = [];
@@ -45,16 +50,18 @@ connection.onInitialize((params: InitializeParams) => {
 
   const folders = params.workspaceFolders;
 
+  // 只打开了 zs 文件
+  // 开启最低限度的语言支持
+  if (folders === null || folders[0].name !== "scripts") {
+    isProject = false;
+  } else {
+    baseFolder = folders[0].uri;
+  }
+
   // Does the client support the `workspace/configuration` request?
   // If not, we will fall back using global settings
   hasConfigurationCapability =
     capabilities.workspace && !!capabilities.workspace.configuration;
-  hasWorkspaceFolderCapability =
-    capabilities.workspace && !!capabilities.workspace.workspaceFolders;
-  hasDiagnosticRelatedInformationCapability =
-    capabilities.textDocument &&
-    capabilities.textDocument.publishDiagnostics &&
-    capabilities.textDocument.publishDiagnostics.relatedInformation;
 
   return {
     capabilities: {
@@ -69,7 +76,7 @@ connection.onInitialize((params: InitializeParams) => {
           "<" // <*autocomplete*:*autocomplete*>
         ]
       },
-      hoverProvider: true,
+      hoverProvider: isProject,
       // TODO: Support ZenScript Formatting
       documentFormattingProvider: false
     }
@@ -83,11 +90,6 @@ connection.onInitialized(() => {
       DidChangeConfigurationNotification.type,
       undefined
     );
-  }
-  if (hasWorkspaceFolderCapability) {
-    connection.workspace.onDidChangeWorkspaceFolders(_event => {
-      connection.console.log("Workspace folder change event received.");
-    });
   }
 });
 
@@ -150,24 +152,6 @@ documents.onDidChangeContent(change => {
   validateTextDocument(change.document);
 });
 
-function parseInput(text: string) {
-  const lexResult = ZSLexer.tokenize(text);
-  // const parser = new ZenScriptParser(lexResult.tokens);
-
-  // const cst = parser.Program();
-
-  // if (parser.errors.length > 0) {
-  //   connection.console.error(JSON.stringify(parser.errors));
-  // } else {
-  //   connection.console.log(JSON.stringify(cst));
-  // }
-
-  return {
-    lexResult
-    //cst
-  };
-}
-
 async function validateTextDocument(textDocument: TextDocument): Promise<void> {
   // In this simple example we get the settings for every validate run.
   let settings = await getDocumentSettings(textDocument.uri);
@@ -175,17 +159,30 @@ async function validateTextDocument(textDocument: TextDocument): Promise<void> {
   // The validator creates diagnostics for all uppercase words length 2 and more
   let text = textDocument.getText();
 
-  const result = parseInput(text);
-  tokens = result.lexResult.tokens;
+  const lexResult = ZSLexer.tokenize(text);
+  tokens = lexResult.tokens;
 }
 
+// 当 Watch 的文件确实发生变动
 connection.onDidChangeWatchedFiles(_change => {
-  // 当 Watch 的文件确实发生变动
-  connection.console.log("We received an file change event");
-  connection.console.log(`${_change.changes[0].uri}`);
+  for (const change of _change.changes) {
+    if (path.resolve(change.uri) === path.resolve(baseFolder, ".zsrc")) {
+      try {
+        rcFile = JSON.parse(
+          fs.readFileSync(new URL(change.uri), {
+            encoding: "utf-8"
+          })
+        );
+        break;
+      } catch (e) {
+        connection.console.error(e);
+      }
+    }
+  }
 });
 
-// 负责处理自动补全的条目, 发送较为简单的消息
+// 负责处理自动补全的条目
+// 发送较为简单的消息
 connection.onCompletion(
   (textDocumentPositionParams): CompletionItem[] => {
     // 获得当前正在修改的 document
@@ -236,7 +233,8 @@ connection.onCompletion(
   }
 );
 
-// 负责处理自动补全条目选中时的信息, 将完整的信息发送至 Client
+// 负责处理自动补全条目选中时的信息
+// 将完整的信息发送至 Client
 // TODO: 发送正确的信息
 connection.onCompletionResolve(
   (item: CompletionItem): CompletionItem => {
@@ -255,7 +253,9 @@ connection.onCompletionResolve(
   }
 );
 
-// 负责处理鼠标 Hover 时的处理模式
+// 负责处理鼠标 Hover
+// 此处不用处理 isProject
+// 若未打开目录 则不会发送 Request
 connection.onHover(textDocumentPositionParams => {
   // 获得当前正在修改的 document
   const document = documents.get(textDocumentPositionParams.textDocument.uri);
