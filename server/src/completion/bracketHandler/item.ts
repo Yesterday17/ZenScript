@@ -73,8 +73,20 @@ class Item implements IBracketHandler {
     switch (item.data.predecessor.length) {
       case 1:
         // item:[modid]
-        // TODO: Return detailed ModName here.
-        return item;
+        if (!zGlobal.mods.has(item.label)) {
+          // For example, minecraft
+          // TODO: Add description for minecraft.
+          return item;
+        }
+        const mod = zGlobal.mods.get(item.label);
+        return {
+          ...item,
+          detail: mod.name,
+          documentation: {
+            kind: "markdown",
+            value: mod.description
+          }
+        };
       case 2:
         // item:modid:[item]
         const itemFound = zGlobal.items.get(item.data.predecessor[1])[
@@ -85,7 +97,7 @@ class Item implements IBracketHandler {
           detail: itemFound.localizedName,
           documentation: {
             kind: "markdown",
-            value: "#### UnlocalizedName\n" + itemFound.unlocalizedName
+            value: "**UnlocalizedName**: " + itemFound.unlocalizedName
           }
         };
       default:

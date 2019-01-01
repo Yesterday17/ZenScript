@@ -1,4 +1,4 @@
-import { ZSRCFile, ItemEntry } from "./rcFile";
+import { ZSRCFile, ItemEntry, ModEntry } from "./rcFile";
 
 export const zGlobal = {
   // 是否为 Project
@@ -9,8 +9,12 @@ export const zGlobal = {
 
   // .zsrc 文件
   rcFile: {
+    mcVersion: "",
+    forgeVersion: "",
+    mods: [],
     items: []
   } as ZSRCFile,
 
+  mods: new Map<string, ModEntry>(),
   items: new Map<string, ItemEntry[]>()
 };

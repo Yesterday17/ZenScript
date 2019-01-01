@@ -158,6 +158,7 @@ async function validateTextDocument(textDocument: TextDocument): Promise<void> {
   tokens = lexResult.tokens;
 }
 
+// 重新加载 .zsrc 文件
 function reloadRCFile() {
   try {
     zGlobal.rcFile = JSON.parse(
@@ -165,6 +166,14 @@ function reloadRCFile() {
         encoding: "utf-8"
       })
     );
+
+    // Reload Mods
+    zGlobal.mods.clear();
+    zGlobal.rcFile.mods.forEach(value => {
+      zGlobal.mods.set(value.modid, value);
+    });
+
+    // Reload Items
     zGlobal.items.clear();
     zGlobal.rcFile.items.forEach(value => {
       if (!zGlobal.items.has(value.domain)) {
