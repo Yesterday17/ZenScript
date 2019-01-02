@@ -217,8 +217,35 @@ connection.onCompletion(
     // 当前文档的文本
     const content = document.getText();
 
+    // 触发自动补全的字符
+    let triggerCharacter = textDocumentPositionParams.context.triggerCharacter;
+    // 是否是这样的形式:
+    // <xxx:yyy:[触发补全]>
+    let justClose: boolean = false;
+
+    // 使用快捷键触发
+    if (triggerCharacter === undefined) {
+      // 寻找可能的补全类型
+      for (let i = offset - 1; i >= 0; i--) {
+        connection.console.log(content[i]);
+        // 当 : 与 < 不再同一行时直接退出
+        if (content[i] === "\n") {
+          break;
+        }
+
+        if (content[i].match(/<|:|\.|#/g)) {
+          triggerCharacter = content[i];
+
+          if (i === offset - 1) {
+            justClose = true;
+          }
+          break;
+        }
+      }
+    }
+
     // TODO: 完成自动补全
-    switch (textDocumentPositionParams.context.triggerCharacter) {
+    switch (triggerCharacter) {
       case "#":
         return Preprocessors;
       case ".":
@@ -228,7 +255,7 @@ connection.onCompletion(
         let predecessor: string[] = [];
 
         // 寻找 inBracket
-        for (let i = offset; i >= 0; i--) {
+        for (let i = offset - 1; i >= 0; i--) {
           // 当 : 与 < 不再同一行时直接返回 null
           if (content[i] === "\n") {
             return;
@@ -246,7 +273,11 @@ connection.onCompletion(
         }
         // HistoryEntries.add(predecessor[0]);
         return BracketHandlerMap.get(predecessor[0])
-          ? BracketHandlerMap.get(predecessor[0]).next(predecessor)
+          ? textDocumentPositionParams.context.triggerCharacter || justClose
+            ? BracketHandlerMap.get(predecessor[0]).next(predecessor)
+            : BracketHandlerMap.get(predecessor[0]).next(
+                predecessor.splice(predecessor.length - 2, 1)
+              )
           : null;
       case "<":
         return [...SimpleBracketHandlers];
