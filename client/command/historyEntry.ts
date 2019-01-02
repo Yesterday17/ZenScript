@@ -1,5 +1,5 @@
 import { window } from "vscode";
-import { CommandBase } from "./command";
+import { CommandBase } from "./CommandBase";
 import { HistoryEntryGetRequestType } from "@/requests/HistoryEntryRequest";
 
 class HistoryEntry extends CommandBase {
