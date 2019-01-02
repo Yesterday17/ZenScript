@@ -322,9 +322,7 @@ export class ZenScriptParser extends Parser {
     this.CONSUME(L_ROUND_BRACKET);
     this.MANY_SEP({
       SEP: COMMA,
-      DEF() {
-        this.SUBRULE(this.Parameter);
-      }
+      DEF: () => this.SUBRULE(this.Parameter)
     });
     this.CONSUME(R_ROUND_BRACKET);
   });

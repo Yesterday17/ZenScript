@@ -1,11 +1,5 @@
 {
-  "compilerOptions": {
-    "module": "commonjs",
-    "target": "es6",
-    "outDir": "out",
-    "composite": true,
-    "declaration": true
-  },
-  "exclude": ["node_modules", ".vscode-test"],
+  "files": [],
+  "include": [],
   "references": [{ "path": "./client" }, { "path": "./server" }]
 }
