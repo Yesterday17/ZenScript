@@ -1,5 +1,12 @@
 {
   "files": [],
   "include": [],
-  "references": [{ "path": "./client" }, { "path": "./server" }]
+  "references": [
+    {
+      "path": "./client"
+    },
+    {
+      "path": "./server"
+    }
+  ]
 }

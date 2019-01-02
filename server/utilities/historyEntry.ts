@@ -1,4 +1,4 @@
-import { HistoryEntryItem } from "../api/requests/HistoryEntryRequest";
+import { HistoryEntryItem } from "@/requests/HistoryEntryRequest";
 
 /**
  * Idea by @Snownee discussed in @TeamCovertDragon QQ Group.

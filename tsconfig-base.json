@@ -28,7 +28,11 @@
     "preserveConstEnums": true,
     "newLine": "lf",
 
-    "types": []
+    "types": [],
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["api/*"]
+    }
   },
   "exclude": ["node_modules", ".vscode-test"]
 }

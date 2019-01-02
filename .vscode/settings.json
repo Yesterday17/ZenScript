@@ -2,6 +2,7 @@
 {
   "files.exclude": {
     "assets": true,
+    "api": true,
     "client": true,
     "server": true,
     "language": true,
