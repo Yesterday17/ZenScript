@@ -11,7 +11,6 @@ import {
 import { ZSLexer } from "./parser/zsLexer";
 import { IToken } from "chevrotain";
 import { ZenScriptParser } from "./parser/zsParser";
-import * as path from "path";
 import * as fs from "fs";
 import {
   DetailBracketHandlers,
@@ -19,10 +18,10 @@ import {
   BracketHandlerMap
 } from "./completion/bracketHandler/bracketHandlers";
 import { Keywords, Preprocessors } from "./completion/completion";
-import { HistoryEntries } from "./utilities/historyEntry";
-import { HistoryEntryRequest } from "./api/requests/HistoryEntryRequest";
 import { URL } from "url";
 import { zGlobal } from "./api/global";
+import { ZenScriptSettings, defaultSettings } from "./api/setting";
+import { applyRequests } from "./requests/requests";
 
 // 创建一个服务的连接，连接使用 Node 的 IPC 作为传输
 // 并且引入所有 LSP 特性, 包括 preview / proposed
@@ -88,20 +87,6 @@ connection.onInitialized(() => {
   }
 });
 
-// The example settings
-interface ZenScriptSettings {
-  maxNumberOfProblems: number;
-  maxHistoryEntries: number;
-}
-
-// The global settings, used when the `workspace/configuration` request is not supported by the client.
-// Please note that this is not the case when using this server with the client provided in this example
-// but could happen with other clients.
-const defaultSettings: ZenScriptSettings = {
-  maxNumberOfProblems: 100,
-  maxHistoryEntries: 20
-};
-
 let globalSettings: ZenScriptSettings = defaultSettings;
 
 // 为所有打开的文档缓存配置
@@ -109,7 +94,7 @@ let documentSettings: Map<string, Thenable<ZenScriptSettings>> = new Map();
 
 connection.onDidChangeConfiguration(change => {
   if (hasConfigurationCapability) {
-    // Reset all cached document settings
+    // 重置全部设置
     documentSettings.clear();
   } else {
     globalSettings = <ZenScriptSettings>(
@@ -318,10 +303,8 @@ connection.onHover(textDocumentPositionParams => {
   return Promise.resolve(void 0);
 });
 
-// 负责处理 HistoryEntryRequest
-connection.onRequest(HistoryEntryRequest, () => {
-  return HistoryEntries.entries.slice(0, globalSettings.maxHistoryEntries);
-});
+// 配置 Requests
+applyRequests(connection);
 
 // 使得 documents 监听 connection 以触发相应事件
 documents.listen(connection);

@@ -1,4 +1,5 @@
-import { ZSRCFile, ItemEntry, ModEntry } from "./rcFile";
+import { ItemEntry, ModEntry, ZSRCFile } from "./rcFile";
+import { ZenScriptSettings } from "./setting";
 
 export const zGlobal = {
   // 是否为 Project
@@ -6,6 +7,9 @@ export const zGlobal = {
 
   // Project 的根目录
   baseFolder: "" as string,
+
+  // 全局设置
+  setting: {} as ZenScriptSettings,
 
   // .zsrc 文件
   rcFile: {
