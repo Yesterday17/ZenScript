@@ -16,7 +16,7 @@
     "onLanguage:zenscript",
     "onCommand:zenscript.command.historyentry"
   ],
-  "main": "./client/out/extension",
+  "main": "./out/client/extension",
   "contributes": {
     "commands": [
       {
@@ -114,10 +114,11 @@
     ]
   },
   "scripts": {
-    "vscode:prepublish": "cd client && yarn run update-vscode && cd .. && yarn run compile",
+    "vscode:prepublish": "yarn run update-vscode && yarn run compile",
+    "update-vscode": "vscode-install",
     "compile": "tsc -b",
     "watch": "tsc -b -w",
-    "postinstall": "cd ./client && yarn && cd  ../server && yarn && cd .."
+    "postinstall": "vscode-install"
   },
   "devDependencies": {
     "@types/mocha": "^2.2.42",
@@ -130,9 +131,14 @@
     "tslint": "^5.12.0",
     "typescript": "^3.2.2",
     "vsce": "^1.54.0",
+    "vscode": "^1.1.26",
     "vscode-nls-dev": "^3.2.3"
   },
   "dependencies": {
-    "vscode-nls": "^4.0.0"
+    "chevrotain": "^4.1.1",
+    "vscode-languageclient": "^5.2.1",
+    "vscode-languageserver": "^5.2.1",
+    "vscode-nls": "^4.0.0",
+    "vscode-uri": "^1.0.6"
   }
 }

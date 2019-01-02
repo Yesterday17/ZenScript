@@ -14,7 +14,7 @@ let client: LanguageClient;
 export function activate(context: ExtensionContext) {
   // Server 是以 Node 实现的
   let serverModule = context.asAbsolutePath(
-    path.join("server", "out", "server.js")
+    path.join("out", "server", "server.js")
   );
 
   // Server 的 Debug 配置
