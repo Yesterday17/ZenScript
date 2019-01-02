@@ -78,15 +78,15 @@ class Enchantment implements IBracketHandler {
         };
       case 2:
         // item:modid:[item]
-        const enchantmentsFound = zGlobal.enchantments.get(
+        const enchantmentFound = zGlobal.enchantments.get(
           item.data.predecessor[1]
         )[item.data.position];
         return {
           ...item,
-          detail: enchantmentsFound.localizedName,
+          detail: enchantmentFound.localizedName,
           documentation: {
             kind: "markdown",
-            value: "**Type**: " + enchantmentsFound.type
+            value: "**Type**: " + enchantmentFound.type
           }
         };
       default:

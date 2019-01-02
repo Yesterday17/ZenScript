@@ -1,5 +1,7 @@
-import { CompletionItem } from "vscode-languageserver";
+import { CompletionItem, CompletionItemKind } from "vscode-languageserver";
 import { IBracketHandler } from "../../api/IBracketHandler";
+import { zGlobal } from "../../api/global";
+import { BracketHandlerKind } from "./bracketHandlers";
 
 class Entity implements IBracketHandler {
   handler: CompletionItem = {
@@ -22,11 +24,74 @@ class Entity implements IBracketHandler {
   };
 
   next(predecessor: string[]): CompletionItem[] {
-    return [];
+    switch (predecessor.length) {
+      case 1:
+        // item:[modid]
+        const result = Array.from(zGlobal.entities.keys()).map(key => {
+          return {
+            label: key,
+            kind: BracketHandlerKind,
+            data: {
+              triggerCharacter: ":",
+              predecessor
+            }
+          } as CompletionItem;
+        });
+        return result;
+      case 2:
+        // item:modid:[item]
+        return zGlobal.entities.has(predecessor[1])
+          ? zGlobal.entities.get(predecessor[1]).map((item, i) => {
+              return {
+                label: item.path,
+                kind: CompletionItemKind.Value,
+                data: {
+                  triggerCharacter: ":",
+                  predecessor,
+                  position: i
+                }
+              } as CompletionItem;
+            })
+          : [];
+      default:
+        return [];
+    }
   }
 
   detail(item: CompletionItem): CompletionItem {
-    return item;
+    switch (item.data.predecessor.length) {
+      case 1:
+        // item:[modid]
+        if (!zGlobal.mods.has(item.label)) {
+          // For example, minecraft
+          // TODO: Add description for minecraft.
+          return item;
+        }
+        const mod = zGlobal.mods.get(item.label);
+        return {
+          ...item,
+          detail: mod.name,
+          documentation: {
+            kind: "markdown",
+            value: mod.description
+          }
+        };
+      case 2:
+        // item:modid:[item]
+        const entityFound = zGlobal.entities.get(item.data.predecessor[1])[
+          item.data.position
+        ];
+        return {
+          ...item,
+          detail: entityFound.localizedName,
+          documentation: {
+            kind: "markdown",
+            value: ""
+          }
+        };
+      default:
+        return item;
+    }
   }
 }
 
