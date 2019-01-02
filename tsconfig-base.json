@@ -4,6 +4,7 @@
     "lib": ["es6"],
     "target": "es6",
     "rootDir": ".",
+    "outDir": "./out/",
 
     "module": "commonjs",
     "moduleResolution": "node",
