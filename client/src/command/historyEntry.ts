@@ -1,11 +1,11 @@
 import { window } from "vscode";
 import { CommandBase } from "./command";
-import { HistoryEntryRequest } from "../api/HistoryEntryRequest";
+import { HistoryEntryGetRequest } from "../api/HistoryEntryRequest";
 
 class HistoryEntry extends CommandBase {
   public command = "zenscript.command.historyentry";
   public handler = () => {
-    this.client.sendRequest(HistoryEntryRequest).then(() => {
+    this.client.sendRequest(HistoryEntryGetRequest).then(() => {
       window.showInformationMessage("あけおめ！");
     });
   }
