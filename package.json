@@ -14,15 +14,22 @@
   ],
   "activationEvents": [
     "onLanguage:zenscript",
-    "onCommand:zenscript.command.historyentry"
+    "onCommand:zenscript.command.gethistoryentry",
+    "onCommand:zenscript.command.addhistoryentry"
   ],
   "main": "./out/client/extension",
   "contributes": {
     "commands": [
       {
-        "command": "zenscript.command.historyentry",
-        "title": "%zenscript.command.historyentry.title%",
-        "description": "%zenscript.command.historyentry.desc%",
+        "command": "zenscript.command.gethistoryentry",
+        "title": "%zenscript.command.gethistoryentry.title%",
+        "description": "%zenscript.command.gethistoryentry.desc%",
+        "when": "editorTextFocus && editorLangId == zenscript"
+      },
+      {
+        "command": "zenscript.command.addhistoryentry",
+        "title": "%zenscript.command.addhistoryentry.title%",
+        "description": "%zenscript.command.addhistoryentry.desc%",
         "when": "editorTextFocus && editorLangId == zenscript"
       }
     ],

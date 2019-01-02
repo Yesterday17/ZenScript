@@ -3,6 +3,9 @@
   "zenscript.maxHistoryEntries.desc": "Controls the maximum number of history entries responsed by the server.",
   "zenscript.trace.server.desc": "Traces the communication between VS Code and the language server.",
 
-  "zenscript.command.historyentry.title": "Show History Entries",
-  "zenscript.command.historyentry.desc": "Show history entries you've typed before."
+  "zenscript.command.gethistoryentry.title": "Show History Entries",
+  "zenscript.command.gethistoryentry.desc": "Show history entries you've typed before.",
+
+  "zenscript.command.addhistoryentry.title": "Add History Entry",
+  "zenscript.command.addhistoryentry.desc": "Add a new history entry."
 }

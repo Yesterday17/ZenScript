@@ -7,7 +7,10 @@ import {
   ServerOptions,
   TransportKind
 } from "vscode-languageclient";
-import { CommandHistoryEntry } from "./command/historyEntry";
+import {
+  CommandHistoryEntryGet,
+  CommandHistoryEntryAdd
+} from "./command/historyEntry";
 
 let client: LanguageClient;
 
@@ -50,7 +53,8 @@ export function activate(context: ExtensionContext) {
   );
 
   // 注册命令
-  CommandHistoryEntry.register(client, context);
+  CommandHistoryEntryGet.register(client, context);
+  CommandHistoryEntryAdd.register(client, context);
 
   //TODO: 注册 zenscriptExplorer
 
