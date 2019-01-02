@@ -116,9 +116,10 @@
   "scripts": {
     "vscode:prepublish": "yarn run update-vscode && yarn run compile",
     "update-vscode": "vscode-install",
+    "postinstall": "vscode-install",
     "compile": "tsc -b",
     "watch": "tsc -b -w",
-    "postinstall": "vscode-install"
+    "package": "gulp package"
   },
   "devDependencies": {
     "@types/mocha": "^2.2.42",

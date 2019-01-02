@@ -8,8 +8,6 @@ const es = require("event-stream");
 const vsce = require("vsce");
 const nls = require("vscode-nls-dev");
 
-const tsProject = ts.createProject("./tsconfig.json");
-
 const inlineMap = true;
 const inlineSource = true;
 const outDest = "out";
@@ -18,10 +16,11 @@ const outDest = "out";
 const languages = [{ folderName: "zh", id: "zh" }];
 
 function clean() {
-  return del(["out/**", "package.nls.*.json", "*.vsix"]);
+  return del([`${outDest}/**`, "package.nls.*.json", "*.vsix"]);
 }
 
 function compile(buildNls) {
+  const tsProject = ts.createProject(`./tsconfig.json`);
   let r = tsProject
     .src()
     .pipe(sourcemaps.init())
@@ -50,7 +49,9 @@ function compile(buildNls) {
 }
 
 gulp.task("internal-compile", function() {
-  return compile(false);
+  compile(false, "api");
+  compile(false, "client");
+  return compile(false, "server");
 });
 
 gulp.task("internal-nls-compile", function() {

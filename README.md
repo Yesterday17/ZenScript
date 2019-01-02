@@ -22,6 +22,7 @@ This extension contributes the following settings:
 
 - Changes made in `.zsrc` can only be applied if the language server is started, which means you must open a `.zs` file to apply it.
 - The autocompletion can only be triggered in specific ways.
+- `yarn package` can't work. See [#606](https://github.com/ivogabe/gulp-typescript/issues/606).
 
 ## Release Notes
 
