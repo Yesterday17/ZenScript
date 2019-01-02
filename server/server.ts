@@ -167,6 +167,26 @@ function reloadRCFile() {
         zGlobal.items.get(value.domain).push(value);
       }
     });
+
+    // Reload Enchantments
+    zGlobal.enchantments.clear();
+    zGlobal.rcFile.enchantments.forEach(value => {
+      if (!zGlobal.enchantments.has(value.domain)) {
+        zGlobal.enchantments.set(value.domain, [value]);
+      } else {
+        zGlobal.enchantments.get(value.domain).push(value);
+      }
+    });
+
+    // Reload Entities
+    zGlobal.entities.clear();
+    zGlobal.rcFile.entities.forEach(value => {
+      if (!zGlobal.entities.has(value.domain)) {
+        zGlobal.entities.set(value.domain, [value]);
+      } else {
+        zGlobal.entities.get(value.domain).push(value);
+      }
+    });
   } catch (e) {
     connection.console.error(e.message);
   }

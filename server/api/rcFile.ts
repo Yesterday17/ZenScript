@@ -21,10 +21,27 @@ export interface ModEntry {
   useDependencyInformation: boolean;
 }
 
+export interface EnchantmentEntry {
+  rarity: string;
+  type: string;
+  domain: string;
+  path: string;
+  unlocalizedName: string;
+  localizedName: string;
+}
+
+export interface EntityEntry {
+  domain: string;
+  path: string;
+  localizedName: string;
+}
+
 export interface ZSRCFile {
   mcVersion: string;
   forgeVersion: string;
 
   mods: ModEntry[];
   items: ItemEntry[];
+  enchantments: EnchantmentEntry[];
+  entities: EntityEntry[];
 }

@@ -1,4 +1,10 @@
-import { ItemEntry, ModEntry, ZSRCFile } from "./rcFile";
+import {
+  ItemEntry,
+  ModEntry,
+  ZSRCFile,
+  EntityEntry,
+  EnchantmentEntry
+} from "./rcFile";
 import { ZenScriptSettings } from "./setting";
 
 export const zGlobal = {
@@ -20,5 +26,7 @@ export const zGlobal = {
   } as ZSRCFile,
 
   mods: new Map<string, ModEntry>(),
-  items: new Map<string, ItemEntry[]>()
+  items: new Map<string, ItemEntry[]>(),
+  enchantments: new Map<string, EnchantmentEntry[]>(),
+  entities: new Map<string, EntityEntry[]>()
 };
