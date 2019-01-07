@@ -1,6 +1,6 @@
 /**
  * This is a template for ANY new BracketHandlers.
- * 
+ *
  * This handler will NEVER be imported.
  */
 
@@ -27,6 +27,10 @@ class Template implements IBracketHandler {
 
   next(predecessor: string[]): CompletionItem[] {
     return [];
+  }
+
+  detail(item: CompletionItem): CompletionItem {
+    return item;
   }
 }
 
