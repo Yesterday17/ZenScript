@@ -141,6 +141,7 @@ async function validateTextDocument(textDocument: TextDocument): Promise<void> {
 
   const lexResult = ZSLexer.tokenize(text);
   tokens = lexResult.tokens;
+  // new ZenScriptParser(tokens).Program();
 }
 
 // 重新加载 .zsrc 文件
@@ -152,39 +153,57 @@ function reloadRCFile() {
       })
     );
 
+    connection.console.log(JSON.stringify(zGlobal.rcFile));
+
     // Reload Mods
     zGlobal.mods.clear();
     zGlobal.rcFile.mods.forEach(value => {
       zGlobal.mods.set(value.modid, value);
     });
 
-    // Reload Items
+    // Items
     zGlobal.items.clear();
+    zGlobal.idMaps.items.clear();
     zGlobal.rcFile.items.forEach(value => {
-      if (!zGlobal.items.has(value.domain)) {
-        zGlobal.items.set(value.domain, [value]);
+      if (!zGlobal.items.has(value.resourceLocation.domain)) {
+        zGlobal.items.set(value.resourceLocation.domain, [value]);
       } else {
-        zGlobal.items.get(value.domain).push(value);
+        zGlobal.items.get(value.resourceLocation.domain).push(value);
       }
+
+      zGlobal.idMaps.items.set(value.id, value);
     });
 
-    // Reload Enchantments
+    // Enchantments
     zGlobal.enchantments.clear();
     zGlobal.rcFile.enchantments.forEach(value => {
-      if (!zGlobal.enchantments.has(value.domain)) {
-        zGlobal.enchantments.set(value.domain, [value]);
+      if (!zGlobal.enchantments.has(value.resourceLocation.domain)) {
+        zGlobal.enchantments.set(value.resourceLocation.domain, [value]);
       } else {
-        zGlobal.enchantments.get(value.domain).push(value);
+        zGlobal.enchantments.get(value.resourceLocation.domain).push(value);
       }
     });
 
-    // Reload Entities
+    // Entities
     zGlobal.entities.clear();
+    zGlobal.idMaps.entities.clear();
     zGlobal.rcFile.entities.forEach(value => {
-      if (!zGlobal.entities.has(value.domain)) {
-        zGlobal.entities.set(value.domain, [value]);
+      if (!zGlobal.entities.has(value.resourceLocation.domain)) {
+        zGlobal.entities.set(value.resourceLocation.domain, [value]);
       } else {
-        zGlobal.entities.get(value.domain).push(value);
+        zGlobal.entities.get(value.resourceLocation.domain).push(value);
+      }
+
+      zGlobal.idMaps.entities.set(value.id, value);
+    });
+
+    // Fluids
+    zGlobal.fluids.clear();
+    zGlobal.rcFile.fluids.forEach(value => {
+      if (!zGlobal.fluids.has(value.still.domain)) {
+        zGlobal.fluids.set(value.still.domain, [value]);
+      } else {
+        zGlobal.fluids.get(value.still.domain).push(value);
       }
     });
   } catch (e) {

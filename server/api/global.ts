@@ -3,7 +3,8 @@ import {
   ModEntry,
   ZSRCFile,
   EntityEntry,
-  EnchantmentEntry
+  EnchantmentEntry,
+  FluidEntry
 } from "./rcFile";
 import { ZenScriptSettings } from "./setting";
 
@@ -21,12 +22,22 @@ export const zGlobal = {
   rcFile: {
     mcVersion: "",
     forgeVersion: "",
-    mods: [],
-    items: []
+
+    mods: [] as ModEntry[],
+    items: [] as ItemEntry[],
+    enchantments: [] as EnchantmentEntry[],
+    entities: [] as EntityEntry[],
+    fluids: [] as FluidEntry[]
   } as ZSRCFile,
 
   mods: new Map<string, ModEntry>(),
   items: new Map<string, ItemEntry[]>(),
   enchantments: new Map<string, EnchantmentEntry[]>(),
-  entities: new Map<string, EntityEntry[]>()
+  entities: new Map<string, EntityEntry[]>(),
+  fluids: new Map<string, FluidEntry[]>(),
+
+  idMaps: {
+    items: new Map<number, ItemEntry>(),
+    entities: new Map<number, EntityEntry>()
+  }
 };

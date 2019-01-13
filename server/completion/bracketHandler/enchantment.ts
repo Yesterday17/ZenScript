@@ -43,7 +43,7 @@ class Enchantment implements IBracketHandler {
         return zGlobal.enchantments.has(predecessor[1])
           ? zGlobal.enchantments.get(predecessor[1]).map((item, i) => {
               return {
-                label: item.path,
+                label: item.resourceLocation.path,
                 kind: CompletionItemKind.Value,
                 data: {
                   triggerCharacter: ":",
@@ -83,7 +83,7 @@ class Enchantment implements IBracketHandler {
         )[item.data.position];
         return {
           ...item,
-          detail: enchantmentFound.localizedName,
+          detail: enchantmentFound.name,
           documentation: {
             kind: "markdown",
             value: "**Type**: " + enchantmentFound.type

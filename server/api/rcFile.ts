@@ -1,8 +1,11 @@
-export interface ItemEntry {
+export interface ArtifactVersion {
+  label: string;
+  version: string;
+}
+
+export interface ResourceLocation {
   domain: string;
   path: string;
-  unlocalizedName: string;
-  localizedName: string;
 }
 
 export interface ModEntry {
@@ -10,30 +13,62 @@ export interface ModEntry {
   name: string;
   description: string;
   url: string;
-  updateUrl: string;
-  updateJSON: string;
-  logoFile: string;
   version: string;
   authorList: string[];
   credits: string;
-  parent: string;
-  screenshots: string[];
-  useDependencyInformation: boolean;
+  parentMod: string;
+}
+
+export interface ItemEntry {
+  id: number;
+  name: string;
+  unlocalizedName: string;
+  resourceLocation: ResourceLocation;
+  maxStackSize: number;
+  maxDamage: number;
+  bFull3D: boolean;
+  hasSubtypes: boolean;
+  canRepair: boolean;
+  containerItem: number | null;
+  tabToDisplayOn: number | null;
+}
+
+export interface CreativeTabEntry {
+  index: number;
+  label: string;
+  translatedLabel: string;
+  hasSearchBar: boolean;
+  itemIcon: number;
 }
 
 export interface EnchantmentEntry {
-  rarity: string;
-  type: string;
-  domain: string;
-  path: string;
+  name: string;
   unlocalizedName: string;
-  localizedName: string;
+  resourceLocation: ResourceLocation;
+  type: string;
+  rarity: string;
+  minLevel: number;
+  maxLevel: number;
 }
 
 export interface EntityEntry {
-  domain: string;
-  path: string;
-  localizedName: string;
+  id: number;
+  name: string;
+  resourceLocation: ResourceLocation;
+}
+
+export interface FluidEntry {
+  name: string;
+  unlocalizedName: string;
+  luminosity: number;
+  density: number;
+  temperature: number;
+  viscosity: number;
+  isGaseous: boolean;
+  rarity: string;
+  color: number;
+  still: ResourceLocation;
+  flowing: ResourceLocation;
 }
 
 export interface ZSRCFile {
@@ -44,4 +79,5 @@ export interface ZSRCFile {
   items: ItemEntry[];
   enchantments: EnchantmentEntry[];
   entities: EntityEntry[];
+  fluids: FluidEntry[];
 }

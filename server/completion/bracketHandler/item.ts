@@ -54,7 +54,7 @@ class Item implements IBracketHandler {
         return zGlobal.items.has(predecessor[1])
           ? zGlobal.items.get(predecessor[1]).map((item, i) => {
               return {
-                label: item.path,
+                label: item.resourceLocation.path,
                 kind: CompletionItemKind.Value,
                 data: {
                   triggerCharacter: ":",
@@ -94,7 +94,7 @@ class Item implements IBracketHandler {
         ];
         return {
           ...item,
-          detail: itemFound.localizedName,
+          detail: itemFound.name,
           documentation: {
             kind: "markdown",
             value: "**UnlocalizedName**: " + itemFound.unlocalizedName

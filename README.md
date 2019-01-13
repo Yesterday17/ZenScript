@@ -11,8 +11,8 @@ ZenScript is a vscode plugin for [CraftTweaker](https://crafttweaker.readthedocs
 
 ## Requirements
 
-You **must** have [this Minecraft Mod](https://github.com/Yesterday17/Probe) installed to have use most features of this plugin.
-If you're just editing `.zs` files, you can have syntax highlight and simple code snippets.
+You **must** have [this Minecraft Mod](https://github.com/Yesterday17/Probe) installed to have use most features of this plugin.  
+If you're just editing `.zs` files, you can only have syntax highlight and simple code snippets.
 
 ## Extension Settings
 

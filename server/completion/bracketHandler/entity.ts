@@ -43,7 +43,7 @@ class Entity implements IBracketHandler {
         return zGlobal.entities.has(predecessor[1])
           ? zGlobal.entities.get(predecessor[1]).map((item, i) => {
               return {
-                label: item.path,
+                label: item.resourceLocation.path,
                 kind: CompletionItemKind.Value,
                 data: {
                   triggerCharacter: ":",
@@ -83,7 +83,7 @@ class Entity implements IBracketHandler {
         ];
         return {
           ...item,
-          detail: entityFound.localizedName,
+          detail: entityFound.name,
           documentation: {
             kind: "markdown",
             value: ""
