@@ -196,13 +196,12 @@ function reloadRCFile() {
     });
 
     // Fluids
-    // TODO: use resourceLocation instead
     zGlobal.fluids.clear();
     zGlobal.rcFile.fluids.forEach(value => {
-      if (!zGlobal.fluids.has(value.still.domain)) {
-        zGlobal.fluids.set(value.still.domain, [value]);
+      if (!zGlobal.fluids.has(value.resourceLocation.domain)) {
+        zGlobal.fluids.set(value.resourceLocation.domain, [value]);
       } else {
-        zGlobal.fluids.get(value.still.domain).push(value);
+        zGlobal.fluids.get(value.resourceLocation.domain).push(value);
       }
     });
   } catch (e) {

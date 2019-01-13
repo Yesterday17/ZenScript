@@ -58,8 +58,10 @@ export interface EntityEntry {
 }
 
 export interface FluidEntry {
+  id: number;
   name: string;
   unlocalizedName: string;
+  resourceLocation: ResourceLocation;
   luminosity: number;
   density: number;
   temperature: number;
