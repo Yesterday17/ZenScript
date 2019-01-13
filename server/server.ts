@@ -153,8 +153,6 @@ function reloadRCFile() {
       })
     );
 
-    connection.console.log(JSON.stringify(zGlobal.rcFile));
-
     // Reload Mods
     zGlobal.mods.clear();
     zGlobal.rcFile.mods.forEach(value => {
@@ -198,6 +196,7 @@ function reloadRCFile() {
     });
 
     // Fluids
+    // TODO: use resourceLocation instead
     zGlobal.fluids.clear();
     zGlobal.rcFile.fluids.forEach(value => {
       if (!zGlobal.fluids.has(value.still.domain)) {
@@ -246,7 +245,6 @@ connection.onCompletion(
     if (triggerCharacter === undefined) {
       // 寻找可能的补全类型
       for (let i = offset - 1; i >= 0; i--) {
-        connection.console.log(content[i]);
         // 当 : 与 < 不再同一行时直接退出
         if (content[i] === "\n") {
           break;

@@ -86,7 +86,7 @@ class Entity implements IBracketHandler {
           detail: entityFound.name,
           documentation: {
             kind: "markdown",
-            value: ""
+            value: ``
           }
         };
       default:

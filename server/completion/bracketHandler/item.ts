@@ -97,7 +97,11 @@ class Item implements IBracketHandler {
           detail: itemFound.name,
           documentation: {
             kind: "markdown",
-            value: "**UnlocalizedName**: " + itemFound.unlocalizedName
+            value:
+              `UnlocalizedName: ${itemFound.unlocalizedName}  \n` +
+              `MaxStackSize: ${itemFound.maxStackSize}  \n` +
+              `MaxDamage: ${itemFound.maxDamage}  \n` +
+              `CanRepair: ${itemFound.canRepair}  \n`
           }
         };
       default:
