@@ -35,9 +35,15 @@
     ],
     "keybindings": [
       {
-        "command": "zenscript.command.historyentry",
+        "command": "zenscript.command.gethistoryentry",
         "key": "alt+H",
         "mac": "alt+H",
+        "when": "editorTextFocus && editorLangId == zenscript"
+      },
+      {
+        "command": "zenscript.command.addhistoryentry",
+        "key": "alt+A",
+        "mac": "alt+A",
         "when": "editorTextFocus && editorLangId == zenscript"
       }
     ],

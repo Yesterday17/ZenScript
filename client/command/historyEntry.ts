@@ -30,17 +30,34 @@ class HistoryEntryGet extends CommandBase {
 class HistoryEntryAdd extends CommandBase {
   public command = "zenscript.command.addhistoryentry";
   public handler = () => {
-    window
-      .showInputBox({ placeHolder: "History entry to add:" })
-      .then(value => {
-        if (value) {
-          this.client
-            .sendRequest(HistoryEntryAddRequestType, value)
-            .then(() => {
-              window.showInformationMessage(`${value} Added!`);
-            });
-        }
+    // If anything is selected
+    if (
+      window.activeTextEditor.selection.start.compareTo(
+        window.activeTextEditor.selection.end
+      ) !== 0
+    ) {
+      // Get selected value
+      const value = window.activeTextEditor.document.getText(
+        window.activeTextEditor.selection
+      );
+      // Send request
+      this.client.sendRequest(HistoryEntryAddRequestType, value).then(() => {
+        window.showInformationMessage(`${value} Added!`);
       });
+    } else {
+      // Nothing is selected, open an inputbox
+      window
+        .showInputBox({ placeHolder: "History entry to add:" })
+        .then(value => {
+          if (value) {
+            this.client
+              .sendRequest(HistoryEntryAddRequestType, value)
+              .then(() => {
+                window.showInformationMessage(`${value} Added!`);
+              });
+          }
+        });
+    }
   }
 }
 
