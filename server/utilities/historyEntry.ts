@@ -1,66 +1,87 @@
 import { HistoryEntryItem } from "../../api/requests/HistoryEntryRequest";
 
 /**
- * Idea by @Snownee discussed in @TeamCovertDragon QQ Group.
+ * Inspired by @Snownee discussed in @TeamCovertDragon QQ Group.
  */
 
 class EntryNode {
   public readonly element: string;
   public usage: number = 1;
-  public prev: EntryNode;
   public next: EntryNode;
 
   constructor(elem: string) {
     this.element = elem;
     this.next = null;
   }
+
+  at(position: number): EntryNode {
+    let now: EntryNode = this;
+    for (; position > 0; position--, now = now.next) {
+      if (now === null) {
+        break;
+      }
+    }
+    return now;
+  }
 }
 
 class HistoryEntryHandler {
-  private top: EntryNode = null;
+  private top: EntryNode = new EntryNode("ENTRY_NODE_TOP");
   private len: number = 0;
 
-  public find(entry: string): EntryNode | null {
-    let now: EntryNode = this.top;
-    while (now !== null) {
-      if (now.element === entry) {
-        return now;
-      }
-    }
-    return null;
+  constructor() {
+    // Set usage of top to 0
+    this.top.usage = 0;
   }
 
+  /**
+   * Find a certain entry in the HistoryEntry LinkedList.
+   * @param entry The entry to find.
+   */
+  public find(entry: string): EntryNode | null {
+    let now = this.top;
+    for (; now !== null; now = now.next) {
+      if (now.element === entry) {
+        break;
+      }
+    }
+    return now;
+  }
+
+  /**
+   * Add an entry to HistoryEntry LinkedList
+   * @param entry The entry to add
+   */
   public add(entry: string) {
     const find = this.find(entry);
 
-    // 当历史纪录未记录时
+    // When entry doesn't exist
     if (find === null) {
       const node = new EntryNode(entry);
-      node.next = this.top;
-      this.top = node;
+      this.top.at(this.len).next = node;
       this.len++;
-      return;
-    }
+    } else {
+      // When extry exists
+      find.usage++;
 
-    // 当历史纪录存在时
-    find.usage++;
-    find.prev.next = find.next;
-    find.next.prev = find.prev;
-    find.prev = null;
-    find.next = this.top;
-    this.top = find;
+      // TODO: Sort HistoryEntry LinkedList.
+    }
   }
 
   get entries(): HistoryEntryItem[] {
     const result: HistoryEntryItem[] = [];
-    let now = this.top;
+    // Skip the top element
+    let now = this.top.next;
+
     while (now !== null) {
+      // Add now to result array
       result.push({
         element: now.element,
         usage: now.usage
       } as HistoryEntryItem);
       now = now.next;
     }
+
     return result;
   }
 }

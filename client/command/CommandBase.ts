@@ -1,6 +1,9 @@
 import { LanguageClient } from "vscode-languageclient";
 import { ExtensionContext, commands } from "vscode";
 
+/**
+ * Base class of all vscode commands.
+ */
 export abstract class CommandBase {
   protected client: LanguageClient;
 

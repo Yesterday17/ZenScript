@@ -8,8 +8,21 @@ import {
 class HistoryEntryGet extends CommandBase {
   public command = "zenscript.command.gethistoryentry";
   public handler = () => {
-    this.client.sendRequest(HistoryEntryGetRequestType).then(() => {
-      window.showInformationMessage("あけおめ！");
+    this.client.sendRequest(HistoryEntryGetRequestType).then(items => {
+      if (items.length === 0) {
+        window.showInformationMessage("No HistoryEntry available!");
+        return;
+      }
+
+      window.showQuickPick(items.map(item => item.element)).then(selected => {
+        window.activeTextEditor.edit(builder => {
+          window.activeTextEditor.selections.forEach(selection => {
+            builder.replace(selection, selected);
+            this.client.sendRequest(HistoryEntryAddRequestType, selected);
+          });
+        });
+        window.showInformationMessage(selected);
+      });
     });
   }
 }
@@ -17,9 +30,17 @@ class HistoryEntryGet extends CommandBase {
 class HistoryEntryAdd extends CommandBase {
   public command = "zenscript.command.addhistoryentry";
   public handler = () => {
-    this.client.sendRequest(HistoryEntryAddRequestType, "").then(() => {
-      window.showInformationMessage("History Added!");
-    });
+    window
+      .showInputBox({ placeHolder: "History entry to add:" })
+      .then(value => {
+        if (value) {
+          this.client
+            .sendRequest(HistoryEntryAddRequestType, value)
+            .then(() => {
+              window.showInformationMessage(`${value} Added!`);
+            });
+        }
+      });
   }
 }
 
