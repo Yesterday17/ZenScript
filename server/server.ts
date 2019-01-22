@@ -92,8 +92,8 @@ let globalSettings: ZenScriptSettings = defaultSettings;
 // cache setting for all opened documents
 let documentSettings: Map<string, Thenable<ZenScriptSettings>> = new Map();
 
-// Lex
-let tokens: Map<string, IToken[]> = new Map();
+// Tokens
+let documentTokens: Map<string, IToken[]> = new Map();
 
 connection.onDidChangeConfiguration(change => {
   if (hasConfigurationCapability) {
@@ -127,6 +127,7 @@ function getDocumentSettings(resource: string): Thenable<ZenScriptSettings> {
 // 只保留打开文档的设置
 documents.onDidClose(e => {
   documentSettings.delete(e.document.uri);
+  documentTokens.delete(e.document.uri);
 });
 
 // The content of a text document has changed. This event is emitted
@@ -143,7 +144,7 @@ async function validateTextDocument(textDocument: TextDocument): Promise<void> {
   let text = textDocument.getText();
 
   const lexResult = ZSLexer.tokenize(text);
-  tokens.set(textDocument.uri, lexResult.tokens);
+  documentTokens.set(textDocument.uri, lexResult.tokens);
   // new ZenScriptParser(tokens).Program();
 }
 
@@ -172,29 +173,13 @@ connection.onCompletion(
     // 当前文档的文本
     const content = document.getText();
 
-    // 触发自动补全的字符
     let triggerCharacter = textDocumentPositionParams.context.triggerCharacter;
-    // 是否是这样的形式:
-    // <xxx:yyy:[触发补全]>
-    let justClose: boolean = false;
-
-    // 使用快捷键触发
-    if (triggerCharacter === undefined) {
-      // 寻找可能的补全类型
-      for (let i = offset - 1; i >= 0; i--) {
-        // 当 : 与 < 不再同一行时直接退出
-        if (content[i] === "\n") {
-          break;
-        }
-
-        if (content[i].match(/<|:|\.|#/g)) {
-          triggerCharacter = content[i];
-
-          if (i === offset - 1) {
-            justClose = true;
-          }
-          break;
-        }
+    if (!triggerCharacter) {
+      const token = findToken(documentTokens.get(document.uri), offset - 1);
+      if (token.exist && token.found.token.image.length === 1) {
+        triggerCharacter = token.found.token.image;
+      } else {
+        return null;
       }
     }
 
@@ -225,13 +210,9 @@ connection.onCompletion(
             break;
           }
         }
-        // HistoryEntries.add(predecessor[0]);
+
         return BracketHandlerMap.get(predecessor[0])
-          ? textDocumentPositionParams.context.triggerCharacter || justClose
-            ? BracketHandlerMap.get(predecessor[0]).next(predecessor)
-            : BracketHandlerMap.get(predecessor[0]).next(
-                predecessor.splice(predecessor.length - 2, 1)
-              )
+          ? BracketHandlerMap.get(predecessor[0]).next(predecessor)
           : null;
       case "<":
         return [...SimpleBracketHandlers];
@@ -288,7 +269,7 @@ connection.onHover(textDocumentPositionParams => {
   const offset = document.offsetAt(position);
 
   const token = findToken(
-    tokens.get(textDocumentPositionParams.textDocument.uri),
+    documentTokens.get(textDocumentPositionParams.textDocument.uri),
     offset
   );
 

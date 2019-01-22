@@ -37,6 +37,6 @@ export const Preprocessors = [
 ].map(item => {
   return {
     label: item,
-    kind: CompletionItemKind.Function
+    kind: CompletionItemKind.EnumMember
   } as CompletionItem;
 });
