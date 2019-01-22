@@ -1,66 +1,62 @@
-// Translated from https://github.com/CraftTweaker/ZenScriptIntelliJPlugin/blob/master/src/de/bloodworkxgaming/zenscript/plugin/zsLanguage/psi/ZenScript.bnf
+// This parser follows https://github.com/CraftTweaker/ZenScript/tree/1f3f16efb9abe93a36bb4b7c11d10c27b67fca6f
 
 import { IToken, Parser } from "chevrotain";
 import {
   AND,
   ANY,
   AS,
-  ASTERISK,
-  AT,
+  ASSIGN,
+  A_CLOSE,
+  A_OPEN,
   BOOL,
+  BR_CLOSE,
+  BR_OPEN,
   BYTE,
   COLON,
   COMMA,
-  DIGITS,
   DIV,
   DOT,
-  DOTDOT,
+  DOT2,
   DOUBLE,
   DOUBLE_QUOTED_STRING,
   ELSE,
-  EQEQ,
-  EQUAL,
-  EXCL,
-  EXP_NUMBER,
+  EQ,
   FALSE,
   FLOAT,
-  FLOATING_POINT,
+  FLOAT_VALUE,
   FOR,
   FUNCTION,
   GLOBAL_ZS,
-  GREATER_EQUAL,
-  HASH,
+  GT,
+  GTEQ,
   IDENTIFIER,
   IF,
   IMPORT,
   IN,
   INT,
-  LESS_EQUAL,
+  INT_VALUE,
   LONG,
-  L_ANGLE_BRACKET,
-  L_CURLY_BRACKET,
-  L_ROUND_BRACKET,
-  L_SQUARE_BRACKET,
+  LT,
+  LTEQ,
   MINUS,
-  NOT_EQUAL,
+  MOD,
+  MUL,
+  NOT,
+  NOT_EQ,
   NULL,
   OR,
-  PERC,
   PLUS,
   PREPROCESSOR,
   QUEST,
   RETURN,
-  R_ANGLE_BRACKET,
-  R_CURLY_BRACKET,
-  R_ROUND_BRACKET,
-  R_SQUARE_BRACKET,
   SEMICOLON,
   SHORT,
   SINGLE_QUOTED_STRING,
+  SQBR_CLOSE,
+  SQBR_OPEN,
   STATIC,
   STRING,
   TILDE,
-  TO,
   TRUE,
   VAL,
   VAR,
@@ -70,44 +66,35 @@ import {
   zsAllTokens
 } from "./zsLexer";
 
-const body = { LABEL: "body" };
-const Declaration = { LABEL: "Declaration" };
-
 export class ZenScriptParser extends Parser {
+  constructor(input: IToken[]) {
+    super(zsAllTokens, {
+      recoveryEnabled: false,
+      maxLookahead: 4,
+      ignoredIssues: {}
+    });
+    this.input = input;
+    this.performSelfAnalysis();
+  }
+
+  /**
+   * Level 1: Program
+   */
   public Program = this.RULE("Program", () => {
     this.SUBRULE(this.ProcessorList);
     this.SUBRULE(this.ImportList);
 
     this.MANY(() =>
       this.OR([
-        { ALT: () => this.SUBRULE(this.FunctionDeclaration, Declaration) },
-        { ALT: () => this.SUBRULE(this.Statement, Declaration) }
+        { ALT: () => this.SUBRULE(this.FunctionDeclaration) },
+        { ALT: () => this.SUBRULE(this.BlockStatement) }
       ])
     );
   });
 
-  // identifier.identifier
-  protected Package = this.RULE("Package", () => {
-    this.AT_LEAST_ONE_SEP({
-      SEP: COMMA,
-      DEF: () => {
-        this.CONSUME(IDENTIFIER);
-      }
-    });
-  });
-
-  protected Variable = this.RULE("Variable", () => {
-    this.CONSUME(IDENTIFIER);
-  });
-
-  protected Number = this.RULE("Number", () => {
-    this.OR([
-      { ALT: () => this.CONSUME(DIGITS) },
-      { ALT: () => this.CONSUME(FLOATING_POINT) },
-      { ALT: () => this.CONSUME(EXP_NUMBER) }
-    ]);
-  });
-
+  /**
+   * Level 2
+   */
   protected ProcessorList = this.RULE("ProcessorList", () => {
     this.MANY(() => {
       this.CONSUME(PREPROCESSOR);
@@ -120,10 +107,56 @@ export class ZenScriptParser extends Parser {
       this.SUBRULE(this.Package);
       this.OPTION(() => {
         this.CONSUME(AS);
-        this.CONSUME2(IDENTIFIER);
+        this.CONSUME(IDENTIFIER);
       });
       this.CONSUME(SEMICOLON);
     });
+  });
+
+  protected BlockStatement = this.RULE("BlockStatement", () => {
+    this.SUBRULE(this.Statement);
+    this.OPTION(() => {
+      this.SUBRULE(this.BlockStatement);
+    });
+  });
+
+  protected FunctionDeclaration = this.RULE("FunctionDeclaration", () => {
+    this.CONSUME(FUNCTION);
+    this.CONSUME(IDENTIFIER);
+    this.CONSUME(BR_OPEN);
+    this.OPTION(() => {
+      this.SUBRULE(this.ParameterList);
+    });
+    this.CONSUME(BR_CLOSE);
+    this.OPTION(() => {
+      this.SUBRULE(this.TypeDeclare);
+    });
+    this.SUBRULE(this.StatementBody);
+  });
+
+  /**
+   * Level 3
+   */
+  protected Package = this.RULE("Package", () => {
+    this.AT_LEAST_ONE_SEP({
+      SEP: DOT,
+      DEF: () => {
+        this.CONSUME(IDENTIFIER);
+      }
+    });
+  });
+
+  protected ParameterList = this.RULE("ParameterList", () => {
+    this.MANY_SEP({
+      SEP: COMMA,
+      DEF: () => this.SUBRULE(this.Parameter)
+    });
+  });
+
+  protected StatementBody = this.RULE("StatementBody", () => {
+    this.CONSUME(A_OPEN);
+    this.SUBRULE(this.BlockStatement);
+    this.CONSUME(A_CLOSE);
   });
 
   protected Statement = this.RULE("Statement", () => {
@@ -141,6 +174,37 @@ export class ZenScriptParser extends Parser {
         { ALT: () => this.SUBRULE(this.ForStatement) }
       ])
     );
+  });
+
+  /**
+   * Level 4
+   */
+
+  protected Parameter = this.RULE("Parameter", () => {
+    this.SUBRULE(this.Variable);
+    this.OPTION(() => {
+      this.SUBRULE(this.TypeDeclare);
+    });
+  });
+
+  protected TypeDeclare = this.RULE("TypeDeclare", () => {
+    this.CONSUME(AS);
+    this.SUBRULE(this.TypeAnnotation);
+  });
+
+  /**
+   * Level 5
+   */
+
+  protected Variable = this.RULE("Variable", () => {
+    this.CONSUME(IDENTIFIER);
+  });
+
+  protected Number = this.RULE("Number", () => {
+    this.OR([
+      { ALT: () => this.CONSUME(FLOAT_VALUE) },
+      { ALT: () => this.CONSUME(INT_VALUE) }
+    ]);
   });
 
   protected ReturnStatement = this.RULE("ReturnStatement", () => {
@@ -167,7 +231,7 @@ export class ZenScriptParser extends Parser {
       this.SUBRULE(this.TypeDeclare);
     });
     this.OPTION3(() => {
-      this.CONSUME(EQUAL);
+      this.CONSUME(ASSIGN);
       this.SUBRULE(this.ValidVariable);
     });
     this.CONSUME(SEMICOLON);
@@ -181,7 +245,7 @@ export class ZenScriptParser extends Parser {
     this.OPTION(() => {
       this.SUBRULE(this.UnaryMathSigns);
     });
-    this.CONSUME(L_ROUND_BRACKET);
+    this.CONSUME(BR_OPEN);
     this.AT_LEAST_ONE_SEP({
       SEP: () => {
         this.OR([
@@ -194,7 +258,7 @@ export class ZenScriptParser extends Parser {
         this.SUBRULE(this.Condition);
       }
     });
-    this.CONSUME(R_ROUND_BRACKET);
+    this.CONSUME(BR_CLOSE);
     this.OR2([
       {
         ALT: () => this.SUBRULE(this.StatementBody)
@@ -219,12 +283,9 @@ export class ZenScriptParser extends Parser {
       {
         ALT: () => {
           this.CONSUME(IN);
-          this.CONSUME(DIGITS, { LABEL: "init" });
-          this.OR2([
-            { ALT: () => this.CONSUME(DOTDOT) },
-            { ALT: () => this.CONSUME(TO) }
-          ]);
-          this.CONSUME2(DIGITS, { LABEL: "end" });
+          this.CONSUME(INT_VALUE, { LABEL: "init" });
+          this.CONSUME(DOT2);
+          this.CONSUME2(INT_VALUE, { LABEL: "end" });
         }
       },
       {
@@ -258,21 +319,21 @@ export class ZenScriptParser extends Parser {
           this.AT_LEAST_ONE_SEP({
             SEP: () =>
               this.OR2([
-                { ALT: () => this.CONSUME(EQEQ) },
+                { ALT: () => this.CONSUME(EQ) },
                 {
-                  ALT: () => this.CONSUME(NOT_EQUAL)
+                  ALT: () => this.CONSUME(NOT_EQ)
                 },
                 {
-                  ALT: () => this.CONSUME(GREATER_EQUAL)
+                  ALT: () => this.CONSUME(GTEQ)
                 },
                 {
-                  ALT: () => this.CONSUME(LESS_EQUAL)
+                  ALT: () => this.CONSUME(LTEQ)
                 },
                 {
-                  ALT: () => this.CONSUME(L_ANGLE_BRACKET)
+                  ALT: () => this.CONSUME(LT)
                 },
                 {
-                  ALT: () => this.CONSUME(R_ANGLE_BRACKET)
+                  ALT: () => this.CONSUME(GT)
                 }
               ]),
             DEF: () => {
@@ -283,24 +344,6 @@ export class ZenScriptParser extends Parser {
     ]);
   });
 
-  protected StatementBody = this.RULE("StatementBody", () => {
-    this.CONSUME(L_CURLY_BRACKET);
-    this.SUBRULE(this.BlockStatement);
-    this.CONSUME(R_CURLY_BRACKET);
-  });
-
-  protected FunctionDeclaration = this.RULE("FunctionDeclaration", lambda => {
-    this.CONSUME(FUNCTION);
-    this.OR([
-      { GATE: () => lambda !== undefined, ALT: () => this.CONSUME(IDENTIFIER) }
-    ]);
-    this.SUBRULE(this.ParameterList);
-    this.OPTION(() => {
-      this.SUBRULE(this.TypeDeclare);
-    });
-    this.SUBRULE(this.StatementBody);
-  });
-
   protected FunctionCall = this.RULE("FunctionCall", () => {
     this.SUBRULE(this.ValidCallable);
     this.AT_LEAST_ONE(() => {
@@ -309,34 +352,13 @@ export class ZenScriptParser extends Parser {
         this.CONSUME(IDENTIFIER);
       });
 
-      this.CONSUME(L_ROUND_BRACKET);
+      this.CONSUME(BR_OPEN);
       this.MANY_SEP({
         SEP: COMMA,
         DEF: () => this.SUBRULE(this.ValidVariable)
       });
-      this.CONSUME(R_ROUND_BRACKET);
+      this.CONSUME(BR_CLOSE);
     });
-  });
-
-  protected ParameterList = this.RULE("ParameterList", () => {
-    this.CONSUME(L_ROUND_BRACKET);
-    this.MANY_SEP({
-      SEP: COMMA,
-      DEF: () => this.SUBRULE(this.Parameter)
-    });
-    this.CONSUME(R_ROUND_BRACKET);
-  });
-
-  protected Parameter = this.RULE("Parameter", () => {
-    this.SUBRULE(this.Variable);
-    this.OPTION(() => {
-      this.SUBRULE(this.TypeDeclare);
-    });
-  });
-
-  protected TypeDeclare = this.RULE("TypeDeclare", () => {
-    this.CONSUME(AS);
-    this.SUBRULE(this.TypeAnnotation);
   });
 
   protected TypeAnnotation = this.RULE("TypeAnnotation", () => {
@@ -355,15 +377,11 @@ export class ZenScriptParser extends Parser {
     ]);
   });
 
-  protected BlockStatement = this.RULE("BlockStatement", () => {
-    this.MANY(() => this.SUBRULE(this.Statement, body));
-  });
-
   protected ValidVariable = this.RULE("ValidVariable", () => {
     this.OR([
-      {
-        ALT: () => this.SUBRULE(this.FunctionDeclaration, { ARGS: [true] })
-      },
+      // {
+      //   ALT: () => this.SUBRULE(this.FunctionDeclaration)
+      // },
       { ALT: () => this.SUBRULE(this.ModuloType) },
       {
         ALT: () => this.SUBRULE(this.ArrayMapRead)
@@ -416,9 +434,9 @@ export class ZenScriptParser extends Parser {
       },
       {
         ALT: () => {
-          this.CONSUME(L_ROUND_BRACKET);
+          this.CONSUME(BR_OPEN);
           this.SUBRULE(this.ValidVariable);
-          this.CONSUME(R_ROUND_BRACKET);
+          this.CONSUME(BR_CLOSE);
         }
       }
     ]);
@@ -427,41 +445,38 @@ export class ZenScriptParser extends Parser {
   private BracketKeywords = this.RULE("BracketKeywords", () => {
     this.OR([
       { ALT: () => this.CONSUME(IDENTIFIER) },
-      { ALT: () => this.CONSUME(DIGITS) },
-      { ALT: () => this.CONSUME(FLOATING_POINT) },
-      { ALT: () => this.CONSUME(EXP_NUMBER) },
-      { ALT: () => this.CONSUME(L_ROUND_BRACKET) },
-      { ALT: () => this.CONSUME(R_ROUND_BRACKET) },
+      { ALT: () => this.CONSUME(FLOAT_VALUE) },
+      { ALT: () => this.CONSUME(INT_VALUE) },
+      { ALT: () => this.CONSUME(BR_OPEN) },
+      { ALT: () => this.CONSUME(BR_CLOSE) },
       {
-        ALT: () => this.CONSUME(L_SQUARE_BRACKET)
+        ALT: () => this.CONSUME(SQBR_OPEN)
       },
       {
-        ALT: () => this.CONSUME(R_SQUARE_BRACKET)
+        ALT: () => this.CONSUME(SQBR_CLOSE)
       },
-      { ALT: () => this.CONSUME(L_CURLY_BRACKET) },
-      { ALT: () => this.CONSUME(R_CURLY_BRACKET) },
-      { ALT: () => this.CONSUME(EQUAL) },
-      { ALT: () => this.CONSUME(EXCL) },
+      { ALT: () => this.CONSUME(A_OPEN) },
+      { ALT: () => this.CONSUME(A_CLOSE) },
+      { ALT: () => this.CONSUME(ASSIGN) },
+      { ALT: () => this.CONSUME(NOT) },
       { ALT: () => this.CONSUME(TILDE) },
       { ALT: () => this.CONSUME(QUEST) },
       { ALT: () => this.CONSUME(COLON) },
       { ALT: () => this.CONSUME(PLUS) },
       { ALT: () => this.CONSUME(MINUS) },
-      { ALT: () => this.CONSUME(ASTERISK) },
+      { ALT: () => this.CONSUME(MUL) },
       { ALT: () => this.CONSUME(DIV) },
       { ALT: () => this.CONSUME(OR) },
       { ALT: () => this.CONSUME(AND) },
       { ALT: () => this.CONSUME(XOR) },
-      { ALT: () => this.CONSUME(PERC) },
-      { ALT: () => this.CONSUME(AT) },
-      { ALT: () => this.CONSUME(HASH) },
+      { ALT: () => this.CONSUME(MOD) },
       { ALT: () => this.CONSUME(SEMICOLON) },
       { ALT: () => this.CONSUME(COMMA) },
       { ALT: () => this.CONSUME(DOT) },
-      { ALT: () => this.CONSUME(EQEQ) },
-      { ALT: () => this.CONSUME(NOT_EQUAL) },
-      { ALT: () => this.CONSUME(LESS_EQUAL) },
-      { ALT: () => this.CONSUME(GREATER_EQUAL) },
+      { ALT: () => this.CONSUME(EQ) },
+      { ALT: () => this.CONSUME(NOT_EQ) },
+      { ALT: () => this.CONSUME(LTEQ) },
+      { ALT: () => this.CONSUME(GTEQ) },
       { ALT: () => this.CONSUME(ANY) },
       { ALT: () => this.CONSUME(BOOL) },
       { ALT: () => this.CONSUME(BYTE) },
@@ -473,7 +488,6 @@ export class ZenScriptParser extends Parser {
       { ALT: () => this.CONSUME(STRING) },
       { ALT: () => this.CONSUME(FUNCTION) },
       { ALT: () => this.CONSUME(IN) },
-      { ALT: () => this.CONSUME(TO) },
       { ALT: () => this.CONSUME(VOID) },
       { ALT: () => this.CONSUME(AS) },
       { ALT: () => this.CONSUME(VERSION) },
@@ -496,22 +510,22 @@ export class ZenScriptParser extends Parser {
    * Format like <xxx>
    */
   protected BracketHandler = this.RULE("BracketHandler", () => {
-    this.CONSUME(L_ANGLE_BRACKET);
+    this.CONSUME(LT);
     this.MANY(() => {
       this.SUBRULE(this.BracketKeywords);
     });
-    this.CONSUME(R_ANGLE_BRACKET);
+    this.CONSUME(GT);
   });
 
   protected MapDeclaration = this.RULE("MapDeclaration", () => {
-    this.CONSUME(L_CURLY_BRACKET);
+    this.CONSUME(A_OPEN);
     this.MANY_SEP({
       SEP: COMMA,
       DEF: () => {
         this.SUBRULE(this.MapEntry);
       }
     });
-    this.CONSUME(R_CURLY_BRACKET);
+    this.CONSUME(A_CLOSE);
     this.OPTION(() => {
       this.SUBRULE(this.TypeDeclare);
     });
@@ -524,14 +538,14 @@ export class ZenScriptParser extends Parser {
   });
 
   protected ArrayDeclaration = this.RULE("ArrayDeclaration", () => {
-    this.CONSUME(L_SQUARE_BRACKET);
+    this.CONSUME(SQBR_OPEN);
     this.MANY_SEP({
       SEP: COMMA,
       DEF: () => {
         this.SUBRULE(this.ValidVariable);
       }
     });
-    this.CONSUME(R_SQUARE_BRACKET);
+    this.CONSUME(SQBR_CLOSE);
   });
 
   protected ArrayMapRead = this.RULE("ArrayMapRead", () => {
@@ -542,9 +556,9 @@ export class ZenScriptParser extends Parser {
       }
     });
     this.AT_LEAST_ONE(() => {
-      this.CONSUME(L_SQUARE_BRACKET);
+      this.CONSUME(SQBR_OPEN);
       this.SUBRULE(this.ValidVariable);
-      this.CONSUME(R_SQUARE_BRACKET);
+      this.CONSUME(SQBR_CLOSE);
     });
   });
 
@@ -580,8 +594,8 @@ export class ZenScriptParser extends Parser {
       { ALT: this.SUBRULE(this.BracketHandler) },
       { ALT: this.SUBRULE(this.Variable) }
     ]);
-    this.CONSUME(PERC);
-    this.CONSUME(DIGITS);
+    this.CONSUME(MOD);
+    this.CONSUME(INT_VALUE);
   });
 
   // This todo exists in the original bnf file.
@@ -637,22 +651,12 @@ export class ZenScriptParser extends Parser {
     this.OR([
       { ALT: () => this.CONSUME(PLUS) },
       { ALT: () => this.CONSUME(MINUS) },
-      { ALT: () => this.CONSUME(ASTERISK) },
+      { ALT: () => this.CONSUME(MUL) },
       { ALT: () => this.CONSUME(DIV) }
     ])
   );
 
   private UnaryMathSigns = this.RULE("UnaryMathSigns", () => {
-    this.CONSUME(EXCL);
+    this.CONSUME(NOT);
   });
-
-  constructor(input: IToken[]) {
-    super(zsAllTokens, {
-      recoveryEnabled: false,
-      maxLookahead: 4,
-      ignoredIssues: {}
-    });
-    this.input = input;
-    this.performSelfAnalysis();
-  }
 }
