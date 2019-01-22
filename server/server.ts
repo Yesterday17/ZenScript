@@ -11,7 +11,6 @@ import {
 import { ZSLexer } from "./parser/zsLexer";
 import { IToken } from "chevrotain";
 import { ZenScriptParser } from "./parser/zsParser";
-import * as fs from "fs";
 import {
   DetailBracketHandlers,
   SimpleBracketHandlers,
@@ -60,7 +59,6 @@ connection.onInitialize((params: InitializeParams) => {
   return {
     capabilities: {
       textDocumentSync: documents.syncKind,
-      // 告知客户端服务端支持代码补全
       completionProvider: {
         resolveProvider: true,
         triggerCharacters: [
@@ -251,16 +249,14 @@ connection.onCompletionResolve(
   }
 );
 
-// 负责处理鼠标 Hover
-// 此处不用处理 isProject
-// 若未打开目录 则不会发送 Request
+// Handle mouse onHover event
 connection.onHover(textDocumentPositionParams => {
   // 获得当前正在修改的 document
   const document = documents.get(textDocumentPositionParams.textDocument.uri);
   // 当前鼠标指向的位置
   const position = textDocumentPositionParams.position;
 
-  // 当 document 不存在时, 返回空
+  // when document doesn't exist, return void
   if (!document) {
     return Promise.resolve(void 0);
   }
@@ -291,29 +287,13 @@ connection.onHover(textDocumentPositionParams => {
     // Token not found, which means that hover is not needed
     return Promise.resolve(void 0);
   }
-
-  // for (const token of tokens) {
-  //   if (token.startOffset <= offset && token.endOffset >= offset) {
-  //     // 返回该 token 的 tokenName
-  //     return Promise.resolve({
-  //       contents: {
-  //         kind: "plaintext",
-  //         value: token.tokenType.tokenName
-  //       },
-  //       range: {
-  //         start: document.positionAt(token.startOffset),
-  //         end: document.positionAt(token.endOffset + 1)
-  //       }
-  //     } as Hover);
-  //   }
-  // }
 });
 
-// 配置 Requests
+// apply all requests
 applyRequests(connection);
 
-// 使得 documents 监听 connection 以触发相应事件
+// listen connection to trigger events
 documents.listen(connection);
 
-// 开始 listen
+// start listening
 connection.listen();
