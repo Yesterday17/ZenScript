@@ -12,13 +12,13 @@ export const zGlobal = {
   // 是否为 Project
   isProject: true as boolean,
 
-  // Project 的根目录
+  // root folder of a project
   baseFolder: "" as string,
 
-  // 全局设置
+  // global setting
   setting: {} as ZenScriptSettings,
 
-  // .zsrc 文件
+  // .zsrc file
   rcFile: {
     mcVersion: "",
     forgeVersion: "",

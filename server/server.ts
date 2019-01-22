@@ -22,6 +22,8 @@ import { URL } from "url";
 import { zGlobal } from "./api/global";
 import { ZenScriptSettings, defaultSettings } from "./api/setting";
 import { applyRequests } from "./requests/requests";
+import { reloadRCFile } from "./utils/zsrcFile";
+import { findToken } from "./utils/findToken";
 
 // 创建一个服务的连接，连接使用 Node 的 IPC 作为传输
 // 并且引入所有 LSP 特性, 包括 preview / proposed
@@ -33,16 +35,14 @@ let documents: TextDocuments = new TextDocuments();
 // 不支持配置
 let hasConfigurationCapability: boolean = false;
 
-// Lex
-let tokens: IToken[] = [];
-
 connection.onInitialize((params: InitializeParams) => {
   let capabilities = params.capabilities;
 
   const folders = params.workspaceFolders;
 
-  // 只打开了 zs 文件
-  // 开启最低限度的语言支持
+  // No Folder is opened / foldername !== scripts
+  // disable most of language server features
+  // TODO: Make it available for workspace
   if (folders === null || folders[0].name !== "scripts") {
     zGlobal.isProject = false;
   } else {
@@ -54,8 +54,8 @@ connection.onInitialize((params: InitializeParams) => {
   hasConfigurationCapability =
     capabilities.workspace && !!capabilities.workspace.configuration;
 
-  // 加载 .zsrc 配置文件
-  reloadRCFile();
+  // Load `.zsrc` configuration file
+  reloadRCFile(connection);
 
   return {
     capabilities: {
@@ -89,12 +89,15 @@ connection.onInitialized(() => {
 
 let globalSettings: ZenScriptSettings = defaultSettings;
 
-// 为所有打开的文档缓存配置
+// cache setting for all opened documents
 let documentSettings: Map<string, Thenable<ZenScriptSettings>> = new Map();
+
+// Lex
+let tokens: Map<string, IToken[]> = new Map();
 
 connection.onDidChangeConfiguration(change => {
   if (hasConfigurationCapability) {
-    // 重置全部设置
+    // reset all the settings
     documentSettings.clear();
   } else {
     globalSettings = <ZenScriptSettings>(
@@ -140,73 +143,8 @@ async function validateTextDocument(textDocument: TextDocument): Promise<void> {
   let text = textDocument.getText();
 
   const lexResult = ZSLexer.tokenize(text);
-  tokens = lexResult.tokens;
+  tokens.set(textDocument.uri, lexResult.tokens);
   // new ZenScriptParser(tokens).Program();
-}
-
-// 重新加载 .zsrc 文件
-function reloadRCFile() {
-  try {
-    zGlobal.rcFile = JSON.parse(
-      fs.readFileSync(new URL(zGlobal.baseFolder + "/.zsrc"), {
-        encoding: "utf-8"
-      })
-    );
-
-    // Reload Mods
-    zGlobal.mods.clear();
-    zGlobal.rcFile.mods.forEach(value => {
-      zGlobal.mods.set(value.modid, value);
-    });
-
-    // Items
-    zGlobal.items.clear();
-    zGlobal.idMaps.items.clear();
-    zGlobal.rcFile.items.forEach(value => {
-      if (!zGlobal.items.has(value.resourceLocation.domain)) {
-        zGlobal.items.set(value.resourceLocation.domain, [value]);
-      } else {
-        zGlobal.items.get(value.resourceLocation.domain).push(value);
-      }
-
-      zGlobal.idMaps.items.set(value.id, value);
-    });
-
-    // Enchantments
-    zGlobal.enchantments.clear();
-    zGlobal.rcFile.enchantments.forEach(value => {
-      if (!zGlobal.enchantments.has(value.resourceLocation.domain)) {
-        zGlobal.enchantments.set(value.resourceLocation.domain, [value]);
-      } else {
-        zGlobal.enchantments.get(value.resourceLocation.domain).push(value);
-      }
-    });
-
-    // Entities
-    zGlobal.entities.clear();
-    zGlobal.idMaps.entities.clear();
-    zGlobal.rcFile.entities.forEach(value => {
-      if (!zGlobal.entities.has(value.resourceLocation.domain)) {
-        zGlobal.entities.set(value.resourceLocation.domain, [value]);
-      } else {
-        zGlobal.entities.get(value.resourceLocation.domain).push(value);
-      }
-
-      zGlobal.idMaps.entities.set(value.id, value);
-    });
-
-    // Fluids
-    zGlobal.fluids.clear();
-    zGlobal.rcFile.fluids.forEach(value => {
-      if (!zGlobal.fluids.has(value.resourceLocation.domain)) {
-        zGlobal.fluids.set(value.resourceLocation.domain, [value]);
-      } else {
-        zGlobal.fluids.get(value.resourceLocation.domain).push(value);
-      }
-    });
-  } catch (e) {
-    connection.console.error(e.message);
-  }
 }
 
 // 当 Watch 的文件确实发生变动
@@ -215,7 +153,7 @@ connection.onDidChangeWatchedFiles(_change => {
     if (
       new URL(change.uri).hash === new URL(zGlobal.baseFolder + "/.zsrc").hash
     ) {
-      reloadRCFile();
+      reloadRCFile(connection);
       break;
     }
   }
@@ -346,28 +284,48 @@ connection.onHover(textDocumentPositionParams => {
     return Promise.resolve(void 0);
   }
 
-  // 获得当前位置的 offset
+  // Get offset
   const offset = document.offsetAt(position);
 
-  // 对所有 token 进行遍历, 确定悬浮位置所在 token
-  for (const token of tokens) {
-    if (token.startOffset <= offset && token.endOffset >= offset) {
-      // 返回该 token 的 tokenName
-      return Promise.resolve({
-        contents: {
-          kind: "plaintext",
-          value: token.tokenType.tokenName
-        },
-        range: {
-          start: document.positionAt(token.startOffset),
-          end: document.positionAt(token.endOffset + 1)
-        }
-      } as Hover);
-    }
+  const token = findToken(
+    tokens.get(textDocumentPositionParams.textDocument.uri),
+    offset
+  );
+
+  connection.console.log(JSON.stringify(token));
+
+  if (token.exist) {
+    const hover: Hover = {
+      contents: {
+        kind: "plaintext",
+        value: token.found.token.tokenType.tokenName
+      },
+      range: {
+        start: document.positionAt(token.found.token.startOffset),
+        end: document.positionAt(token.found.token.endOffset + 1)
+      }
+    };
+    return Promise.resolve(hover);
+  } else {
+    // Token not found, which means that hover is not needed
+    return Promise.resolve(void 0);
   }
 
-  // 当前位置未找到有效 token
-  return Promise.resolve(void 0);
+  // for (const token of tokens) {
+  //   if (token.startOffset <= offset && token.endOffset >= offset) {
+  //     // 返回该 token 的 tokenName
+  //     return Promise.resolve({
+  //       contents: {
+  //         kind: "plaintext",
+  //         value: token.tokenType.tokenName
+  //       },
+  //       range: {
+  //         start: document.positionAt(token.startOffset),
+  //         end: document.positionAt(token.endOffset + 1)
+  //       }
+  //     } as Hover);
+  //   }
+  // }
 });
 
 // 配置 Requests
