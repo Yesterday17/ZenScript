@@ -4,7 +4,7 @@
   "description": "For Modpack makers.",
   "repository": "https://github.com/Yesterday17/ZenScript",
   "license": "MIT",
-  "version": "0.2.1",
+  "version": "0.1.1",
   "publisher": "yesterday17",
   "engines": {
     "vscode": "^1.30.0"
@@ -127,7 +127,7 @@
     ]
   },
   "scripts": {
-    "vscode:prepublish": "yarn run update-vscode && yarn run compile",
+    "vscode:prepublish": "yarn run update-vscode && yarn run compile && yarn version --patch",
     "update-vscode": "vscode-install",
     "postinstall": "vscode-install",
     "compile": "tsc -b",
