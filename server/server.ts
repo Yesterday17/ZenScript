@@ -22,13 +22,17 @@ import {
   DetailBracketHandlers,
   SimpleBracketHandlers,
 } from './completion/bracketHandler/bracketHandlers';
-import { Keywords, Preprocessors } from './completion/completion';
+import { Keywords } from './completion/completion';
 import { ZSLexer } from './parser/zsLexer';
 import { ZSParser } from './parser/zsParser';
-import { getPreProcessorList, PreProcessors } from './parser/zsPreProcessor';
+import {
+  getPreProcessorList,
+  PreProcessors,
+} from './preprocessor/zsPreProcessor';
 import { applyRequests } from './requests/requests';
 import { findToken } from './utils/findToken';
 import { reloadRCFile } from './utils/zsrcFile';
+import { PreProcessorCompletions } from './completion/preprocessor/preprocessors';
 
 // 创建一个服务的连接，连接使用 Node 的 IPC 作为传输
 // 并且引入所有 LSP 特性, 包括 preview / proposed
@@ -222,7 +226,7 @@ connection.onCompletion(
     // TODO: 完成自动补全
     switch (triggerCharacter) {
       case '#':
-        return Preprocessors;
+        return PreProcessorCompletions;
       case '.':
         break;
       case ':':
