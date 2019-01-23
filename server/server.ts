@@ -1,29 +1,30 @@
+import { IToken } from 'chevrotain';
+import * as path from 'path';
+import { URL } from 'url';
 import {
-  createConnection,
-  TextDocuments,
-  TextDocument,
-  ProposedFeatures,
-  InitializeParams,
-  DidChangeConfigurationNotification,
   CompletionItem,
+  createConnection,
+  DidChangeConfigurationNotification,
   Hover,
+  InitializeParams,
+  ProposedFeatures,
+  TextDocument,
+  TextDocuments,
   WorkspaceFolder
 } from 'vscode-languageserver';
-import { ZSLexer } from './parser/zsLexer';
-import { IToken } from 'chevrotain';
-import { ZenScriptParser } from './parser/zsParser';
+import Uri from 'vscode-uri';
+import { zGlobal } from './api/global';
+import { defaultSettings, ZenScriptSettings } from './api/setting';
 import {
+  BracketHandlerMap,
   DetailBracketHandlers,
-  SimpleBracketHandlers,
-  BracketHandlerMap
+  SimpleBracketHandlers
 } from './completion/bracketHandler/bracketHandlers';
 import { Keywords, Preprocessors } from './completion/completion';
-import { URL } from 'url';
-import { zGlobal } from './api/global';
-import { ZenScriptSettings, defaultSettings } from './api/setting';
+import { ZSLexer } from './parser/zsLexer';
 import { applyRequests } from './requests/requests';
-import { reloadRCFile } from './utils/zsrcFile';
 import { findToken } from './utils/findToken';
+import { reloadRCFile } from './utils/zsrcFile';
 
 // 创建一个服务的连接，连接使用 Node 的 IPC 作为传输
 // 并且引入所有 LSP 特性, 包括 preview / proposed
@@ -44,7 +45,14 @@ connection.onInitialize((params: InitializeParams) => {
   // disable most of language server features
   // TODO: Make it available for workspace
   let folder: WorkspaceFolder | undefined = undefined;
-  folders.forEach(f => (folder = f.name === 'scripts' ? f : undefined));
+  folders.forEach(
+    f =>
+      (folder =
+        f.name === 'scripts' ||
+        path.basename(Uri.parse(f.uri).fsPath) === 'scripts'
+          ? f
+          : undefined)
+  );
 
   // whether a folder named `scripts` exist
   if (folder) {
