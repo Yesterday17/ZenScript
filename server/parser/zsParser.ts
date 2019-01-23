@@ -81,17 +81,29 @@ import {
 } from './zsLexer';
 
 export class ZenScriptParser extends Parser {
-  constructor(input: IToken[]) {
-    super(zsAllTokens, { maxLookahead: 4, recoveryEnabled: true });
-    this.input = input;
+  constructor() {
+    super(zsAllTokens, {
+      maxLookahead: 4,
+      recoveryEnabled: false,
+      ignoredIssues: {
+        Statement: {
+          OR: true,
+        },
+      },
+    });
     this.performSelfAnalysis();
+  }
+
+  parse(input: IToken[]) {
+    this.input = input;
+    this.Program();
   }
 
   /**
    * Level 1: Program
    * =================================================================================================
    */
-  public Program = this.RULE('Program', () => {
+  protected Program = this.RULE('Program', () => {
     this.SUBRULE(this.ImportList);
 
     this.MANY(() =>
@@ -189,14 +201,8 @@ export class ZenScriptParser extends Parser {
    */
   protected Statement = this.RULE('Statement', () => {
     this.OR([
-      {
-        GATE: this.BACKTRACK(this.ExpressionStatement),
-        ALT: () => this.SUBRULE(this.StatementBody),
-      },
-      {
-        GATE: this.BACKTRACK(this.StatementBody),
-        ALT: () => this.SUBRULE(this.ExpressionStatement),
-      },
+      { ALT: () => this.SUBRULE(this.StatementBody) },
+      { ALT: () => this.SUBRULE(this.ExpressionStatement) },
       { ALT: () => this.SUBRULE(this.ReturnStatement) },
       { ALT: () => this.SUBRULE(this.DeclareStatement) },
       { ALT: () => this.SUBRULE(this.IfStatement) },
@@ -483,7 +489,10 @@ export class ZenScriptParser extends Parser {
       { ALT: () => this.SUBRULE(this.LambdaFunctionDeclaration) },
       { ALT: () => this.SUBRULE(this.BracketHandler) },
       { ALT: () => this.SUBRULE(this.ZSArray) },
-      { ALT: () => this.SUBRULE(this.ZSMap) },
+      {
+        GATE: this.BACKTRACK(this.StatementBody),
+        ALT: () => this.SUBRULE(this.ZSMap),
+      },
       { ALT: () => this.CONSUME(TRUE) },
       { ALT: () => this.CONSUME(FALSE) },
       { ALT: () => this.CONSUME(NULL) },
@@ -673,3 +682,5 @@ export class ZenScriptParser extends Parser {
     });
   });
 }
+
+export const ZSParser = new ZenScriptParser();

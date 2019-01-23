@@ -4,6 +4,8 @@ import { URL } from 'url';
 import {
   CompletionItem,
   createConnection,
+  Diagnostic,
+  DiagnosticSeverity,
   DidChangeConfigurationNotification,
   Hover,
   InitializeParams,
@@ -11,8 +13,6 @@ import {
   TextDocument,
   TextDocuments,
   WorkspaceFolder,
-  Diagnostic,
-  DiagnosticSeverity,
 } from 'vscode-languageserver';
 import Uri from 'vscode-uri';
 import { zGlobal } from './api/global';
@@ -24,11 +24,11 @@ import {
 } from './completion/bracketHandler/bracketHandlers';
 import { Keywords, Preprocessors } from './completion/completion';
 import { ZSLexer } from './parser/zsLexer';
+import { ZSParser } from './parser/zsParser';
+import { getPreProcessorList, PreProcessors } from './parser/zsPreProcessor';
 import { applyRequests } from './requests/requests';
 import { findToken } from './utils/findToken';
 import { reloadRCFile } from './utils/zsrcFile';
-import { ZenScriptParser } from './parser/zsParser';
-import { getPreProcessorList, PreProcessors } from './parser/zsPreProcessor';
 
 // 创建一个服务的连接，连接使用 Node 的 IPC 作为传输
 // 并且引入所有 LSP 特性, 包括 preview / proposed
@@ -151,7 +151,6 @@ documents.onDidChangeContent(change => {
 });
 
 async function validateTextDocument(textDocument: TextDocument): Promise<void> {
-  // In this simple example we get the settings for every validate run.
   let settings = await getDocumentSettings(textDocument.uri);
 
   const preProcessedText = getPreProcessorList(
@@ -161,14 +160,15 @@ async function validateTextDocument(textDocument: TextDocument): Promise<void> {
   let text = preProcessedText[0];
 
   const lexResult = ZSLexer.tokenize(text);
-  documentTokens.set(textDocument.uri, lexResult.tokens);
-
-  const parser = new ZenScriptParser(documentTokens.get(textDocument.uri));
-
-  documentCSTs.set(textDocument.uri, parser.Program());
-
   const diagnostics: Diagnostic[] = [];
-  parser.errors.map(error => {
+
+  // save lexing result
+  documentTokens.set(textDocument.uri, lexResult.tokens);
+  // save parsing result
+  documentCSTs.set(textDocument.uri, ZSParser.parse(lexResult.tokens));
+
+  // save errors
+  ZSParser.errors.map(error => {
     const diagnotic: Diagnostic = {
       severity: DiagnosticSeverity.Error,
       range: {
@@ -180,6 +180,7 @@ async function validateTextDocument(textDocument: TextDocument): Promise<void> {
     diagnostics.push(diagnotic);
   });
 
+  // send error diagnostics to client
   connection.sendDiagnostics({ uri: textDocument.uri, diagnostics });
 }
 
