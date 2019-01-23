@@ -1,6 +1,5 @@
 import * as path from 'path';
-import { workspace, ExtensionContext } from 'vscode';
-
+import { ExtensionContext, workspace } from 'vscode';
 import {
   LanguageClient,
   LanguageClientOptions,
@@ -8,9 +7,10 @@ import {
   TransportKind
 } from 'vscode-languageclient';
 import {
-  CommandHistoryEntryGet,
-  CommandHistoryEntryAdd
+  CommandHistoryEntryAdd,
+  CommandHistoryEntryGet
 } from './command/historyEntry';
+import { StatusBar } from './view/statusbar';
 
 let client: LanguageClient;
 
@@ -44,7 +44,7 @@ export function activate(context: ExtensionContext) {
     }
   };
 
-  // 创建并启动 Client
+  // Create language client
   client = new LanguageClient(
     'zenscript',
     'Zenscript',
@@ -52,14 +52,20 @@ export function activate(context: ExtensionContext) {
     clientOptions
   );
 
-  // 注册命令
+  // Register commands
   CommandHistoryEntryGet.register(client, context);
   CommandHistoryEntryAdd.register(client, context);
 
-  //TODO: 注册 zenscriptExplorer
+  // Register status bar
+  StatusBar.register(client, context);
 
-  // 启动 Client, 同时也会启动 Server
+  //TODO: Register zenscriptExplorer
+
+  // Start client & server
   client.start();
+
+  // Show status bar
+  StatusBar.show();
 }
 
 export function deactivate(): Thenable<void> | undefined {
