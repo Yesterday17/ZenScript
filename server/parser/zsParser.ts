@@ -46,7 +46,6 @@ import {
   NULL,
   OR,
   PLUS,
-  PREPROCESSOR,
   QUEST,
   RETURN,
   SEMICOLON,
@@ -92,9 +91,7 @@ export class ZenScriptParser extends Parser {
    * Level 1: Program
    * =================================================================================================
    */
-  // TODO: Process preprocess before parsing script file.
   public Program = this.RULE('Program', () => {
-    this.SUBRULE(this.ProcessorList);
     this.SUBRULE(this.ImportList);
 
     this.MANY(() =>
@@ -112,12 +109,6 @@ export class ZenScriptParser extends Parser {
    * Level 2
    * =================================================================================================
    */
-
-  protected ProcessorList = this.RULE('ProcessorList', () => {
-    this.MANY(() => {
-      this.CONSUME(PREPROCESSOR);
-    });
-  });
 
   protected ImportList = this.RULE('ImportList', () => {
     this.MANY(() => {

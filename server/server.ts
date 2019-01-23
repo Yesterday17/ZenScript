@@ -26,6 +26,7 @@ import { applyRequests } from './requests/requests';
 import { findToken } from './utils/findToken';
 import { reloadRCFile } from './utils/zsrcFile';
 import { ZenScriptParser } from './parser/zsParser';
+import { getPreProcessorList, PreProcessors } from './parser/zsPreProcessor';
 
 // 创建一个服务的连接，连接使用 Node 的 IPC 作为传输
 // 并且引入所有 LSP 特性, 包括 preview / proposed
@@ -151,8 +152,11 @@ async function validateTextDocument(textDocument: TextDocument): Promise<void> {
   // In this simple example we get the settings for every validate run.
   let settings = await getDocumentSettings(textDocument.uri);
 
-  // The validator creates diagnostics for all uppercase words length 2 and more
-  let text = textDocument.getText();
+  const preProcessedText = getPreProcessorList(
+    textDocument.getText(),
+    PreProcessors
+  );
+  let text = preProcessedText[0];
 
   const lexResult = ZSLexer.tokenize(text);
   documentTokens.set(textDocument.uri, lexResult.tokens);

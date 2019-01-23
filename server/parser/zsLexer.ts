@@ -18,7 +18,7 @@ export const WHITE_SPACE = createToken({
 });
 export const LINE_COMMENT = createToken({
   name: 'LINE_COMMENT',
-  pattern: /(?:\/\/|# ).*/,
+  pattern: /(?:\/\/|#).*/,
   group: chevrotain.Lexer.SKIPPED,
 });
 export const BLOCK_COMMENT = createToken({
@@ -120,12 +120,6 @@ export const SINGLE_QUOTED_STRING = createToken({
   name: 'SINGLE_QUOTED_STRING',
   pattern: /\'([^\'\\]|\\([\'\"\\/bfnrt]|u[0-9a-fA-F]{4}))*\'/,
   categories: [STRING_VALUE],
-});
-
-// Others
-export const PREPROCESSOR = createToken({
-  name: 'PREPROCESSOR',
-  pattern: /#[^ \t\r\n\x0B\f\r].*/,
 });
 
 // Keywords
@@ -336,7 +330,6 @@ export const zsAllTokens = [
   DOLLAR,
   DOUBLE_QUOTED_STRING,
   SINGLE_QUOTED_STRING,
-  PREPROCESSOR,
   ANY,
   BOOL,
   BYTE,
