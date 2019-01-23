@@ -11,6 +11,8 @@ import {
   TextDocument,
   TextDocuments,
   WorkspaceFolder,
+  Diagnostic,
+  DiagnosticSeverity,
 } from 'vscode-languageserver';
 import Uri from 'vscode-uri';
 import { zGlobal } from './api/global';
@@ -165,7 +167,20 @@ async function validateTextDocument(textDocument: TextDocument): Promise<void> {
 
   documentCSTs.set(textDocument.uri, parser.Program());
 
-  connection.console.log(JSON.stringify(parser.errors));
+  const diagnostics: Diagnostic[] = [];
+  parser.errors.map(error => {
+    const diagnotic: Diagnostic = {
+      severity: DiagnosticSeverity.Error,
+      range: {
+        start: textDocument.positionAt(error.token.startOffset),
+        end: textDocument.positionAt(error.token.endOffset),
+      },
+      message: error.message,
+    };
+    diagnostics.push(diagnotic);
+  });
+
+  connection.sendDiagnostics({ uri: textDocument.uri, diagnostics });
 }
 
 // 当 Watch 的文件确实发生变动

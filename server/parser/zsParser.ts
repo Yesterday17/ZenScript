@@ -132,7 +132,15 @@ export class ZenScriptParser extends Parser {
         { ALT: () => this.CONSUME(GLOBAL_ZS) },
         { ALT: () => this.CONSUME(STATIC) },
       ]);
-      this.SUBRULE(this.DeclareStatement);
+      this.CONSUME(IDENTIFIER, { ERR_MSG: 'Identifier expected.' });
+      this.OPTION(() => {
+        this.SUBRULE(this.TypeDeclare);
+      });
+      this.OPTION2(() => {
+        this.CONSUME(ASSIGN);
+        this.SUBRULE(this.Expression);
+      });
+      this.CONSUME(SEMICOLON, { ERR_MSG: '; expected' });
     }
   );
 
@@ -568,17 +576,51 @@ export class ZenScriptParser extends Parser {
 
   protected TypeAnnotation = this.RULE('TypeAnnotation', () => {
     this.OR([
-      { ALT: () => this.CONSUME(INT) },
+      { ALT: () => this.CONSUME(ANY) },
+      { ALT: () => this.CONSUME(VOID) },
       { ALT: () => this.CONSUME(BOOL) },
       { ALT: () => this.CONSUME(BYTE) },
+      { ALT: () => this.CONSUME(SHORT) },
+      { ALT: () => this.CONSUME(INT) },
+      { ALT: () => this.CONSUME(LONG) },
       { ALT: () => this.CONSUME(FLOAT) },
       { ALT: () => this.CONSUME(DOUBLE) },
-      { ALT: () => this.CONSUME(LONG) },
-      { ALT: () => this.CONSUME(NULL) },
-      { ALT: () => this.CONSUME(SHORT) },
       { ALT: () => this.CONSUME(STRING) },
-      { ALT: () => this.CONSUME(VOID) },
-      { ALT: () => this.CONSUME(IDENTIFIER) },
+      {
+        ALT: () => {
+          this.AT_LEAST_ONE_SEP({
+            SEP: DOT,
+            DEF: () => {
+              this.CONSUME(IDENTIFIER);
+            },
+          });
+        },
+      },
+      {
+        ALT: () => {
+          this.CONSUME(FUNCTION);
+          this.CONSUME(BR_OPEN);
+          this.MANY_SEP({
+            SEP: COMMA,
+            DEF: () => {
+              this.SUBRULE(this.TypeAnnotation);
+            },
+          });
+          this.CONSUME(BR_CLOSE);
+          this.SUBRULE2(this.TypeAnnotation);
+        },
+      },
+      {
+        ALT: () => {
+          this.CONSUME(SQBR_OPEN);
+          this.SUBRULE3(this.TypeAnnotation);
+          this.CONSUME(SQBR_CLOSE);
+        },
+      },
     ]);
+    this.MANY(() => {
+      this.CONSUME2(SQBR_OPEN);
+      this.CONSUME2(SQBR_CLOSE);
+    });
   });
 }
