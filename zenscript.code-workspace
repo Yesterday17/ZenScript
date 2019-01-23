@@ -22,7 +22,8 @@
       "path": "i18n"
     },
     {
-      "path": "test"
+      "name": "Test Large Modpack",
+      "path": "test\\large-modpack\\scripts"
     }
   ],
   "settings": {
