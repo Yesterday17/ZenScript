@@ -173,7 +173,7 @@ async function validateTextDocument(textDocument: TextDocument): Promise<void> {
       severity: DiagnosticSeverity.Error,
       range: {
         start: textDocument.positionAt(error.token.startOffset),
-        end: textDocument.positionAt(error.token.endOffset),
+        end: textDocument.positionAt(error.token.endOffset + 1),
       },
       message: error.message,
     };

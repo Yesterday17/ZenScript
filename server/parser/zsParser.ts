@@ -573,8 +573,14 @@ export class ZenScriptParser extends Parser {
       DEF: () => {
         // this.SUBRULE(this.AssignExpression);
         this.OR([
-          { ALT: () => this.CONSUME(IDENTIFIER) },
+          { ALT: () => this.CONSUME(INT_VALUE) },
+          { ALT: () => this.CONSUME(FLOAT_VALUE) },
           { ALT: () => this.CONSUME(STRING_VALUE) },
+          { ALT: () => this.CONSUME(IDENTIFIER) },
+          { ALT: () => this.SUBRULE(this.BracketHandler) },
+          { ALT: () => this.CONSUME(TRUE) },
+          { ALT: () => this.CONSUME(FALSE) },
+          { ALT: () => this.CONSUME(NULL) },
         ]);
         this.CONSUME(COLON);
         this.SUBRULE2(this.AssignExpression);
