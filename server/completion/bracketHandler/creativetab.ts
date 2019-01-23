@@ -17,8 +17,8 @@ class CreativeTab implements IBracketHandler {
         '```\n' +
         'If the Creative Tab is found, this will return an ICreativeTab Object.  \n' +
         'Please refer to the [respective Wiki entry](https://crafttweaker.readthedocs.io/en/latest/#Vanilla/CreativeTabs/ICreativeTab/)' +
-        ' for further information on what you can do with these.\n'
-    }
+        ' for further information on what you can do with these.\n',
+    },
   };
 
   next(predecessor: string[]): CompletionItem[] {

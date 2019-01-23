@@ -24,7 +24,7 @@ export const Keywords: CompletionItem[] = [
   { label: 'null', kind: CompletionItemKind.Keyword },
   { label: 'true', kind: CompletionItemKind.Keyword },
   { label: 'false', kind: CompletionItemKind.Keyword },
-  { label: 'import', kind: CompletionItemKind.Keyword }
+  { label: 'import', kind: CompletionItemKind.Keyword },
 ];
 
 export const Preprocessors = [
@@ -33,10 +33,10 @@ export const Preprocessors = [
   'loader',
   'modloaded',
   'norun',
-  'priority'
+  'priority',
 ].map(item => {
   return {
     label: item,
-    kind: CompletionItemKind.EnumMember
+    kind: CompletionItemKind.EnumMember,
   } as CompletionItem;
 });

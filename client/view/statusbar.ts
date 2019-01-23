@@ -3,7 +3,7 @@ import {
   StatusBarAlignment,
   StatusBarItem,
   ExtensionContext,
-  TextEditor
+  TextEditor,
 } from 'vscode';
 import { Registerable } from 'client/api/Registerable';
 import { LanguageClient } from 'vscode-languageclient';

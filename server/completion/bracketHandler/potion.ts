@@ -17,8 +17,8 @@ class Potion implements IBracketHandler {
         '```\n' +
         'If the Potion is found, this will return an IPotion Object.  \n' +
         'Please refer to the [respective Wiki entry](https://crafttweaker.readthedocs.io/en/latest/#Vanilla/Potions/IPotion/)' +
-        ' for further information on what you can do with these.'
-    }
+        ' for further information on what you can do with these.',
+    },
   };
 
   next(predecessor: string[]): CompletionItem[] {

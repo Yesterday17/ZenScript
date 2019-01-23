@@ -8,5 +8,5 @@ export interface ZenScriptSettings {
 // but could happen with other clients.
 export const defaultSettings: ZenScriptSettings = {
   maxNumberOfProblems: 100,
-  maxHistoryEntries: 20
+  maxHistoryEntries: 20,
 };

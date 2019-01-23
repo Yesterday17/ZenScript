@@ -30,8 +30,8 @@ class Item implements IBracketHandler {
         'Also optional: If left out it will be 0.  \n\n' +
         'Normally, this will return an IItemStack Object.  \n' +
         'Please refer to [the respective wiki entry](https://crafttweaker.readthedocs.io/en/latest/#Vanilla/Items/IItemStack/)' +
-        ' for further information.'
-    }
+        ' for further information.',
+    },
   };
 
   next(predecessor: string[]): CompletionItem[] {
@@ -44,8 +44,8 @@ class Item implements IBracketHandler {
             kind: BracketHandlerKind,
             data: {
               triggerCharacter: ':',
-              predecessor
-            }
+              predecessor,
+            },
           } as CompletionItem;
         });
         return result;
@@ -59,8 +59,8 @@ class Item implements IBracketHandler {
                 data: {
                   triggerCharacter: ':',
                   predecessor,
-                  position: i
-                }
+                  position: i,
+                },
               } as CompletionItem;
             })
           : [];
@@ -84,8 +84,8 @@ class Item implements IBracketHandler {
           detail: mod.name,
           documentation: {
             kind: 'markdown',
-            value: mod.description
-          }
+            value: mod.description,
+          },
         };
       case 2:
         // item:modid:[item]
@@ -101,8 +101,8 @@ class Item implements IBracketHandler {
               `UnlocalizedName: ${itemFound.unlocalizedName}  \n` +
               `MaxStackSize: ${itemFound.maxStackSize}  \n` +
               `MaxDamage: ${itemFound.maxDamage}  \n` +
-              `CanRepair: ${itemFound.canRepair}  \n`
-          }
+              `CanRepair: ${itemFound.canRepair}  \n`,
+          },
         };
       default:
         return item;

@@ -11,7 +11,7 @@ export function reloadRCFile(connection: Connection) {
   try {
     zGlobal.rcFile = JSON.parse(
       fs.readFileSync(new URL(zGlobal.baseFolder + '/.zsrc'), {
-        encoding: 'utf-8'
+        encoding: 'utf-8',
       })
     );
 

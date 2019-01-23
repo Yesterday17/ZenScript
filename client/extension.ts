@@ -4,11 +4,11 @@ import {
   LanguageClient,
   LanguageClientOptions,
   ServerOptions,
-  TransportKind
+  TransportKind,
 } from 'vscode-languageclient';
 import {
   CommandHistoryEntryAdd,
-  CommandHistoryEntryGet
+  CommandHistoryEntryGet,
 } from './command/historyEntry';
 import { StatusBar } from './view/statusbar';
 
@@ -30,8 +30,8 @@ export function activate(context: ExtensionContext) {
     debug: {
       module: serverModule,
       transport: TransportKind.ipc,
-      options: debugOptions
-    }
+      options: debugOptions,
+    },
   };
 
   // 控制 Language Client 的选项
@@ -40,8 +40,8 @@ export function activate(context: ExtensionContext) {
     documentSelector: [{ scheme: 'file', language: 'zenscript' }],
     synchronize: {
       // 当工作空间中的'.clientrc'文件改变时通知服务
-      fileEvents: workspace.createFileSystemWatcher('**/.zsrc')
-    }
+      fileEvents: workspace.createFileSystemWatcher('**/.zsrc'),
+    },
   };
 
   // Create language client

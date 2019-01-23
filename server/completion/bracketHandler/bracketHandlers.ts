@@ -21,7 +21,7 @@ const BracketHandlers: IBracketHandler[] = [
   LiquidBracketHandler,
   FluidBracketHandler, // fluid is an alias of liquid
   OreBracketHandler,
-  PotionBracketHandler
+  PotionBracketHandler,
 ];
 
 export const BracketHandlerMap: Map<string, IBracketHandler> = new Map();
@@ -35,7 +35,7 @@ export const SimpleBracketHandlers: CompletionItem[] = BracketHandlers.map(
     return {
       label: item.handler.label,
       kind: BracketHandlerKind,
-      data: { triggerCharacter: '<' }
+      data: { triggerCharacter: '<' },
     };
   }
 );
@@ -44,7 +44,7 @@ export const DetailBracketHandlers: CompletionItem[] = BracketHandlers.map(
   (item: IBracketHandler) => {
     return {
       kind: BracketHandlerKind,
-      ...item.handler
+      ...item.handler,
     };
   }
 );

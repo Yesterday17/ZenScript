@@ -9,56 +9,56 @@ export const createToken = chevrotain.createToken;
 export const EOL = createToken({
   name: 'EOL',
   pattern: /\r?\n/,
-  group: chevrotain.Lexer.SKIPPED
+  group: chevrotain.Lexer.SKIPPED,
 });
 export const WHITE_SPACE = createToken({
   name: 'WHITE_SPACE',
   pattern: /\s+/,
-  group: chevrotain.Lexer.SKIPPED
+  group: chevrotain.Lexer.SKIPPED,
 });
 export const LINE_COMMENT = createToken({
   name: 'LINE_COMMENT',
   pattern: /\/\/.*/,
-  group: chevrotain.Lexer.SKIPPED
+  group: chevrotain.Lexer.SKIPPED,
 });
 export const BLOCK_COMMENT = createToken({
   name: 'BLOCK_COMMENT',
   pattern: /\/\*([^*]|\*+[^*/])*(\*+\/)?/,
-  group: chevrotain.Lexer.SKIPPED
+  group: chevrotain.Lexer.SKIPPED,
 });
 
 // Tokens
 export const IDENTIFIER = createToken({
   name: 'IDENTIFIER',
-  pattern: /[a-zA-Z_][a-zA-Z_0-9]*/
+  pattern: /[a-zA-Z_][a-zA-Z_0-9]*/,
 });
 export const FLOAT_VALUE = createToken({
   name: 'FLOAT_VALUE',
-  pattern: /\-?(0|[1-9][0-9]*)\.[0-9]+([eE][\+\-]?[0-9]+)?[fFdD]?/
+  pattern: /\-?(0|[1-9][0-9]*)\.[0-9]+([eE][\+\-]?[0-9]+)?[fFdD]?/,
 });
 export const INT_VALUE = createToken({
   name: 'INT_VALUE',
-  pattern: /(?:0x[A-Fa-f0-9]*)|(?:\-?(0|[1-9][0-9]*))/
+  pattern: /(?:0x[A-Fa-f0-9]*)|(?:\-?(0|[1-9][0-9]*))/,
 });
 export const STRING_VALUE = createToken({
   name: 'STRING_VALUE',
-  pattern: chevrotain.Lexer.NA
+  pattern: chevrotain.Lexer.NA,
 });
 export const A_OPEN = createToken({
   name: 'A_OPEN',
-  pattern: /\{/
+  pattern: /\{/,
 });
 export const A_CLOSE = createToken({
   name: 'A_CLOSE',
-  pattern: /\}/
+  pattern: /\}/,
 });
 export const SQBR_OPEN = createToken({
   name: 'SQBR_OPEN',
-  pattern: /\[/
+  pattern: /\[/,
 });
 export const SQBR_CLOSE = createToken({
   name: 'SQBR_CLOSE',
-  pattern: /\]/
+  pattern: /\]/,
 });
 // TODO: Separate .. & to so that 'to' can be variable name.
 export const DOT2 = createToken({ name: 'DOT2', pattern: /\.\.|to/ });
@@ -68,7 +68,7 @@ export const PLUS_ASSIGN = createToken({ name: 'PLUS_ASSIGN', pattern: /\+=/ });
 export const PLUS = createToken({ name: 'PLUS', pattern: /\+/ });
 export const MINUS_ASSIGN = createToken({
   name: 'MINUS_ASSIGN',
-  pattern: /\-=/
+  pattern: /\-=/,
 });
 export const MINUS = createToken({ name: 'MINUS', pattern: /\-/ });
 export const MUL_ASSIGN = createToken({ name: 'MUL_ASSIGN', pattern: /\*=/ });
@@ -89,15 +89,15 @@ export const QUEST = createToken({ name: 'QUEST', pattern: /\?/ });
 export const COLON = createToken({ name: 'COLON', pattern: /:/ });
 export const BR_OPEN = createToken({
   name: 'BR_OPEN',
-  pattern: /\(/
+  pattern: /\(/,
 });
 export const BR_CLOSE = createToken({
   name: 'BR_CLOSE',
-  pattern: /\)/
+  pattern: /\)/,
 });
 export const TILDE_ASSIGN = createToken({
   name: 'TILDE_ASSIGN',
-  pattern: /~=/
+  pattern: /~=/,
 });
 export const TILDE = createToken({ name: 'TILDE', pattern: /~/ });
 export const SEMICOLON = createToken({ name: 'SEMICOLON', pattern: /;/ });
@@ -114,18 +114,18 @@ export const DOLLAR = createToken({ name: 'DOLLAR', pattern: /\$/ });
 export const DOUBLE_QUOTED_STRING = createToken({
   name: 'DOUBLE_QUOTED_STRING',
   pattern: /\"([^\"\\]|\\([\'\"\\/bfnrt]|u[0-9a-fA-F]{4}))*\"/,
-  categories: [STRING_VALUE]
+  categories: [STRING_VALUE],
 });
 export const SINGLE_QUOTED_STRING = createToken({
   name: 'SINGLE_QUOTED_STRING',
   pattern: /\'([^\'\\]|\\([\'\"\\/bfnrt]|u[0-9a-fA-F]{4}))*\'/,
-  categories: [STRING_VALUE]
+  categories: [STRING_VALUE],
 });
 
 // Others
 export const PREPROCESSOR = createToken({
   name: 'PREPROCESSOR',
-  pattern: /#[^ \t\r\n\x0B\f\r].*/
+  pattern: /#[^ \t\r\n\x0B\f\r].*/,
 });
 
 // Keywords
@@ -154,7 +154,7 @@ export const GLOBAL_ZS = createToken({ name: 'GLOBAL_ZS', pattern: /global/ });
 export const STATIC = createToken({ name: 'STATIC', pattern: /static/ });
 export const INSTANCEOF = createToken({
   name: 'INSTANCEOF',
-  pattern: /instanceof/
+  pattern: /instanceof/,
 });
 export const WHILE = createToken({ name: 'WHILE', pattern: /while/ });
 export const BREAK = createToken({ name: 'BREAK', pattern: /break/ });
@@ -254,7 +254,7 @@ export const zsAllTokens = [
   TRUE,
   FALSE,
   IMPORT,
-  IDENTIFIER
+  IDENTIFIER,
 ];
 
 export const ZSLexer = new chevrotain.Lexer(zsAllTokens);

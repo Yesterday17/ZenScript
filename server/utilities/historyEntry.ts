@@ -77,7 +77,7 @@ class HistoryEntryHandler {
       // Add now to result array
       result.push({
         element: now.element,
-        usage: now.usage
+        usage: now.usage,
       } as HistoryEntryItem);
       now = now.next;
     }

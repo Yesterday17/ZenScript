@@ -19,8 +19,8 @@ class Entity implements IBracketHandler {
         '```\n' +
         'If the mob/entity is found, this will return an IEntityDefinition Object.  \n' +
         'Please refer to the [respective Wiki entry](https://crafttweaker.readthedocs.io/en/latest/#Vanilla/Entities/IEntityDefinition/)' +
-        ' for further information on what you can do with these.'
-    }
+        ' for further information on what you can do with these.',
+    },
   };
 
   next(predecessor: string[]): CompletionItem[] {
@@ -33,8 +33,8 @@ class Entity implements IBracketHandler {
             kind: BracketHandlerKind,
             data: {
               triggerCharacter: ':',
-              predecessor
-            }
+              predecessor,
+            },
           } as CompletionItem;
         });
         return result;
@@ -48,8 +48,8 @@ class Entity implements IBracketHandler {
                 data: {
                   triggerCharacter: ':',
                   predecessor,
-                  position: i
-                }
+                  position: i,
+                },
               } as CompletionItem;
             })
           : [];
@@ -73,8 +73,8 @@ class Entity implements IBracketHandler {
           detail: mod.name,
           documentation: {
             kind: 'markdown',
-            value: mod.description
-          }
+            value: mod.description,
+          },
         };
       case 2:
         // item:modid:[item]
@@ -86,8 +86,8 @@ class Entity implements IBracketHandler {
           detail: entityFound.name,
           documentation: {
             kind: 'markdown',
-            value: ``
-          }
+            value: ``,
+          },
         };
       default:
         return item;

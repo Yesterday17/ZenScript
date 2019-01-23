@@ -21,8 +21,8 @@ class Template implements IBracketHandler {
         '\n' +
         '<TemplateBracketHandler:misc>\n' +
         '```\n' +
-        '.....'
-    }
+        '.....',
+    },
   };
 
   next(predecessor: string[]): CompletionItem[] {

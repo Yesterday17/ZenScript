@@ -21,8 +21,8 @@ class Liquid implements IBracketHandler {
           '```\n' +
           'If the liquid is found, this will return an ILiquidStack Object.  \n' +
           'Please refer to the [respective Wiki entry](https://crafttweaker.readthedocs.io/en/latest/#Vanilla/Liquids/ILiquidStack/)' +
-          ' for further information on what you can do with these.'
-      }
+          ' for further information on what you can do with these.',
+      },
     };
   }
 
@@ -36,8 +36,8 @@ class Liquid implements IBracketHandler {
             kind: BracketHandlerKind,
             data: {
               triggerCharacter: ':',
-              predecessor
-            }
+              predecessor,
+            },
           } as CompletionItem;
         });
         return result;
@@ -51,8 +51,8 @@ class Liquid implements IBracketHandler {
                 data: {
                   triggerCharacter: ':',
                   predecessor,
-                  position: i
-                }
+                  position: i,
+                },
               } as CompletionItem;
             })
           : [];
@@ -76,8 +76,8 @@ class Liquid implements IBracketHandler {
           detail: mod.name,
           documentation: {
             kind: 'markdown',
-            value: mod.description
-          }
+            value: mod.description,
+          },
         };
       case 2:
         // liquid:modid:[liquid]
@@ -93,8 +93,8 @@ class Liquid implements IBracketHandler {
               `UnlocalizedName: ${liquidFound.unlocalizedName}  \n` +
               `Rarity: ${liquidFound.rarity}  \n` +
               `Density: ${liquidFound.density}  \n` +
-              `Color: ${liquidFound.color}  \n`
-          }
+              `Color: ${liquidFound.color}  \n`,
+          },
         };
       default:
         return item;

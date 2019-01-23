@@ -2,7 +2,7 @@ import { window } from 'vscode';
 import { CommandBase } from '../api/CommandBase';
 import {
   HistoryEntryGetRequestType,
-  HistoryEntryAddRequestType
+  HistoryEntryAddRequestType,
 } from '../../api/requests/HistoryEntryRequest';
 
 class HistoryEntryGet extends CommandBase {

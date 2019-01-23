@@ -14,8 +14,8 @@ class DamageSource implements IBracketHandler {
         '```\n' +
         '<damageSource:type>;\n' +
         '<damageSource:IN_FIRE>;\n' +
-        '```'
-    }
+        '```',
+    },
   };
 
   next(predecessor: string[]): CompletionItem[] {
@@ -40,15 +40,15 @@ class DamageSource implements IBracketHandler {
         'ANVIL',
         'FALLING_BLOCK',
         'DRAGON_BREATH',
-        'FIREWORKS'
+        'FIREWORKS',
       ].map(key => {
         return {
           label: key,
           kind: CompletionItemKind.Value,
           data: {
             triggerCharacter: ':',
-            predecessor
-          }
+            predecessor,
+          },
         } as CompletionItem;
       });
     }

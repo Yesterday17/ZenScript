@@ -14,8 +14,8 @@ const TOKEN_NOT_FOUND: TokenFindResult = {
   exist: false,
   found: {
     position: -1,
-    token: null
-  }
+    token: null,
+  },
 };
 
 /**
@@ -34,8 +34,8 @@ export function findToken(arr: IToken[], offset: number): TokenFindResult {
         exist: true,
         found: {
           position: mid,
-          token: arr[mid]
-        }
+          token: arr[mid],
+        },
       };
     } else if (arr[mid].startOffset > offset) {
       end = mid - 1;

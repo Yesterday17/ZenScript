@@ -19,8 +19,8 @@ class Enchantment implements IBracketHandler {
         '```\n' +
         'If the Enchantment is found, this will return an IEnchantmentDefinition Object.  \n' +
         'Please refer to the [respective Wiki entry](https://crafttweaker.readthedocs.io/en/latest/#Vanilla/Enchantments/IEnchantmentDefinition/)' +
-        ' for further information on what you can do with these.'
-    }
+        ' for further information on what you can do with these.',
+    },
   };
 
   next(predecessor: string[]): CompletionItem[] {
@@ -33,8 +33,8 @@ class Enchantment implements IBracketHandler {
             kind: BracketHandlerKind,
             data: {
               triggerCharacter: ':',
-              predecessor
-            }
+              predecessor,
+            },
           } as CompletionItem;
         });
         return result;
@@ -48,8 +48,8 @@ class Enchantment implements IBracketHandler {
                 data: {
                   triggerCharacter: ':',
                   predecessor,
-                  position: i
-                }
+                  position: i,
+                },
               } as CompletionItem;
             })
           : [];
@@ -73,8 +73,8 @@ class Enchantment implements IBracketHandler {
           detail: mod.name,
           documentation: {
             kind: 'markdown',
-            value: mod.description
-          }
+            value: mod.description,
+          },
         };
       case 2:
         // item:modid:[item]
@@ -86,8 +86,8 @@ class Enchantment implements IBracketHandler {
           detail: enchantmentFound.name,
           documentation: {
             kind: 'markdown',
-            value: '**Type**: ' + enchantmentFound.type
-          }
+            value: '**Type**: ' + enchantmentFound.type,
+          },
         };
       default:
         return item;
