@@ -60,7 +60,6 @@ export const SQBR_CLOSE = createToken({
   name: 'SQBR_CLOSE',
   pattern: /\]/,
 });
-// TODO: Separate .. & to so that 'to' can be variable name.
 export const DOT2 = createToken({ name: 'DOT2', pattern: /\.\./ });
 export const DOT = createToken({ name: 'DOT', pattern: /\./ });
 export const COMMA = createToken({ name: 'COMMA', pattern: /\,/ });
