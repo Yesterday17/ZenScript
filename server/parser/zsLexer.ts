@@ -61,7 +61,7 @@ export const SQBR_CLOSE = createToken({
   pattern: /\]/,
 });
 // TODO: Separate .. & to so that 'to' can be variable name.
-export const DOT2 = createToken({ name: 'DOT2', pattern: /\.\.|to/ });
+export const DOT2 = createToken({ name: 'DOT2', pattern: /\.\./ });
 export const DOT = createToken({ name: 'DOT', pattern: /\./ });
 export const COMMA = createToken({ name: 'COMMA', pattern: /\,/ });
 export const PLUS_ASSIGN = createToken({ name: 'PLUS_ASSIGN', pattern: /\+=/ });
@@ -129,41 +129,153 @@ export const PREPROCESSOR = createToken({
 });
 
 // Keywords
-export const ANY = createToken({ name: 'ANY', pattern: /any/ });
-export const BOOL = createToken({ name: 'BOOL', pattern: /bool/ });
-export const BYTE = createToken({ name: 'BYTE', pattern: /byte/ });
-export const SHORT = createToken({ name: 'SHORT', pattern: /short/ });
-export const INT = createToken({ name: 'INT', pattern: /int/ });
-export const LONG = createToken({ name: 'LONG', pattern: /long/ });
-export const FLOAT = createToken({ name: 'FLOAT', pattern: /float/ });
-export const DOUBLE = createToken({ name: 'DOUBLE', pattern: /double/ });
-export const STRING = createToken({ name: 'STRING', pattern: /string/ });
-export const FUNCTION = createToken({ name: 'FUNCTION', pattern: /function/ });
-export const IN = createToken({ name: 'IN', pattern: /in|has/ });
-export const VOID = createToken({ name: 'VOID', pattern: /void/ });
+export const ANY = createToken({
+  name: 'ANY',
+  pattern: /any/,
+  longer_alt: IDENTIFIER,
+});
+export const BOOL = createToken({
+  name: 'BOOL',
+  pattern: /bool/,
+  longer_alt: IDENTIFIER,
+});
+export const BYTE = createToken({
+  name: 'BYTE',
+  pattern: /byte/,
+  longer_alt: IDENTIFIER,
+});
+export const SHORT = createToken({
+  name: 'SHORT',
+  pattern: /short/,
+  longer_alt: IDENTIFIER,
+});
+export const INT = createToken({
+  name: 'INT',
+  pattern: /int/,
+  longer_alt: IDENTIFIER,
+});
+export const LONG = createToken({
+  name: 'LONG',
+  pattern: /long/,
+  longer_alt: IDENTIFIER,
+});
+export const FLOAT = createToken({
+  name: 'FLOAT',
+  pattern: /float/,
+  longer_alt: IDENTIFIER,
+});
+export const DOUBLE = createToken({
+  name: 'DOUBLE',
+  pattern: /double/,
+  longer_alt: IDENTIFIER,
+});
+export const STRING = createToken({
+  name: 'STRING',
+  pattern: /string/,
+  longer_alt: IDENTIFIER,
+});
+export const FUNCTION = createToken({
+  name: 'FUNCTION',
+  pattern: /function/,
+  longer_alt: IDENTIFIER,
+});
+export const IN = createToken({
+  name: 'IN',
+  pattern: /in|has/,
+  longer_alt: IDENTIFIER,
+});
+export const VOID = createToken({
+  name: 'VOID',
+  pattern: /void/,
+  longer_alt: IDENTIFIER,
+});
 
-export const AS = createToken({ name: 'AS', pattern: /as/ });
-export const VERSION = createToken({ name: 'VERSION', pattern: /version/ });
-export const IF = createToken({ name: 'IF', pattern: /if/ });
-export const ELSE = createToken({ name: 'ELSE', pattern: /else/ });
-export const FOR = createToken({ name: 'FOR', pattern: /for/ });
-export const RETURN = createToken({ name: 'RETURN', pattern: /return/ });
-export const VAR = createToken({ name: 'VAR', pattern: /var/ });
-export const VAL = createToken({ name: 'VAL', pattern: /val/ });
-export const GLOBAL_ZS = createToken({ name: 'GLOBAL_ZS', pattern: /global/ });
-export const STATIC = createToken({ name: 'STATIC', pattern: /static/ });
+export const AS = createToken({
+  name: 'AS',
+  pattern: /as/,
+  longer_alt: IDENTIFIER,
+});
+export const VERSION = createToken({
+  name: 'VERSION',
+  pattern: /version/,
+  longer_alt: IDENTIFIER,
+});
+export const IF = createToken({
+  name: 'IF',
+  pattern: /if/,
+  longer_alt: IDENTIFIER,
+});
+export const ELSE = createToken({
+  name: 'ELSE',
+  pattern: /else/,
+  longer_alt: IDENTIFIER,
+});
+export const FOR = createToken({
+  name: 'FOR',
+  pattern: /for/,
+  longer_alt: IDENTIFIER,
+});
+export const RETURN = createToken({
+  name: 'RETURN',
+  pattern: /return/,
+  longer_alt: IDENTIFIER,
+});
+export const VAR = createToken({
+  name: 'VAR',
+  pattern: /var/,
+  longer_alt: IDENTIFIER,
+});
+export const VAL = createToken({
+  name: 'VAL',
+  pattern: /val/,
+  longer_alt: IDENTIFIER,
+});
+export const GLOBAL_ZS = createToken({
+  name: 'GLOBAL_ZS',
+  pattern: /global/,
+  longer_alt: IDENTIFIER,
+});
+export const STATIC = createToken({
+  name: 'STATIC',
+  pattern: /static/,
+  longer_alt: IDENTIFIER,
+});
 export const INSTANCEOF = createToken({
   name: 'INSTANCEOF',
   pattern: /instanceof/,
 });
-export const WHILE = createToken({ name: 'WHILE', pattern: /while/ });
-export const BREAK = createToken({ name: 'BREAK', pattern: /break/ });
+export const WHILE = createToken({
+  name: 'WHILE',
+  pattern: /while/,
+  longer_alt: IDENTIFIER,
+});
+export const BREAK = createToken({
+  name: 'BREAK',
+  pattern: /break/,
+  longer_alt: IDENTIFIER,
+});
 
-export const NULL = createToken({ name: 'NULL', pattern: /null/ });
-export const TRUE = createToken({ name: 'TRUE', pattern: /true/ });
-export const FALSE = createToken({ name: 'FALSE', pattern: /false/ });
+export const NULL = createToken({
+  name: 'NULL',
+  pattern: /null/,
+  longer_alt: IDENTIFIER,
+});
+export const TRUE = createToken({
+  name: 'TRUE',
+  pattern: /true/,
+  longer_alt: IDENTIFIER,
+});
+export const FALSE = createToken({
+  name: 'FALSE',
+  pattern: /false/,
+  longer_alt: IDENTIFIER,
+});
 
-export const IMPORT = createToken({ name: 'IMPORT', pattern: /import/ });
+export const IMPORT = createToken({
+  name: 'IMPORT',
+  pattern: /import/,
+  longer_alt: IDENTIFIER,
+});
 
 //TODO: Implement the following
 /**

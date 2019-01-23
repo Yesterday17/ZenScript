@@ -68,6 +68,17 @@ import {
   STRING_VALUE,
   WHILE,
   BREAK,
+  OR2,
+  AND2,
+  PLUS_ASSIGN,
+  MINUS_ASSIGN,
+  MUL_ASSIGN,
+  DIV_ASSIGN,
+  MOD_ASSIGN,
+  OR_ASSIGN,
+  AND_ASSIGN,
+  XOR_ASSIGN,
+  INSTANCEOF,
 } from './zsLexer';
 
 export class ZenScriptParser extends Parser {
@@ -79,6 +90,7 @@ export class ZenScriptParser extends Parser {
 
   /**
    * Level 1: Program
+   * =================================================================================================
    */
   public Program = this.RULE('Program', () => {
     this.SUBRULE(this.ProcessorList);
@@ -86,7 +98,10 @@ export class ZenScriptParser extends Parser {
 
     this.MANY(() =>
       this.OR([
+        { ALT: () => this.SUBRULE(this.GlobalStaticDeclaration) },
         { ALT: () => this.SUBRULE(this.FunctionDeclaration) },
+        // TODO: Support ZenClass
+        // { ALT: () => this.SUBRULE(this.ZenClassDeclaration) },
         { ALT: () => this.SUBRULE(this.BlockStatement) },
       ])
     );
@@ -94,7 +109,9 @@ export class ZenScriptParser extends Parser {
 
   /**
    * Level 2
+   * =================================================================================================
    */
+
   protected ProcessorList = this.RULE('ProcessorList', () => {
     this.MANY(() => {
       this.CONSUME(PREPROCESSOR);
@@ -112,6 +129,20 @@ export class ZenScriptParser extends Parser {
       this.CONSUME(SEMICOLON, { ERR_MSG: '; expected' });
     });
   });
+
+  /**
+   * Global / Static
+   */
+  protected GlobalStaticDeclaration = this.RULE(
+    'GlobalStaticDeclaration',
+    () => {
+      this.OR([
+        { ALT: () => this.CONSUME(GLOBAL_ZS) },
+        { ALT: () => this.CONSUME(STATIC) },
+      ]);
+      this.SUBRULE(this.DeclareStatement);
+    }
+  );
 
   /**
    * Function declaration
@@ -141,22 +172,8 @@ export class ZenScriptParser extends Parser {
 
   /**
    * Level 3
+   * =================================================================================================
    */
-  protected Package = this.RULE('Package', () => {
-    this.AT_LEAST_ONE_SEP({
-      SEP: DOT,
-      DEF: () => {
-        this.CONSUME(IDENTIFIER);
-      },
-    });
-  });
-
-  protected ParameterList = this.RULE('ParameterList', () => {
-    this.MANY_SEP({
-      SEP: COMMA,
-      DEF: () => this.SUBRULE(this.Parameter),
-    });
-  });
 
   /**
    * Multiple statements with {}
@@ -186,8 +203,8 @@ export class ZenScriptParser extends Parser {
 
   /**
    * Level 4: Statements
+   * =================================================================================================
    */
-
   protected ReturnStatement = this.RULE('ReturnStatement', () => {
     this.CONSUME(RETURN);
     this.SUBRULE(this.Expression);
@@ -240,45 +257,210 @@ export class ZenScriptParser extends Parser {
     this.SUBRULE(this.Statement);
   });
 
-  protected VersionStatement = this.RULE('WhileStatement', () => {
+  protected VersionStatement = this.RULE('VersionStatement', () => {
     this.CONSUME(VERSION);
     this.CONSUME(INT_VALUE, { ERR_MSG: 'INT_VALUE expected' });
     this.CONSUME(SEMICOLON, { ERR_MSG: '; expected' });
   });
 
-  protected BreakStatement = this.RULE('WhileStatement', () => {
+  protected BreakStatement = this.RULE('BreakStatement', () => {
     this.CONSUME(BREAK);
     this.CONSUME(SEMICOLON, { ERR_MSG: '; expected' });
   });
 
-  protected ExpressionStatement = this.RULE('WhileStatement', () => {
+  protected ExpressionStatement = this.RULE('ExpressionStatement', () => {
     this.SUBRULE(this.Expression);
     this.CONSUME(SEMICOLON, { ERR_MSG: '; expected' });
   });
 
   /**
    * Level 5: Expressions
+   * =================================================================================================
    */
   protected Expression = this.RULE('Expression', () => {
-    // UnaryExpression
+    this.SUBRULE(this.AssignExpression);
+  });
+
+  protected AssignExpression = this.RULE('AssignExpression', () => {
+    this.SUBRULE(this.ConditionalExpression);
     this.OPTION(() => {
       this.OR([
-        { ALT: () => this.CONSUME(NOT) },
-        { ALT: () => this.CONSUME(MINUS) },
+        { ALT: () => this.CONSUME(ASSIGN) },
+        { ALT: () => this.CONSUME(PLUS_ASSIGN) },
+        { ALT: () => this.CONSUME(MINUS_ASSIGN) },
+        { ALT: () => this.CONSUME(TILDE_ASSIGN) },
+        { ALT: () => this.CONSUME(MUL_ASSIGN) },
+        { ALT: () => this.CONSUME(DIV_ASSIGN) },
+        { ALT: () => this.CONSUME(MOD_ASSIGN) },
+        { ALT: () => this.CONSUME(OR_ASSIGN) },
+        { ALT: () => this.CONSUME(AND_ASSIGN) },
+        { ALT: () => this.CONSUME(XOR_ASSIGN) },
       ]);
+      this.SUBRULE(this.AssignExpression);
     });
   });
 
   protected UnaryExpression = this.RULE('UnaryExpression', () => {
     this.OR([
-      { ALT: () => this.CONSUME(NOT) },
-      { ALT: () => this.CONSUME(MINUS) },
+      {
+        ALT: () => {
+          this.OR2([
+            { ALT: () => this.CONSUME(NOT) },
+            { ALT: () => this.CONSUME(MINUS) },
+          ]);
+          this.SUBRULE(this.UnaryExpression);
+        },
+      },
+      {
+        ALT: () => {
+          this.SUBRULE(this.PostfixExpression);
+        },
+      },
     ]);
-    this.SUBRULE(this.PostfixExpression);
+  });
+
+  protected AddExpression = this.RULE('AddExpression', () => {
+    this.SUBRULE(this.MultiplyExpression);
+    this.OPTION(() => {
+      this.OR([
+        { ALT: () => this.CONSUME(PLUS) },
+        { ALT: () => this.CONSUME(MINUS) },
+        { ALT: () => this.CONSUME(TILDE) },
+      ]);
+      this.SUBRULE2(this.AddExpression);
+    });
+  });
+
+  protected MultiplyExpression = this.RULE('MultiplyExpression', () => {
+    this.SUBRULE(this.UnaryExpression);
+    this.OPTION(() => {
+      this.OR([
+        { ALT: () => this.CONSUME(MUL) },
+        { ALT: () => this.CONSUME(DIV) },
+        { ALT: () => this.CONSUME(MOD) },
+      ]);
+      this.SUBRULE2(this.MultiplyExpression);
+    });
+  });
+
+  protected CompareExpression = this.RULE('CompareExpression', () => {
+    this.SUBRULE(this.AddExpression);
+    this.OPTION(() => {
+      this.OR([
+        { ALT: () => this.CONSUME(EQ) },
+        { ALT: () => this.CONSUME(NOT_EQ) },
+        { ALT: () => this.CONSUME(LT) },
+        { ALT: () => this.CONSUME(LTEQ) },
+        { ALT: () => this.CONSUME(GT) },
+        { ALT: () => this.CONSUME(GTEQ) },
+        { ALT: () => this.CONSUME(IN) },
+      ]);
+      this.SUBRULE2(this.AddExpression);
+    });
+  });
+
+  protected AndExpression = this.RULE('AndExpression', () => {
+    this.SUBRULE(this.CompareExpression);
+    this.OPTION(() => {
+      this.CONSUME(AND);
+      this.SUBRULE2(this.CompareExpression);
+    });
+  });
+
+  protected AndAndExpression = this.RULE('AndAndExpression', () => {
+    this.SUBRULE(this.OrExpression);
+    this.OPTION(() => {
+      this.CONSUME(AND2);
+      this.SUBRULE2(this.OrExpression);
+    });
+  });
+
+  protected OrExpression = this.RULE('OrExpression', () => {
+    this.SUBRULE(this.XorExpression);
+    this.OPTION(() => {
+      this.CONSUME(OR);
+      this.SUBRULE2(this.XorExpression);
+    });
+  });
+
+  protected OrOrExpression = this.RULE('OrOrExpression', () => {
+    this.SUBRULE(this.AndAndExpression);
+    this.OPTION(() => {
+      this.CONSUME(OR2);
+      this.SUBRULE2(this.AndAndExpression);
+    });
+  });
+
+  protected XorExpression = this.RULE('XorExpression', () => {
+    this.SUBRULE(this.AndExpression);
+    this.OPTION(() => {
+      this.CONSUME(AND);
+      this.SUBRULE2(this.AndExpression);
+    });
+  });
+
+  protected ConditionalExpression = this.RULE('ConditionalExpression', () => {
+    this.SUBRULE(this.OrOrExpression);
+    this.OPTION(() => {
+      this.CONSUME(QUEST);
+      this.SUBRULE2(this.OrOrExpression);
+      this.CONSUME(COLON);
+      this.SUBRULE(this.ConditionalExpression);
+    });
   });
 
   protected PostfixExpression = this.RULE('PostfixExpression', () => {
     this.SUBRULE(this.PrimaryExpression);
+    this.MANY(() => {
+      this.OR([
+        {
+          ALT: () => {
+            this.CONSUME(DOT);
+            this.OR2([
+              { ALT: () => this.CONSUME(IDENTIFIER) },
+              { ALT: () => this.CONSUME(STRING) },
+            ]);
+          },
+        },
+        {
+          ALT: () => {
+            this.CONSUME(DOT2);
+            // TODO: Add identifier `to`
+            this.SUBRULE(this.AssignExpression);
+          },
+        },
+        {
+          ALT: () => {
+            this.CONSUME(SQBR_OPEN);
+            this.SUBRULE2(this.AssignExpression);
+            this.CONSUME(SQBR_CLOSE);
+            this.OPTION(() => {
+              this.CONSUME(ASSIGN);
+              this.SUBRULE3(this.AssignExpression);
+            });
+          },
+        },
+        {
+          ALT: () => {
+            this.CONSUME(BR_OPEN);
+            this.MANY_SEP({
+              SEP: COMMA,
+              DEF: () => {
+                this.SUBRULE4(this.AssignExpression);
+              },
+            });
+            this.CONSUME(BR_CLOSE);
+          },
+        },
+        { ALT: () => this.SUBRULE(this.TypeDeclare) },
+        {
+          ALT: () => {
+            this.CONSUME(INSTANCEOF);
+            this.SUBRULE(this.TypeAnnotation);
+          },
+        },
+      ]);
+    });
   });
 
   protected PrimaryExpression = this.RULE('PrimaryExpression', () => {
@@ -287,22 +469,97 @@ export class ZenScriptParser extends Parser {
       { ALT: () => this.CONSUME(FLOAT_VALUE) },
       { ALT: () => this.CONSUME(STRING_VALUE) },
       { ALT: () => this.CONSUME(IDENTIFIER) },
-      // TODO: Lambda Function
-      // { ALT: () => this.SUBRULE(this.FunctionDeclaration) },
-      // { ALT: () => this.SUBRULE(this.BracketHandler) },
-      // TODO: ParsedExpression.java Line 394 T_SQBROPEN
-      // TODO: ParsedExpression.java Line 408 T_AOPEN
+      { ALT: () => this.SUBRULE(this.LambdaFunctionDeclaration) },
+      { ALT: () => this.SUBRULE(this.BracketHandler) },
+      { ALT: () => this.SUBRULE(this.ZSArray) },
+      // { ALT: () => this.SUBRULE(this.ZSObject) },
       { ALT: () => this.CONSUME(TRUE) },
       { ALT: () => this.CONSUME(FALSE) },
       { ALT: () => this.CONSUME(NULL) },
-      // TODO: ParsedExpression.java Line 436 T_BROPEN
-      // { ALT: () => this.CONSUME(STRING_VALUE) }
+      { ALT: () => this.SUBRULE(this.InBracket) },
     ]);
   });
 
   /**
    * Level 6 Others
+   * =================================================================================================
    */
+  protected LambdaFunctionDeclaration = this.RULE(
+    'LambdaFunctionDeclaration',
+    () => {
+      this.CONSUME(FUNCTION);
+      this.CONSUME(BR_OPEN);
+      this.OPTION(() => {
+        this.SUBRULE(this.ParameterList);
+      });
+      this.CONSUME(BR_CLOSE);
+      this.OPTION2(() => {
+        this.SUBRULE(this.TypeDeclare);
+      });
+      this.SUBRULE(this.StatementBody);
+    }
+  );
+
+  protected InBracket = this.RULE('InBracket', () => {
+    this.CONSUME(BR_OPEN);
+    this.SUBRULE(this.AssignExpression);
+    this.CONSUME(BR_CLOSE);
+  });
+
+  protected BracketHandler = this.RULE('BracketHandler', () => {
+    this.CONSUME(LT);
+    this.AT_LEAST_ONE_SEP({
+      SEP: COLON,
+      DEF: () => {
+        this.OR([
+          { ALT: () => this.CONSUME(IDENTIFIER) },
+          { ALT: () => this.CONSUME(INT_VALUE) },
+          { ALT: () => this.CONSUME(MUL) },
+        ]);
+      },
+    });
+    this.CONSUME(GT);
+  });
+
+  protected ZSArray = this.RULE('ZSArray', () => {
+    this.CONSUME(SQBR_OPEN);
+    this.MANY_SEP({
+      SEP: COMMA,
+      DEF: () => {
+        this.SUBRULE(this.AssignExpression);
+      },
+    });
+    this.CONSUME(SQBR_CLOSE);
+  });
+
+  protected ZSObject = this.RULE('ZSObject', () => {
+    this.CONSUME(A_OPEN);
+    this.MANY_SEP({
+      SEP: COMMA,
+      DEF: () => {
+        this.SUBRULE(this.AssignExpression);
+        this.CONSUME(COLON);
+        this.SUBRULE2(this.AssignExpression);
+      },
+    });
+    this.CONSUME(A_CLOSE);
+  });
+
+  protected Package = this.RULE('Package', () => {
+    this.AT_LEAST_ONE_SEP({
+      SEP: DOT,
+      DEF: () => {
+        this.CONSUME(IDENTIFIER);
+      },
+    });
+  });
+
+  protected ParameterList = this.RULE('ParameterList', () => {
+    this.MANY_SEP({
+      SEP: COMMA,
+      DEF: () => this.SUBRULE(this.Parameter),
+    });
+  });
 
   protected Parameter = this.RULE('Parameter', () => {
     this.CONSUME(IDENTIFIER);
