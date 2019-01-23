@@ -92,6 +92,7 @@ export class ZenScriptParser extends Parser {
    * Level 1: Program
    * =================================================================================================
    */
+  // TODO: Process preprocess before parsing script file.
   public Program = this.RULE('Program', () => {
     this.SUBRULE(this.ProcessorList);
     this.SUBRULE(this.ImportList);
@@ -508,15 +509,15 @@ export class ZenScriptParser extends Parser {
 
   protected BracketHandler = this.RULE('BracketHandler', () => {
     this.CONSUME(LT);
-    this.AT_LEAST_ONE_SEP({
-      SEP: COLON,
-      DEF: () => {
-        this.OR([
-          { ALT: () => this.CONSUME(IDENTIFIER) },
-          { ALT: () => this.CONSUME(INT_VALUE) },
-          { ALT: () => this.CONSUME(MUL) },
-        ]);
-      },
+    this.AT_LEAST_ONE(() => {
+      this.OR([
+        { ALT: () => this.CONSUME(IDENTIFIER) },
+        { ALT: () => this.CONSUME(INT_VALUE) },
+        { ALT: () => this.CONSUME(MUL) },
+        { ALT: () => this.CONSUME(MINUS) },
+        { ALT: () => this.CONSUME(COLON) },
+        { ALT: () => this.CONSUME(DOT) },
+      ]);
     });
     this.CONSUME(GT);
   });
@@ -532,6 +533,7 @@ export class ZenScriptParser extends Parser {
     this.CONSUME(SQBR_CLOSE);
   });
 
+  // TODO: make ZSObject not ambiguous with blockstatement
   protected ZSObject = this.RULE('ZSObject', () => {
     this.CONSUME(A_OPEN);
     this.MANY_SEP({

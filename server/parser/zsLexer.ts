@@ -18,7 +18,7 @@ export const WHITE_SPACE = createToken({
 });
 export const LINE_COMMENT = createToken({
   name: 'LINE_COMMENT',
-  pattern: /\/\/.*/,
+  pattern: /(?:\/\/|# ).*/,
   group: chevrotain.Lexer.SKIPPED,
 });
 export const BLOCK_COMMENT = createToken({

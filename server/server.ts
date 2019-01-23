@@ -103,7 +103,8 @@ let globalSettings: ZenScriptSettings = defaultSettings;
 let documentSettings: Map<string, Thenable<ZenScriptSettings>> = new Map();
 
 // Tokens
-let documentTokens: Map<string, IToken[]> = new Map();
+const documentTokens: Map<string, IToken[]> = new Map();
+const documentCSTs: Map<string, any> = new Map();
 
 connection.onDidChangeConfiguration(change => {
   if (hasConfigurationCapability) {
@@ -155,8 +156,11 @@ async function validateTextDocument(textDocument: TextDocument): Promise<void> {
 
   const lexResult = ZSLexer.tokenize(text);
   documentTokens.set(textDocument.uri, lexResult.tokens);
+
   const parser = new ZenScriptParser(documentTokens.get(textDocument.uri));
-  const cst = parser.Program();
+
+  documentCSTs.set(textDocument.uri, parser.Program());
+
   connection.console.log(JSON.stringify(parser.errors));
 }
 
