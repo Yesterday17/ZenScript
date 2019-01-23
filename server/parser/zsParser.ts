@@ -82,7 +82,7 @@ import {
 
 export class ZenScriptParser extends Parser {
   constructor(input: IToken[]) {
-    super(zsAllTokens);
+    super(zsAllTokens, { maxLookahead: 4, recoveryEnabled: true });
     this.input = input;
     this.performSelfAnalysis();
   }
@@ -339,7 +339,7 @@ export class ZenScriptParser extends Parser {
         { ALT: () => this.CONSUME(DIV) },
         { ALT: () => this.CONSUME(MOD) },
       ]);
-      this.SUBRULE2(this.MultiplyExpression);
+      this.SUBRULE2(this.UnaryExpression);
     });
   });
 
@@ -394,7 +394,7 @@ export class ZenScriptParser extends Parser {
   protected XorExpression = this.RULE('XorExpression', () => {
     this.SUBRULE(this.AndExpression);
     this.OPTION(() => {
-      this.CONSUME(AND);
+      this.CONSUME(XOR);
       this.SUBRULE2(this.AndExpression);
     });
   });
@@ -404,7 +404,7 @@ export class ZenScriptParser extends Parser {
     this.OPTION(() => {
       this.CONSUME(QUEST);
       this.SUBRULE2(this.OrOrExpression);
-      this.CONSUME(COLON);
+      this.CONSUME(COLON, { ERR_MSG: ': expected' });
       this.SUBRULE(this.ConditionalExpression);
     });
   });
@@ -418,6 +418,7 @@ export class ZenScriptParser extends Parser {
             this.CONSUME(DOT);
             this.OR2([
               { ALT: () => this.CONSUME(IDENTIFIER) },
+              { ALT: () => this.CONSUME(VERSION) },
               { ALT: () => this.CONSUME(STRING) },
             ]);
           },
@@ -452,7 +453,11 @@ export class ZenScriptParser extends Parser {
             this.CONSUME(BR_CLOSE);
           },
         },
-        { ALT: () => this.SUBRULE(this.TypeDeclare) },
+        {
+          ALT: () => {
+            this.SUBRULE(this.TypeDeclare);
+          },
+        },
         {
           ALT: () => {
             this.CONSUME(INSTANCEOF);
@@ -472,7 +477,7 @@ export class ZenScriptParser extends Parser {
       { ALT: () => this.SUBRULE(this.LambdaFunctionDeclaration) },
       { ALT: () => this.SUBRULE(this.BracketHandler) },
       { ALT: () => this.SUBRULE(this.ZSArray) },
-      // { ALT: () => this.SUBRULE(this.ZSObject) },
+      { ALT: () => this.SUBRULE(this.ZSMap) },
       { ALT: () => this.CONSUME(TRUE) },
       { ALT: () => this.CONSUME(FALSE) },
       { ALT: () => this.CONSUME(NULL) },
@@ -516,6 +521,35 @@ export class ZenScriptParser extends Parser {
         { ALT: () => this.CONSUME(MINUS) },
         { ALT: () => this.CONSUME(COLON) },
         { ALT: () => this.CONSUME(DOT) },
+        { ALT: () => this.CONSUME(ANY) },
+        { ALT: () => this.CONSUME(BOOL) },
+        { ALT: () => this.CONSUME(BYTE) },
+        { ALT: () => this.CONSUME(SHORT) },
+        { ALT: () => this.CONSUME(INT) },
+        { ALT: () => this.CONSUME(LONG) },
+        { ALT: () => this.CONSUME(FLOAT) },
+        { ALT: () => this.CONSUME(DOUBLE) },
+        { ALT: () => this.CONSUME(STRING) },
+        { ALT: () => this.CONSUME(FUNCTION) },
+        { ALT: () => this.CONSUME(IN) },
+        { ALT: () => this.CONSUME(VOID) },
+        { ALT: () => this.CONSUME(AS) },
+        { ALT: () => this.CONSUME(VERSION) },
+        { ALT: () => this.CONSUME(IF) },
+        { ALT: () => this.CONSUME(ELSE) },
+        { ALT: () => this.CONSUME(FOR) },
+        { ALT: () => this.CONSUME(RETURN) },
+        { ALT: () => this.CONSUME(VAR) },
+        { ALT: () => this.CONSUME(VAL) },
+        { ALT: () => this.CONSUME(GLOBAL_ZS) },
+        { ALT: () => this.CONSUME(STATIC) },
+        { ALT: () => this.CONSUME(INSTANCEOF) },
+        { ALT: () => this.CONSUME(WHILE) },
+        { ALT: () => this.CONSUME(BREAK) },
+        { ALT: () => this.CONSUME(NULL) },
+        { ALT: () => this.CONSUME(TRUE) },
+        { ALT: () => this.CONSUME(FALSE) },
+        { ALT: () => this.CONSUME(IMPORT) },
       ]);
     });
     this.CONSUME(GT);
@@ -532,13 +566,16 @@ export class ZenScriptParser extends Parser {
     this.CONSUME(SQBR_CLOSE);
   });
 
-  // TODO: make ZSObject not ambiguous with blockstatement
-  protected ZSObject = this.RULE('ZSObject', () => {
+  protected ZSMap = this.RULE('ZSMap', () => {
     this.CONSUME(A_OPEN);
     this.MANY_SEP({
       SEP: COMMA,
       DEF: () => {
-        this.SUBRULE(this.AssignExpression);
+        // this.SUBRULE(this.AssignExpression);
+        this.OR([
+          { ALT: () => this.CONSUME(IDENTIFIER) },
+          { ALT: () => this.CONSUME(STRING_VALUE) },
+        ]);
         this.CONSUME(COLON);
         this.SUBRULE2(this.AssignExpression);
       },
