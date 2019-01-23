@@ -189,7 +189,14 @@ export class ZenScriptParser extends Parser {
    */
   protected Statement = this.RULE('Statement', () => {
     this.OR([
-      { ALT: () => this.SUBRULE(this.StatementBody) },
+      {
+        GATE: this.BACKTRACK(this.ExpressionStatement),
+        ALT: () => this.SUBRULE(this.StatementBody),
+      },
+      {
+        GATE: this.BACKTRACK(this.StatementBody),
+        ALT: () => this.SUBRULE(this.ExpressionStatement),
+      },
       { ALT: () => this.SUBRULE(this.ReturnStatement) },
       { ALT: () => this.SUBRULE(this.DeclareStatement) },
       { ALT: () => this.SUBRULE(this.IfStatement) },
@@ -197,7 +204,6 @@ export class ZenScriptParser extends Parser {
       { ALT: () => this.SUBRULE(this.WhileStatement) },
       { ALT: () => this.SUBRULE(this.VersionStatement) },
       { ALT: () => this.SUBRULE(this.BreakStatement) },
-      { ALT: () => this.SUBRULE(this.ExpressionStatement) },
     ]);
   });
 
@@ -571,17 +577,17 @@ export class ZenScriptParser extends Parser {
     this.MANY_SEP({
       SEP: COMMA,
       DEF: () => {
-        // this.SUBRULE(this.AssignExpression);
-        this.OR([
-          { ALT: () => this.CONSUME(INT_VALUE) },
-          { ALT: () => this.CONSUME(FLOAT_VALUE) },
-          { ALT: () => this.CONSUME(STRING_VALUE) },
-          { ALT: () => this.CONSUME(IDENTIFIER) },
-          { ALT: () => this.SUBRULE(this.BracketHandler) },
-          { ALT: () => this.CONSUME(TRUE) },
-          { ALT: () => this.CONSUME(FALSE) },
-          { ALT: () => this.CONSUME(NULL) },
-        ]);
+        this.SUBRULE(this.AssignExpression);
+        // this.OR([
+        //   { ALT: () => this.CONSUME(INT_VALUE) },
+        //   { ALT: () => this.CONSUME(FLOAT_VALUE) },
+        //   { ALT: () => this.CONSUME(STRING_VALUE) },
+        //   { ALT: () => this.CONSUME(IDENTIFIER) },
+        //   { ALT: () => this.SUBRULE(this.BracketHandler) },
+        //   { ALT: () => this.CONSUME(TRUE) },
+        //   { ALT: () => this.CONSUME(FALSE) },
+        //   { ALT: () => this.CONSUME(NULL) },
+        // ]);
         this.CONSUME(COLON);
         this.SUBRULE2(this.AssignExpression);
       },
