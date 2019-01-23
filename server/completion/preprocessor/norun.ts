@@ -1,4 +1,4 @@
-import { IPreProcessorCompletion } from 'server/api/IPreProcessor';
+import { IPreProcessorCompletion } from '../../api/IPreProcessor';
 
 export const NoRunPreProcessor: IPreProcessorCompletion = {
   name: 'norun',

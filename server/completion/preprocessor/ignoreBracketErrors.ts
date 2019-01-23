@@ -1,4 +1,4 @@
-import { IPreProcessorCompletion } from 'server/api/IPreProcessor';
+import { IPreProcessorCompletion } from '../../api/IPreProcessor';
 
 export const IgnoreBracketErrorsPreProcessor: IPreProcessorCompletion = {
   name: 'ignoreBracketErrors',
