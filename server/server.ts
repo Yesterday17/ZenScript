@@ -292,11 +292,11 @@ connection.onCompletionResolve(
 );
 
 // Handle mouse onHover event
-connection.onHover(textDocumentPositionParams => {
+connection.onHover(hoverPosition => {
   // 获得当前正在修改的 document
-  const document = documents.get(textDocumentPositionParams.textDocument.uri);
+  const document = documents.get(hoverPosition.textDocument.uri);
   // 当前鼠标指向的位置
-  const position = textDocumentPositionParams.position;
+  const position = hoverPosition.position;
 
   // when document doesn't exist, return void
   if (!document) {
@@ -307,11 +307,9 @@ connection.onHover(textDocumentPositionParams => {
   const offset = document.offsetAt(position);
 
   const token = findToken(
-    documentTokens.get(textDocumentPositionParams.textDocument.uri),
+    documentTokens.get(hoverPosition.textDocument.uri),
     offset
   );
-
-  connection.console.log(JSON.stringify(token));
 
   if (token.exist) {
     const hover: Hover = {
