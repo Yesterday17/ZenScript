@@ -10,7 +10,7 @@ import {
   ProposedFeatures,
   TextDocument,
   TextDocuments,
-  WorkspaceFolder
+  WorkspaceFolder,
 } from 'vscode-languageserver';
 import Uri from 'vscode-uri';
 import { zGlobal } from './api/global';
@@ -18,13 +18,14 @@ import { defaultSettings, ZenScriptSettings } from './api/setting';
 import {
   BracketHandlerMap,
   DetailBracketHandlers,
-  SimpleBracketHandlers
+  SimpleBracketHandlers,
 } from './completion/bracketHandler/bracketHandlers';
 import { Keywords, Preprocessors } from './completion/completion';
 import { ZSLexer } from './parser/zsLexer';
 import { applyRequests } from './requests/requests';
 import { findToken } from './utils/findToken';
 import { reloadRCFile } from './utils/zsrcFile';
+import { ZenScriptParser } from './parser/zsParser';
 
 // 创建一个服务的连接，连接使用 Node 的 IPC 作为传输
 // 并且引入所有 LSP 特性, 包括 preview / proposed
@@ -76,13 +77,13 @@ connection.onInitialize((params: InitializeParams) => {
           '#', // #*auto_preprocessor*
           '.', // recipes.*autocomplete*
           ':', // ore:*Autocomplete*
-          '<' // <*autocomplete*:*autocomplete*>
-        ]
+          '<', // <*autocomplete*:*autocomplete*>
+        ],
       },
       hoverProvider: zGlobal.isProject,
       // TODO: Support ZenScript Formatting
-      documentFormattingProvider: false
-    }
+      documentFormattingProvider: false,
+    },
   };
 });
 
@@ -126,7 +127,7 @@ function getDocumentSettings(resource: string): Thenable<ZenScriptSettings> {
   if (!result) {
     result = connection.workspace.getConfiguration({
       scopeUri: resource,
-      section: 'zenscript'
+      section: 'zenscript',
     });
     documentSettings.set(resource, result);
   }
@@ -154,7 +155,9 @@ async function validateTextDocument(textDocument: TextDocument): Promise<void> {
 
   const lexResult = ZSLexer.tokenize(text);
   documentTokens.set(textDocument.uri, lexResult.tokens);
-  // new ZenScriptParser(tokens).Program();
+  const parser = new ZenScriptParser(documentTokens.get(textDocument.uri));
+  const cst = parser.Program();
+  connection.console.log(JSON.stringify(parser.errors));
 }
 
 // 当 Watch 的文件确实发生变动
@@ -172,17 +175,17 @@ connection.onDidChangeWatchedFiles(_change => {
 // 负责处理自动补全的条目
 // 发送较为简单的消息
 connection.onCompletion(
-  (textDocumentPositionParams): CompletionItem[] => {
+  (completion): CompletionItem[] => {
     // 获得当前正在修改的 document
-    const document = documents.get(textDocumentPositionParams.textDocument.uri);
+    const document = documents.get(completion.textDocument.uri);
     // 当前补全的位置
-    const position = textDocumentPositionParams.position;
+    const position = completion.position;
     // 当前补全的 offset
     const offset = document.offsetAt(position);
     // 当前文档的文本
     const content = document.getText();
 
-    let triggerCharacter = textDocumentPositionParams.context.triggerCharacter;
+    let triggerCharacter = completion.context.triggerCharacter;
     if (!triggerCharacter) {
       const token = findToken(documentTokens.get(document.uri), offset - 1);
       if (token.exist && token.found.token.image.length === 1) {
@@ -213,7 +216,7 @@ connection.onCompletion(
             predecessor = document
               .getText({
                 start: document.positionAt(i + 1),
-                end: document.positionAt(offset - 1)
+                end: document.positionAt(offset - 1),
               })
               .split(':');
             break;
@@ -286,12 +289,12 @@ connection.onHover(textDocumentPositionParams => {
     const hover: Hover = {
       contents: {
         kind: 'plaintext',
-        value: token.found.token.tokenType.tokenName
+        value: token.found.token.tokenType.tokenName,
       },
       range: {
         start: document.positionAt(token.found.token.startOffset),
-        end: document.positionAt(token.found.token.endOffset + 1)
-      }
+        end: document.positionAt(token.found.token.endOffset + 1),
+      },
     };
     return Promise.resolve(hover);
   } else {
