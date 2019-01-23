@@ -63,9 +63,6 @@ export function activate(context: ExtensionContext) {
 
   // Start client & server
   client.start();
-
-  // Show status bar
-  StatusBar.show();
 }
 
 export function deactivate(): Thenable<void> | undefined {

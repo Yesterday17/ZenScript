@@ -2,23 +2,44 @@ import {
   window,
   StatusBarAlignment,
   StatusBarItem,
-  ExtensionContext
+  ExtensionContext,
+  TextEditor
 } from 'vscode';
 import { Registerable } from 'client/api/Registerable';
 import { LanguageClient } from 'vscode-languageclient';
+import * as path from 'path';
 
 class ZSStatusBar implements Registerable {
-  private bar: StatusBarItem;
+  bar: StatusBarItem;
 
   constructor() {
     this.bar = window.createStatusBarItem(StatusBarAlignment.Left, 10);
     this.bar.command = '';
-    this.bar.color = '#9999FF';
-    this.bar.text = '233';
+    this.bar.color = '#32CD32';
+    this.bar.text = 'ZenScript';
   }
 
   register(client: LanguageClient, context: ExtensionContext) {
+    // Register statusbar
     context.subscriptions.push(this.bar);
+
+    // Register texteditor change event
+    context.subscriptions.push(
+      window.onDidChangeActiveTextEditor((e: TextEditor) => {
+        if (e && e.document) {
+          const isZSFile =
+            path.extname(e.document.uri.fsPath).toLowerCase() === '.zs';
+          if (isZSFile) {
+            this.show();
+            return;
+          }
+        }
+        this.hide();
+      })
+    );
+
+    // Show status bar
+    this.show();
   }
 
   show() {
