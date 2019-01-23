@@ -1,27 +1,27 @@
-import { CompletionItem, CompletionItemKind } from "vscode-languageserver";
-import { IBracketHandler } from "../../api/IBracketHandler";
-import { zGlobal } from "../../api/global";
-import { BracketHandlerKind } from "./bracketHandlers";
+import { CompletionItem, CompletionItemKind } from 'vscode-languageserver';
+import { IBracketHandler } from '../../api/IBracketHandler';
+import { zGlobal } from '../../api/global';
+import { BracketHandlerKind } from './bracketHandlers';
 
 class Liquid implements IBracketHandler {
   handler: CompletionItem;
   constructor(alias: string) {
     this.handler = {
       label: alias,
-      detail: "Access liquids.",
+      detail: 'Access liquids.',
       documentation: {
-        kind: "markdown",
+        kind: 'markdown',
         value:
           "The liquid Bracket Handler gives you access to the liquids in the game. It is only possible to get liquids registered in the game, so adding or removing mods may cause issues if you reference the mod's liquids in an liquid Bracket Handler.  \n" +
-          "Liquids are referenced in the Liquid Bracket Handler by like so:  \n" +
-          "```\n" +
-          "<liquid:liquidname> OR <fluid:liquidname>\n" +
-          "\n" +
-          "<liquid:lava> OR <fluid:lava>\n" +
-          "```\n" +
-          "If the liquid is found, this will return an ILiquidStack Object.  \n" +
-          "Please refer to the [respective Wiki entry](https://crafttweaker.readthedocs.io/en/latest/#Vanilla/Liquids/ILiquidStack/)" +
-          " for further information on what you can do with these."
+          'Liquids are referenced in the Liquid Bracket Handler by like so:  \n' +
+          '```\n' +
+          '<liquid:liquidname> OR <fluid:liquidname>\n' +
+          '\n' +
+          '<liquid:lava> OR <fluid:lava>\n' +
+          '```\n' +
+          'If the liquid is found, this will return an ILiquidStack Object.  \n' +
+          'Please refer to the [respective Wiki entry](https://crafttweaker.readthedocs.io/en/latest/#Vanilla/Liquids/ILiquidStack/)' +
+          ' for further information on what you can do with these.'
       }
     };
   }
@@ -35,7 +35,7 @@ class Liquid implements IBracketHandler {
             label: key,
             kind: BracketHandlerKind,
             data: {
-              triggerCharacter: ":",
+              triggerCharacter: ':',
               predecessor
             }
           } as CompletionItem;
@@ -49,7 +49,7 @@ class Liquid implements IBracketHandler {
                 label: fluid.name,
                 kind: CompletionItemKind.Value,
                 data: {
-                  triggerCharacter: ":",
+                  triggerCharacter: ':',
                   predecessor,
                   position: i
                 }
@@ -75,7 +75,7 @@ class Liquid implements IBracketHandler {
           ...item,
           detail: mod.name,
           documentation: {
-            kind: "markdown",
+            kind: 'markdown',
             value: mod.description
           }
         };
@@ -88,7 +88,7 @@ class Liquid implements IBracketHandler {
           ...item,
           detail: liquidFound.name,
           documentation: {
-            kind: "markdown",
+            kind: 'markdown',
             value:
               `UnlocalizedName: ${liquidFound.unlocalizedName}  \n` +
               `Rarity: ${liquidFound.rarity}  \n` +
@@ -102,5 +102,5 @@ class Liquid implements IBracketHandler {
   }
 }
 
-export const LiquidBracketHandler = new Liquid("liquid");
-export const FluidBracketHandler = new Liquid("fluid");
+export const LiquidBracketHandler = new Liquid('liquid');
+export const FluidBracketHandler = new Liquid('fluid');

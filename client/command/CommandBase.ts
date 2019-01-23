@@ -1,5 +1,5 @@
-import { LanguageClient } from "vscode-languageclient";
-import { ExtensionContext, commands } from "vscode";
+import { LanguageClient } from 'vscode-languageclient';
+import { ExtensionContext, commands } from 'vscode';
 
 /**
  * Base class of all vscode commands.

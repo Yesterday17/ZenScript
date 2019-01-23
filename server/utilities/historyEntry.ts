@@ -1,4 +1,4 @@
-import { HistoryEntryItem } from "../../api/requests/HistoryEntryRequest";
+import { HistoryEntryItem } from '../../api/requests/HistoryEntryRequest';
 
 /**
  * Inspired by @Snownee discussed in @TeamCovertDragon QQ Group.
@@ -26,7 +26,7 @@ class EntryNode {
 }
 
 class HistoryEntryHandler {
-  private top: EntryNode = new EntryNode("ENTRY_NODE_TOP");
+  private top: EntryNode = new EntryNode('ENTRY_NODE_TOP');
   private len: number = 0;
 
   constructor() {

@@ -6,23 +6,24 @@ import {
   InitializeParams,
   DidChangeConfigurationNotification,
   CompletionItem,
-  Hover
-} from "vscode-languageserver";
-import { ZSLexer } from "./parser/zsLexer";
-import { IToken } from "chevrotain";
-import { ZenScriptParser } from "./parser/zsParser";
+  Hover,
+  WorkspaceFolder
+} from 'vscode-languageserver';
+import { ZSLexer } from './parser/zsLexer';
+import { IToken } from 'chevrotain';
+import { ZenScriptParser } from './parser/zsParser';
 import {
   DetailBracketHandlers,
   SimpleBracketHandlers,
   BracketHandlerMap
-} from "./completion/bracketHandler/bracketHandlers";
-import { Keywords, Preprocessors } from "./completion/completion";
-import { URL } from "url";
-import { zGlobal } from "./api/global";
-import { ZenScriptSettings, defaultSettings } from "./api/setting";
-import { applyRequests } from "./requests/requests";
-import { reloadRCFile } from "./utils/zsrcFile";
-import { findToken } from "./utils/findToken";
+} from './completion/bracketHandler/bracketHandlers';
+import { Keywords, Preprocessors } from './completion/completion';
+import { URL } from 'url';
+import { zGlobal } from './api/global';
+import { ZenScriptSettings, defaultSettings } from './api/setting';
+import { applyRequests } from './requests/requests';
+import { reloadRCFile } from './utils/zsrcFile';
+import { findToken } from './utils/findToken';
 
 // 创建一个服务的连接，连接使用 Node 的 IPC 作为传输
 // 并且引入所有 LSP 特性, 包括 preview / proposed
@@ -37,15 +38,20 @@ let hasConfigurationCapability: boolean = false;
 connection.onInitialize((params: InitializeParams) => {
   let capabilities = params.capabilities;
 
-  const folders = params.workspaceFolders;
+  const folders = params.workspaceFolders ? [...params.workspaceFolders] : [];
 
   // No Folder is opened / foldername !== scripts
   // disable most of language server features
   // TODO: Make it available for workspace
-  if (folders === null || folders[0].name !== "scripts") {
-    zGlobal.isProject = false;
+  let folder: WorkspaceFolder | undefined = undefined;
+  folders.forEach(f => (folder = f.name === 'scripts' ? f : undefined));
+
+  // whether a folder named `scripts` exist
+  if (folder) {
+    zGlobal.baseFolder = folder.uri;
+    reloadRCFile(connection);
   } else {
-    zGlobal.baseFolder = folders[0].uri;
+    zGlobal.isProject = false;
   }
 
   // Does the client support the `workspace/configuration` request?
@@ -53,19 +59,16 @@ connection.onInitialize((params: InitializeParams) => {
   hasConfigurationCapability =
     capabilities.workspace && !!capabilities.workspace.configuration;
 
-  // Load `.zsrc` configuration file
-  reloadRCFile(connection);
-
   return {
     capabilities: {
       textDocumentSync: documents.syncKind,
       completionProvider: {
         resolveProvider: true,
         triggerCharacters: [
-          "#", // #*auto_preprocessor*
-          ".", // recipes.*autocomplete*
-          ":", // ore:*Autocomplete*
-          "<" // <*autocomplete*:*autocomplete*>
+          '#', // #*auto_preprocessor*
+          '.', // recipes.*autocomplete*
+          ':', // ore:*Autocomplete*
+          '<' // <*autocomplete*:*autocomplete*>
         ]
       },
       hoverProvider: zGlobal.isProject,
@@ -115,7 +118,7 @@ function getDocumentSettings(resource: string): Thenable<ZenScriptSettings> {
   if (!result) {
     result = connection.workspace.getConfiguration({
       scopeUri: resource,
-      section: "zenscript"
+      section: 'zenscript'
     });
     documentSettings.set(resource, result);
   }
@@ -150,7 +153,7 @@ async function validateTextDocument(textDocument: TextDocument): Promise<void> {
 connection.onDidChangeWatchedFiles(_change => {
   for (const change of _change.changes) {
     if (
-      new URL(change.uri).hash === new URL(zGlobal.baseFolder + "/.zsrc").hash
+      new URL(change.uri).hash === new URL(zGlobal.baseFolder + '/.zsrc').hash
     ) {
       reloadRCFile(connection);
       break;
@@ -183,28 +186,28 @@ connection.onCompletion(
 
     // TODO: 完成自动补全
     switch (triggerCharacter) {
-      case "#":
+      case '#':
         return Preprocessors;
-      case ".":
+      case '.':
         break;
-      case ":":
+      case ':':
         // 位于 <> 内的内容
         let predecessor: string[] = [];
 
         // 寻找 inBracket
         for (let i = offset - 1; i >= 0; i--) {
           // 当 : 与 < 不再同一行时直接返回 null
-          if (content[i] === "\n") {
+          if (content[i] === '\n') {
             return;
           }
 
-          if (content[i] === "<") {
+          if (content[i] === '<') {
             predecessor = document
               .getText({
                 start: document.positionAt(i + 1),
                 end: document.positionAt(offset - 1)
               })
-              .split(":");
+              .split(':');
             break;
           }
         }
@@ -212,7 +215,7 @@ connection.onCompletion(
         return BracketHandlerMap.get(predecessor[0])
           ? BracketHandlerMap.get(predecessor[0]).next(predecessor)
           : null;
-      case "<":
+      case '<':
         return [...SimpleBracketHandlers];
       default:
         return [...Keywords];
@@ -230,7 +233,7 @@ connection.onCompletionResolve(
     }
 
     switch (item.data.triggerCharacter) {
-      case ":":
+      case ':':
         if (
           item.data.predecessor instanceof Array &&
           item.data.predecessor.length > 0
@@ -239,7 +242,7 @@ connection.onCompletionResolve(
         } else {
           return;
         }
-      case "<":
+      case '<':
         return DetailBracketHandlers.find(i => {
           return i.label === item.label;
         });
@@ -274,7 +277,7 @@ connection.onHover(textDocumentPositionParams => {
   if (token.exist) {
     const hover: Hover = {
       contents: {
-        kind: "plaintext",
+        kind: 'plaintext',
         value: token.found.token.tokenType.tokenName
       },
       range: {

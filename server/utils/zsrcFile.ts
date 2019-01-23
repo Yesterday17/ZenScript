@@ -1,7 +1,7 @@
-import * as fs from "fs";
-import { zGlobal } from "../api/global";
-import { URL } from "url";
-import { Connection } from "vscode-languageserver";
+import * as fs from 'fs';
+import { zGlobal } from '../api/global';
+import { URL } from 'url';
+import { Connection } from 'vscode-languageserver';
 
 /**
  * Reload /scripts/.zsrc
@@ -10,8 +10,8 @@ import { Connection } from "vscode-languageserver";
 export function reloadRCFile(connection: Connection) {
   try {
     zGlobal.rcFile = JSON.parse(
-      fs.readFileSync(new URL(zGlobal.baseFolder + "/.zsrc"), {
-        encoding: "utf-8"
+      fs.readFileSync(new URL(zGlobal.baseFolder + '/.zsrc'), {
+        encoding: 'utf-8'
       })
     );
 

@@ -1,7 +1,7 @@
-import { Connection } from "vscode-languageserver";
-import { zGlobal } from "../api/global";
-import { HistoryEntryGetRequestType } from "../../api/requests/HistoryEntryRequest";
-import { HistoryEntries } from "../utilities/historyEntry";
+import { Connection } from 'vscode-languageserver';
+import { zGlobal } from '../api/global';
+import { HistoryEntryGetRequestType } from '../../api/requests/HistoryEntryRequest';
+import { HistoryEntries } from '../utilities/historyEntry';
 
 // TODO: implement RequestBase when the [feature](https://github.com/Microsoft/TypeScript/issues/14600) is available.
 export class HistoryEntryGetRequest /* implements RequestBase */ {

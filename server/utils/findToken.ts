@@ -1,4 +1,4 @@
-import { IToken } from "chevrotain";
+import { IToken } from 'chevrotain';
 
 interface TokenFindResult {
   exist: boolean;

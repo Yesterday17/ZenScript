@@ -1,28 +1,28 @@
-import * as path from "path";
-import { workspace, ExtensionContext } from "vscode";
+import * as path from 'path';
+import { workspace, ExtensionContext } from 'vscode';
 
 import {
   LanguageClient,
   LanguageClientOptions,
   ServerOptions,
   TransportKind
-} from "vscode-languageclient";
+} from 'vscode-languageclient';
 import {
   CommandHistoryEntryGet,
   CommandHistoryEntryAdd
-} from "./command/historyEntry";
+} from './command/historyEntry';
 
 let client: LanguageClient;
 
 export function activate(context: ExtensionContext) {
   // Server 是以 Node 实现的
   let serverModule = context.asAbsolutePath(
-    path.join("out", "server", "server.js")
+    path.join('out', 'server', 'server.js')
   );
 
   // Server 的 Debug 配置
   // --inspect=6009: runs the server in Node's Inspector mode so VS Code can attach to the server for debugging
-  const debugOptions = { execArgv: ["--nolazy", "--inspect=6009"] };
+  const debugOptions = { execArgv: ['--nolazy', '--inspect=6009'] };
 
   // 当处于 Debug 状态时使用 Debug, 通常情况使用 run
   const serverOptions: ServerOptions = {
@@ -37,17 +37,17 @@ export function activate(context: ExtensionContext) {
   // 控制 Language Client 的选项
   const clientOptions: LanguageClientOptions = {
     // 为 Language Server 注册文件类型为 ZenScript
-    documentSelector: [{ scheme: "file", language: "zenscript" }],
+    documentSelector: [{ scheme: 'file', language: 'zenscript' }],
     synchronize: {
       // 当工作空间中的'.clientrc'文件改变时通知服务
-      fileEvents: workspace.createFileSystemWatcher("**/.zsrc")
+      fileEvents: workspace.createFileSystemWatcher('**/.zsrc')
     }
   };
 
   // 创建并启动 Client
   client = new LanguageClient(
-    "zenscript",
-    "Zenscript",
+    'zenscript',
+    'Zenscript',
     serverOptions,
     clientOptions
   );

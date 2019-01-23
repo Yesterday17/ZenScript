@@ -1,25 +1,25 @@
-import { CompletionItem, CompletionItemKind } from "vscode-languageserver";
-import { IBracketHandler } from "../../api/IBracketHandler";
-import { BracketHandlerKind } from "./bracketHandlers";
-import { zGlobal } from "../../api/global";
+import { CompletionItem, CompletionItemKind } from 'vscode-languageserver';
+import { IBracketHandler } from '../../api/IBracketHandler';
+import { BracketHandlerKind } from './bracketHandlers';
+import { zGlobal } from '../../api/global';
 
 class Enchantment implements IBracketHandler {
   handler: CompletionItem = {
-    label: "enchantment",
-    detail: "Access Enchantment definitions.",
+    label: 'enchantment',
+    detail: 'Access Enchantment definitions.',
     documentation: {
-      kind: "markdown",
+      kind: 'markdown',
       value:
-        "The Enchantment Bracket Handler gives you access to the Enchantment definitions in the game.  \n" +
-        "They are referenced in the Enchantment handler this way:  \n" +
-        "```\n" +
-        "<enchantment:modid:name>\n" +
-        "\n" +
-        "<enchantment:minecraft:protection>\n" +
-        "```\n" +
-        "If the Enchantment is found, this will return an IEnchantmentDefinition Object.  \n" +
-        "Please refer to the [respective Wiki entry](https://crafttweaker.readthedocs.io/en/latest/#Vanilla/Enchantments/IEnchantmentDefinition/)" +
-        " for further information on what you can do with these."
+        'The Enchantment Bracket Handler gives you access to the Enchantment definitions in the game.  \n' +
+        'They are referenced in the Enchantment handler this way:  \n' +
+        '```\n' +
+        '<enchantment:modid:name>\n' +
+        '\n' +
+        '<enchantment:minecraft:protection>\n' +
+        '```\n' +
+        'If the Enchantment is found, this will return an IEnchantmentDefinition Object.  \n' +
+        'Please refer to the [respective Wiki entry](https://crafttweaker.readthedocs.io/en/latest/#Vanilla/Enchantments/IEnchantmentDefinition/)' +
+        ' for further information on what you can do with these.'
     }
   };
 
@@ -32,7 +32,7 @@ class Enchantment implements IBracketHandler {
             label: key,
             kind: BracketHandlerKind,
             data: {
-              triggerCharacter: ":",
+              triggerCharacter: ':',
               predecessor
             }
           } as CompletionItem;
@@ -46,7 +46,7 @@ class Enchantment implements IBracketHandler {
                 label: item.resourceLocation.path,
                 kind: CompletionItemKind.Value,
                 data: {
-                  triggerCharacter: ":",
+                  triggerCharacter: ':',
                   predecessor,
                   position: i
                 }
@@ -72,7 +72,7 @@ class Enchantment implements IBracketHandler {
           ...item,
           detail: mod.name,
           documentation: {
-            kind: "markdown",
+            kind: 'markdown',
             value: mod.description
           }
         };
@@ -85,8 +85,8 @@ class Enchantment implements IBracketHandler {
           ...item,
           detail: enchantmentFound.name,
           documentation: {
-            kind: "markdown",
-            value: "**Type**: " + enchantmentFound.type
+            kind: 'markdown',
+            value: '**Type**: ' + enchantmentFound.type
           }
         };
       default:

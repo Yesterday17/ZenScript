@@ -1,0 +1,6 @@
+{
+  "parser": "typescript",
+  "singleQuote": true,
+  "printWidth": 80,
+  "bracketSpacing": true
+}

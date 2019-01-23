@@ -1,4 +1,4 @@
-import { CompletionItem } from "vscode-languageserver";
+import { CompletionItem } from 'vscode-languageserver';
 
 export interface IBracketHandler {
   handler: CompletionItem;

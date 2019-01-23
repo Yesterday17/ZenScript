@@ -5,23 +5,23 @@ import {
   EntityEntry,
   EnchantmentEntry,
   FluidEntry
-} from "./rcFile";
-import { ZenScriptSettings } from "./setting";
+} from './rcFile';
+import { ZenScriptSettings } from './setting';
 
 export const zGlobal = {
   // 是否为 Project
   isProject: true as boolean,
 
   // root folder of a project
-  baseFolder: "" as string,
+  baseFolder: '' as string,
 
   // global setting
   setting: {} as ZenScriptSettings,
 
   // .zsrc file
   rcFile: {
-    mcVersion: "",
-    forgeVersion: "",
+    mcVersion: '',
+    forgeVersion: '',
 
     mods: [] as ModEntry[],
     items: [] as ItemEntry[],

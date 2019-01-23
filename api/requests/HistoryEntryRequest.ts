@@ -1,4 +1,4 @@
-import { RequestType, RequestType0 } from "vscode-jsonrpc";
+import { RequestType, RequestType0 } from 'vscode-jsonrpc';
 
 export interface HistoryEntryItem {
   element: string;
@@ -9,11 +9,11 @@ export const HistoryEntryGetRequestType: RequestType0<
   HistoryEntryItem[],
   any,
   any
-> = new RequestType0("zenscript/getHistoryEntries");
+> = new RequestType0('zenscript/getHistoryEntries');
 
 export const HistoryEntryAddRequestType: RequestType<
   string,
   HistoryEntryItem[],
   any,
   any
-> = new RequestType("zenscript/addHistoryEntry");
+> = new RequestType('zenscript/addHistoryEntry');

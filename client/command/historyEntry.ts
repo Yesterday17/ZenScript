@@ -1,16 +1,16 @@
-import { window } from "vscode";
-import { CommandBase } from "./CommandBase";
+import { window } from 'vscode';
+import { CommandBase } from './CommandBase';
 import {
   HistoryEntryGetRequestType,
   HistoryEntryAddRequestType
-} from "../../api/requests/HistoryEntryRequest";
+} from '../../api/requests/HistoryEntryRequest';
 
 class HistoryEntryGet extends CommandBase {
-  public command = "zenscript.command.gethistoryentry";
+  public command = 'zenscript.command.gethistoryentry';
   public handler = () => {
     this.client.sendRequest(HistoryEntryGetRequestType).then(items => {
       if (items.length === 0) {
-        window.showInformationMessage("No HistoryEntry available!");
+        window.showInformationMessage('No HistoryEntry available!');
         return;
       }
 
@@ -28,7 +28,7 @@ class HistoryEntryGet extends CommandBase {
 }
 
 class HistoryEntryAdd extends CommandBase {
-  public command = "zenscript.command.addhistoryentry";
+  public command = 'zenscript.command.addhistoryentry';
   public handler = () => {
     // If anything is selected
     if (
@@ -47,7 +47,7 @@ class HistoryEntryAdd extends CommandBase {
     } else {
       // Nothing is selected, open an inputbox
       window
-        .showInputBox({ placeHolder: "History entry to add:" })
+        .showInputBox({ placeHolder: 'History entry to add:' })
         .then(value => {
           if (value) {
             this.client

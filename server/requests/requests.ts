@@ -1,6 +1,6 @@
-import { Connection } from "vscode-languageserver";
-import { HistoryEntryAddRequest } from "./HistoryEntryAddRequest";
-import { HistoryEntryGetRequest } from "./HistoryEntryGetRequest";
+import { Connection } from 'vscode-languageserver';
+import { HistoryEntryAddRequest } from './HistoryEntryAddRequest';
+import { HistoryEntryGetRequest } from './HistoryEntryGetRequest';
 
 const Requests = [HistoryEntryAddRequest, HistoryEntryGetRequest];
 

@@ -1,13 +1,13 @@
-import { CompletionItemKind, CompletionItem } from "vscode-languageserver";
-import { CreativeTabBracketHandler } from "./creativetab";
-import { DamageSourceBracketHandler } from "./damageSource";
-import { EnchantmentBracketHandler } from "./enchantment";
-import { EntityBracketHandler } from "./entity";
-import { LiquidBracketHandler, FluidBracketHandler } from "./liquid";
-import { OreBracketHandler } from "./ore";
-import { PotionBracketHandler } from "./potion";
-import { ItemBracketHandler } from "./item";
-import { IBracketHandler } from "../../api/IBracketHandler";
+import { CompletionItemKind, CompletionItem } from 'vscode-languageserver';
+import { CreativeTabBracketHandler } from './creativetab';
+import { DamageSourceBracketHandler } from './damageSource';
+import { EnchantmentBracketHandler } from './enchantment';
+import { EntityBracketHandler } from './entity';
+import { LiquidBracketHandler, FluidBracketHandler } from './liquid';
+import { OreBracketHandler } from './ore';
+import { PotionBracketHandler } from './potion';
+import { ItemBracketHandler } from './item';
+import { IBracketHandler } from '../../api/IBracketHandler';
 
 export const BracketHandlerKind: CompletionItemKind = CompletionItemKind.Unit;
 
@@ -35,7 +35,7 @@ export const SimpleBracketHandlers: CompletionItem[] = BracketHandlers.map(
     return {
       label: item.handler.label,
       kind: BracketHandlerKind,
-      data: { triggerCharacter: "<" }
+      data: { triggerCharacter: '<' }
     };
   }
 );
