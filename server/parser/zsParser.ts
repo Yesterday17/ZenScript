@@ -112,7 +112,7 @@ export class ZenScriptParser extends Parser {
         { ALT: () => this.SUBRULE(this.FunctionDeclaration) },
         // TODO: Support ZenClass
         // { ALT: () => this.SUBRULE(this.ZenClassDeclaration) },
-        { ALT: () => this.SUBRULE(this.BlockStatement) },
+        { ALT: () => this.SUBRULE(this.Statement) },
       ])
     );
   });
@@ -192,7 +192,9 @@ export class ZenScriptParser extends Parser {
    */
   protected StatementBody = this.RULE('StatementBody', () => {
     this.CONSUME(A_OPEN);
-    this.SUBRULE(this.BlockStatement);
+    this.OPTION(() => {
+      this.SUBRULE(this.BlockStatement);
+    });
     this.CONSUME(A_CLOSE);
   });
 
@@ -489,10 +491,7 @@ export class ZenScriptParser extends Parser {
       { ALT: () => this.SUBRULE(this.LambdaFunctionDeclaration) },
       { ALT: () => this.SUBRULE(this.BracketHandler) },
       { ALT: () => this.SUBRULE(this.ZSArray) },
-      {
-        GATE: this.BACKTRACK(this.StatementBody),
-        ALT: () => this.SUBRULE(this.ZSMap),
-      },
+      { ALT: () => this.SUBRULE(this.ZSMap) },
       { ALT: () => this.CONSUME(TRUE) },
       { ALT: () => this.CONSUME(FALSE) },
       { ALT: () => this.CONSUME(NULL) },
