@@ -1,5 +1,5 @@
 import * as path from 'path';
-import { ExtensionContext, workspace } from 'vscode';
+import { ExtensionContext, workspace, window } from 'vscode';
 import {
   LanguageClient,
   LanguageClientOptions,
@@ -60,6 +60,14 @@ export function activate(context: ExtensionContext) {
   StatusBar.register(client, context);
 
   //TODO: Register zenscriptExplorer
+
+  // Notifications
+  // TODO:
+  client.onReady().then(() => {
+    client.onNotification('zenscript/logMessage', (message: string) => {
+      window.showInformationMessage(message);
+    });
+  });
 
   // Start client & server
   client.start();

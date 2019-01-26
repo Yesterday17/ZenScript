@@ -59,7 +59,7 @@ connection.onInitialize((params: InitializeParams) => {
         f.name === 'scripts' ||
         path.basename(Uri.parse(f.uri).fsPath) === 'scripts'
           ? f
-          : undefined)
+          : folder)
   );
 
   // whether a folder named `scripts` exist
@@ -222,6 +222,13 @@ connection.onCompletion(
         return null;
       }
     }
+
+    // Debug
+    //
+    // connection.sendNotification(
+    //   'zenscript/logMessage',
+    //   `isProject: ${zGlobal.isProject}`
+    // );
 
     // TODO: 完成自动补全
     switch (triggerCharacter) {
