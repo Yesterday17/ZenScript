@@ -96,7 +96,7 @@ export class ZenScriptParser extends Parser {
 
   parse(input: IToken[]) {
     this.input = input;
-    this.Program();
+    return this.Program();
   }
 
   /**
@@ -104,7 +104,9 @@ export class ZenScriptParser extends Parser {
    * =================================================================================================
    */
   protected Program = this.RULE('Program', () => {
-    this.SUBRULE(this.ImportList);
+    this.OPTION(() => {
+      this.SUBRULE(this.ImportList);
+    });
 
     this.MANY(() =>
       this.OR([
@@ -123,7 +125,7 @@ export class ZenScriptParser extends Parser {
    */
 
   protected ImportList = this.RULE('ImportList', () => {
-    this.MANY(() => {
+    this.AT_LEAST_ONE(() => {
       this.CONSUME(IMPORT);
       this.SUBRULE(this.Package);
       this.OPTION(() => {
@@ -161,12 +163,12 @@ export class ZenScriptParser extends Parser {
    */
   protected FunctionDeclaration = this.RULE('FunctionDeclaration', () => {
     this.CONSUME(FUNCTION);
-    this.CONSUME(IDENTIFIER);
-    this.CONSUME(BR_OPEN);
+    this.CONSUME(IDENTIFIER, { ERR_MSG: 'Identifier Expected.' });
+    this.CONSUME(BR_OPEN, { ERR_MSG: `Missing '('` });
     this.OPTION(() => {
       this.SUBRULE(this.ParameterList);
     });
-    this.CONSUME(BR_CLOSE);
+    this.CONSUME(BR_CLOSE, { ERR_MSG: `Missing ')'` });
     this.OPTION2(() => {
       this.SUBRULE(this.TypeDeclare);
     });
@@ -585,19 +587,9 @@ export class ZenScriptParser extends Parser {
     this.MANY_SEP({
       SEP: COMMA,
       DEF: () => {
-        this.SUBRULE(this.AssignExpression);
-        // this.OR([
-        //   { ALT: () => this.CONSUME(INT_VALUE) },
-        //   { ALT: () => this.CONSUME(FLOAT_VALUE) },
-        //   { ALT: () => this.CONSUME(STRING_VALUE) },
-        //   { ALT: () => this.CONSUME(IDENTIFIER) },
-        //   { ALT: () => this.SUBRULE(this.BracketHandler) },
-        //   { ALT: () => this.CONSUME(TRUE) },
-        //   { ALT: () => this.CONSUME(FALSE) },
-        //   { ALT: () => this.CONSUME(NULL) },
-        // ]);
+        this.SUBRULE(this.AssignExpression, { LABEL: 'KEY' });
         this.CONSUME(COLON);
-        this.SUBRULE2(this.AssignExpression);
+        this.SUBRULE2(this.AssignExpression, { LABEL: 'VALUE' });
       },
     });
     this.CONSUME(A_CLOSE);

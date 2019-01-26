@@ -324,6 +324,11 @@ connection.onHover(hoverPosition => {
   // Get offset
   const offset = document.offsetAt(position);
 
+  // Debug
+  connection.console.log(
+    JSON.stringify(documentCSTs.get(hoverPosition.textDocument.uri))
+  );
+
   const token = findToken(
     documentTokens.get(hoverPosition.textDocument.uri),
     offset
