@@ -16,7 +16,7 @@ import {
 } from 'vscode-languageserver';
 import Uri from 'vscode-uri';
 import { zGlobal } from './api/global';
-import { defaultSettings, ZenScriptSettings } from './api/setting';
+import { defaultSettings } from './api/setting';
 import {
   BracketHandlerMap,
   DetailBracketHandlers,
@@ -33,6 +33,7 @@ import { applyRequests } from './requests/requests';
 import { findToken } from './utils/findToken';
 import { reloadRCFile } from './utils/zsrcFile';
 import { PreProcessorCompletions } from './completion/preprocessor/preprocessors';
+import { ZenScriptSettings } from './api';
 
 // 创建一个服务的连接，连接使用 Node 的 IPC 作为传输
 // 并且引入所有 LSP 特性, 包括 preview / proposed

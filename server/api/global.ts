@@ -1,34 +1,34 @@
+import { defaultSettings } from './setting';
+import { ZSGlobal } from '.';
 import {
-  ItemEntry,
   ModEntry,
-  ZSRCFile,
-  EntityEntry,
+  ItemEntry,
   EnchantmentEntry,
+  EntityEntry,
   FluidEntry,
 } from './rcFile';
-import { ZenScriptSettings } from './setting';
 
-export const zGlobal = {
+export const zGlobal: ZSGlobal = {
   // 是否为 Project
-  isProject: true as boolean,
+  isProject: true,
 
   // root folder of a project
-  baseFolder: '' as string,
+  baseFolder: '',
 
-  // global setting
-  setting: {} as ZenScriptSettings,
+  // global setting(default)
+  setting: defaultSettings,
 
   // .zsrc file
   rcFile: {
     mcVersion: '',
     forgeVersion: '',
 
-    mods: [] as ModEntry[],
-    items: [] as ItemEntry[],
-    enchantments: [] as EnchantmentEntry[],
-    entities: [] as EntityEntry[],
-    fluids: [] as FluidEntry[],
-  } as ZSRCFile,
+    mods: [],
+    items: [],
+    enchantments: [],
+    entities: [],
+    fluids: [],
+  },
 
   mods: new Map<string, ModEntry>(),
   items: new Map<string, ItemEntry[]>(),
