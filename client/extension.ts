@@ -17,12 +17,11 @@ import { PriorityTreeDataView } from './view/priority';
 let client: LanguageClient;
 
 export function activate(context: ExtensionContext) {
-  // Server 是以 Node 实现的
-  let serverModule = context.asAbsolutePath(
+  const serverModule = context.asAbsolutePath(
     path.join('out', 'server', 'server.js')
   );
 
-  // Server 的 Debug 配置
+  // Debug setting for languageServer
   // --inspect=6009: runs the server in Node's Inspector mode so VS Code can attach to the server for debugging
   const debugOptions = { execArgv: ['--nolazy', '--inspect=6009'] };
 
@@ -36,7 +35,7 @@ export function activate(context: ExtensionContext) {
     },
   };
 
-  // 控制 Language Client 的选项
+  // options of language client
   const clientOptions: LanguageClientOptions = {
     // 为 Language Server 注册文件类型为 ZenScript
     documentSelector: [{ scheme: 'file', language: 'zenscript' }],
@@ -62,15 +61,15 @@ export function activate(context: ExtensionContext) {
   // Register status bar
   StatusBar.register(client, context);
 
-  // Register TreeDataView
-  PriorityTreeDataView.register(client, context);
-
-  // Notifications
-  // TODO: reconstruct
+  // Register when language server is reqdy
   client.onReady().then(() => {
+    // Notifications
     client.onNotification('zenscript/logMessage', (message: string) => {
       window.showInformationMessage(message);
     });
+
+    // Priority TreeDataView
+    PriorityTreeDataView.register(client, context);
   });
 
   // Start client & server
