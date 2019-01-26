@@ -14,6 +14,7 @@
   ],
   "activationEvents": [
     "onLanguage:zenscript",
+    "onView:priorityTree",
     "onCommand:zenscript.command.gethistoryentry",
     "onCommand:zenscript.command.addhistoryentry"
   ],
@@ -61,6 +62,10 @@
         {
           "id": "history-entries",
           "name": "History Entries"
+        },
+        {
+          "id": "priorityTree",
+          "name": "Priority Tree"
         }
       ]
     },

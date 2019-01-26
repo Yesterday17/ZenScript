@@ -9,7 +9,7 @@ export abstract class CommandBase implements Registerable {
   protected client: LanguageClient;
 
   protected abstract command: string;
-  protected abstract handler: () => void;
+  protected abstract handler: (...args: any[]) => void;
 
   public register(client: LanguageClient, context: ExtensionContext) {
     this.client = client;

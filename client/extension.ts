@@ -11,6 +11,8 @@ import {
   CommandHistoryEntryGet,
 } from './command/historyEntry';
 import { StatusBar } from './view/statusbar';
+import { CommandOpenFile } from './command/openFile';
+import { PriorityTreeDataView } from './view/priority';
 
 let client: LanguageClient;
 
@@ -55,14 +57,16 @@ export function activate(context: ExtensionContext) {
   // Register commands
   CommandHistoryEntryGet.register(client, context);
   CommandHistoryEntryAdd.register(client, context);
+  CommandOpenFile.register(client, context);
 
   // Register status bar
   StatusBar.register(client, context);
 
-  //TODO: Register zenscriptExplorer
+  // Register TreeDataView
+  PriorityTreeDataView.register(client, context);
 
   // Notifications
-  // TODO:
+  // TODO: reconstruct
   client.onReady().then(() => {
     client.onNotification('zenscript/logMessage', (message: string) => {
       window.showInformationMessage(message);

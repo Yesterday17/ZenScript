@@ -5,7 +5,7 @@ import {
   ExtensionContext,
   TextEditor,
 } from 'vscode';
-import { Registerable } from 'client/api/Registerable';
+import { Registerable } from '../api/Registerable';
 import { LanguageClient } from 'vscode-languageclient';
 import * as path from 'path';
 

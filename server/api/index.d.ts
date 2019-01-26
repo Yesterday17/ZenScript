@@ -6,6 +6,7 @@ import {
   ModEntry,
   ZSRCFile,
 } from './rcFile';
+import { PriorityTreeItem } from '../../api/requests/PriorityTreeRequest';
 
 /**
  * Settings
@@ -37,4 +38,7 @@ export interface ZSGlobal {
   fluids: Map<string, FluidEntry[]>;
 
   idMaps: IDMap;
+
+  // preprocessor
+  priority: Map<string, PriorityTreeItem>;
 }

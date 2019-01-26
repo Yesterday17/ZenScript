@@ -4,3 +4,8 @@ export interface IPreProcessorCompletion {
 
   supported: boolean;
 }
+
+export interface IPreProcessor {
+  completion: IPreProcessorCompletion;
+  handle(path: string, args: string[]): void;
+}

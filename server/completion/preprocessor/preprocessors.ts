@@ -1,18 +1,18 @@
 import { CompletionItem, CompletionItemKind } from 'vscode-languageserver';
-import { DebugPreProcessor } from './debug';
-import { IgnoreBracketErrorsPreProcessor } from './ignoreBracketErrors';
-import { LoaderPreProcessor } from './loader';
-import { ModLoadedPreProcessor } from './modloaded';
-import { NoRunPreProcessor } from './norun';
-import { PriorityPreProcessor } from './priotiry';
+import { DebugPreProcessorCompletion } from './debug';
+import { IgnoreBracketErrorsPreProcessorCompletion } from './ignoreBracketErrors';
+import { LoaderPreProcessorCompletion } from './loader';
+import { ModLoadedPreProcessorCompletion } from './modloaded';
+import { NoRunPreProcessorCompletion } from './norun';
+import { PriorityPreProcessorCompletion } from './priotiry';
 
 export const PreProcessorCompletions: CompletionItem[] = [
-  DebugPreProcessor,
-  IgnoreBracketErrorsPreProcessor,
-  LoaderPreProcessor,
-  ModLoadedPreProcessor,
-  NoRunPreProcessor,
-  PriorityPreProcessor,
+  DebugPreProcessorCompletion,
+  IgnoreBracketErrorsPreProcessorCompletion,
+  LoaderPreProcessorCompletion,
+  ModLoadedPreProcessorCompletion,
+  NoRunPreProcessorCompletion,
+  PriorityPreProcessorCompletion,
 ].map(item => {
   return {
     label: item.name,

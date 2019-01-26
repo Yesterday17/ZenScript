@@ -28,6 +28,7 @@ import { ZSParser } from './parser/zsParser';
 import {
   getPreProcessorList,
   PreProcessors,
+  PreProcessorHandlersMap,
 } from './preprocessor/zsPreProcessor';
 import { applyRequests } from './requests/requests';
 import { findToken } from './utils/findToken';
@@ -162,6 +163,15 @@ async function validateTextDocument(textDocument: TextDocument): Promise<void> {
     textDocument.getText(),
     PreProcessors
   );
+
+  // run preprocessors
+  preProcessedText.slice(1).forEach(preprocessor => {
+    const split = preprocessor.split(' ');
+    if (PreProcessorHandlersMap.has(split[0])) {
+      PreProcessorHandlersMap.get(split[0]).handle(textDocument.uri, split);
+    }
+  });
+
   let text = preProcessedText[0];
 
   const lexResult = ZSLexer.tokenize(text);

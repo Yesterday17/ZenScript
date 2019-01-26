@@ -7,9 +7,10 @@ import {
   EntityEntry,
   FluidEntry,
 } from './rcFile';
+import { PriorityTreeItem } from '../../out/api/requests/PriorityTreeRequest';
 
 export const zGlobal: ZSGlobal = {
-  // 是否为 Project
+  // whether it's a project
   isProject: true,
 
   // root folder of a project
@@ -40,4 +41,7 @@ export const zGlobal: ZSGlobal = {
     items: new Map<number, ItemEntry>(),
     entities: new Map<number, EntityEntry>(),
   },
+
+  // preprocessor information
+  priority: new Map<string, PriorityTreeItem>(),
 };

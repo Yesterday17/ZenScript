@@ -1,6 +1,6 @@
 import { IPreProcessorCompletion } from '../../api/IPreProcessor';
 
-export const PriorityPreProcessor: IPreProcessorCompletion = {
+export const PriorityPreProcessorCompletion: IPreProcessorCompletion = {
   name: 'priority',
   description:
     'The higher a script’s priority the earlier it is getting executed.\n' +

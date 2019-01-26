@@ -38,5 +38,6 @@
       "out": true
     },
     "prettier.tslintIntegration": true,
+    "editor.tabSize": 2,
   }
 }
