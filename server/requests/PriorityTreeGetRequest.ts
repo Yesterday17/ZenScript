@@ -7,7 +7,7 @@ export class PriorityTreeGetRequest /* implements RequestBase */ {
   static onRequest(connection: Connection) {
     connection.onRequest(PriorityTreeGetRequestType, () => {
       return Array.from(zGlobal.priority.values()).sort((a, b) => {
-        const priorityCompare = a.priority - b.priority;
+        const priorityCompare = b.priority - a.priority;
         if (priorityCompare !== 0) {
           return priorityCompare;
         } else {
