@@ -63,11 +63,6 @@ export function activate(context: ExtensionContext) {
 
   // Register when language server is reqdy
   client.onReady().then(() => {
-    // Notifications
-    client.onNotification('zenscript/logMessage', (message: string) => {
-      window.showInformationMessage(message);
-    });
-
     // Priority TreeDataView
     PriorityTreeDataView.register(client, context);
   });
