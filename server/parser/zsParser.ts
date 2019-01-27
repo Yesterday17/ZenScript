@@ -153,7 +153,9 @@ export class ZenScriptParser extends Parser {
       this.OPTION(() => {
         this.SUBRULE(this.TypeDeclare, { LABEL: 'vType' });
       });
-      this.CONSUME(ASSIGN);
+      this.CONSUME(ASSIGN, {
+        ERR_MSG: 'Global and Static variables must be initialized.',
+      });
       this.SUBRULE(this.Expression, { LABEL: 'value' });
       this.CONSUME(SEMICOLON, { ERR_MSG: '; expected' });
     }
