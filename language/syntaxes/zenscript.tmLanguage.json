@@ -3,6 +3,21 @@
   "name": "ZenScript",
   "patterns": [
     {
+      "include": "#keywords"
+    },
+    {
+      "include": "#doublestrings"
+    },
+    {
+      "include": "#singlestrings"
+    },
+    {
+      "include": "#values"
+    },
+    {
+      "include": "#brackethandlers"
+    },
+    {
       "include": "#blockcomment"
     },
     {
@@ -10,18 +25,6 @@
     },
     {
       "include": "#preprocessor"
-    },
-    {
-      "include": "#brackethandlers"
-    },
-    {
-      "include": "#keywords"
-    },
-    {
-      "include": "#singlestrings"
-    },
-    {
-      "include": "#doublestrings"
     }
   ],
   "repository": {
@@ -29,7 +32,7 @@
       "patterns": [
         {
           "name": "keyword.control.zenscript",
-          "match": "\\b(any|bool|byte|short|int|long|float|double|string|function|in|has|void|as|version|for|return|var|val|while|break|null|true|false|global|static|instanceof)\\b"
+          "match": "\\b(any|bool|byte|short|int|long|float|double|string|function|in|has|void|as|version|return|var|val|global|static|instanceof|break|null|true|false)\\b"
         },
         {
           "name": "keyword.control.import.zenscript",
@@ -38,6 +41,10 @@
         {
           "name": "keyword.control.conditional.zenscript",
           "match": "\\b(if|else)\\b"
+        },
+        {
+          "name": "keyword.control.loop.zenscript",
+          "match": "\\b(for|while)\\b"
         },
         {
           "name": "keyword.operator",
@@ -72,6 +79,18 @@
         {
           "name": "constant.character.escape.zenscript",
           "match": "\\\\."
+        }
+      ]
+    },
+    "values": {
+      "patterns": [
+        {
+          "name": "constant.numeric.integer.zenscript",
+          "match": "(?:0x[A-Fa-f0-9]*)|(?:-?(0|[1-9][0-9]*))"
+        },
+        {
+          "name": "constant.numeric.float.zenscript",
+          "match": "-?(0|[1-9][0-9]*).[0-9]+([eE][+-]?[0-9]+)?[fFdD]?"
         }
       ]
     },

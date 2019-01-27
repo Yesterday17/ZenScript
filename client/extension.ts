@@ -48,7 +48,7 @@ export function activate(context: ExtensionContext) {
   // Create language client
   client = new LanguageClient(
     'zenscript',
-    'Zenscript',
+    'ZenScript',
     serverOptions,
     clientOptions
   );
