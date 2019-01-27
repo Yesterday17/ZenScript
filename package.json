@@ -85,6 +85,12 @@
           "default": 20,
           "description": "%zenscript.maxHistoryEntries.desc%"
         },
+        "zenscript.showIsProjectWarn": {
+          "scope": "window",
+          "type": "boolean",
+          "default": true,
+          "description": ""
+        },
         "zenscript.trace.server": {
           "scope": "window",
           "type": "string",

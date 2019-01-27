@@ -6,4 +6,6 @@ import { ZenScriptSettings } from '.';
 export const defaultSettings: ZenScriptSettings = {
   maxNumberOfProblems: 100,
   maxHistoryEntries: 20,
+
+  showIsProjectWarn: true,
 };

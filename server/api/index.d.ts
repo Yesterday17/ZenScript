@@ -14,6 +14,8 @@ import { PriorityTreeItem } from '../../api/requests/PriorityTreeRequest';
 export interface ZenScriptSettings {
   maxNumberOfProblems: number;
   maxHistoryEntries: number;
+
+  showIsProjectWarn: boolean;
 }
 
 /**
