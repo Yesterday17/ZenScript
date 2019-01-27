@@ -35,6 +35,7 @@ import { findToken } from './utils/findToken';
 import { reloadRCFile } from './utils/zsrcFile';
 import { PreProcessorCompletions } from './completion/preprocessor/preprocessors';
 import { ZenScriptSettings } from './api';
+import { ZSInterpreter } from './parser/zsInterpreter';
 
 // 创建一个服务的连接，连接使用 Node 的 IPC 作为传输
 // 并且引入所有 LSP 特性, 包括 preview / proposed
@@ -189,6 +190,10 @@ async function validateTextDocument(textDocument: TextDocument): Promise<void> {
   documentTokens.set(textDocument.uri, lexResult.tokens);
   // save parsing result
   documentCSTs.set(textDocument.uri, ZSParser.parse(lexResult.tokens));
+  // FIXME: debug
+  connection.console.log(
+    JSON.stringify(ZSInterpreter.visit(documentCSTs.get(textDocument.uri)))
+  );
 
   // save errors
   ZSParser.errors.map(error => {

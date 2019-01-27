@@ -146,13 +146,16 @@ export class ZenScriptParser extends Parser {
         { ALT: () => this.CONSUME(GLOBAL_ZS) },
         { ALT: () => this.CONSUME(STATIC) },
       ]);
-      this.CONSUME(IDENTIFIER, { ERR_MSG: 'Identifier expected.' });
+      this.CONSUME(IDENTIFIER, {
+        LABEL: 'vName',
+        ERR_MSG: 'Identifier expected.',
+      });
       this.OPTION(() => {
-        this.SUBRULE(this.TypeDeclare);
+        this.SUBRULE(this.TypeDeclare, { LABEL: 'vType' });
       });
       this.OPTION2(() => {
         this.CONSUME(ASSIGN);
-        this.SUBRULE(this.Expression);
+        this.SUBRULE(this.Expression, { LABEL: 'value' });
       });
       this.CONSUME(SEMICOLON, { ERR_MSG: '; expected' });
     }

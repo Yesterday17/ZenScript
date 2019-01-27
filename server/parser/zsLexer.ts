@@ -3,7 +3,7 @@
 
 import * as chevrotain from 'chevrotain';
 
-export const createToken = chevrotain.createToken;
+const createToken = chevrotain.createToken;
 
 // Skip
 export const EOL = createToken({
