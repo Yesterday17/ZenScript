@@ -53,13 +53,17 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
       vName: '',
       vType: 'any',
       value: undefined,
+      errors: [],
     };
 
     declaration.type = ctx.GLOBAL_ZS ? 'global' : 'static';
     declaration.vName = ctx.vName[0].image;
     declaration.vType = ctx.vType ? this.visit(ctx.vType) : 'any';
-    declaration.value = ctx.value ? this.visit(ctx.value) : undefined;
+    declaration.value = this.visit(ctx.value);
 
+    if (declaration.errors.length === 0) {
+      delete declaration.errors;
+    }
     return declaration;
   }
 

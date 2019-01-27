@@ -153,10 +153,8 @@ export class ZenScriptParser extends Parser {
       this.OPTION(() => {
         this.SUBRULE(this.TypeDeclare, { LABEL: 'vType' });
       });
-      this.OPTION2(() => {
-        this.CONSUME(ASSIGN);
-        this.SUBRULE(this.Expression, { LABEL: 'value' });
-      });
+      this.CONSUME(ASSIGN);
+      this.SUBRULE(this.Expression, { LABEL: 'value' });
       this.CONSUME(SEMICOLON, { ERR_MSG: '; expected' });
     }
   );
