@@ -292,16 +292,42 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
     };
   }
 
-  protected TypeDeclare(ctx: NodeContext): ASTNode {
-    return {
-      type: 'type-declare',
-    };
+  protected TypeDeclare(ctx: NodeContext) {
+    return this.visit(ctx.TypeAnnotation);
   }
 
   protected TypeAnnotation(ctx: NodeContext): ASTNode {
-    return {
-      type: 'type',
-    };
+    // Type from ANY - STRING
+    if (Object.keys(ctx).length === 1) {
+      return {
+        type: Object.keys(ctx)[0],
+      };
+    }
+
+    // Imported type
+    if (ctx.IDENTIFIER) {
+      return {
+        type: 'IMPORT',
+        item: ctx.IDENTIFIER.map((identifier: IToken) => identifier.image),
+      };
+    }
+
+    // Function type
+    if (ctx.FUNCTION) {
+      return {
+        type: 'FUNCTION',
+        item: ctx.ParameterType.map((type: any) => this.visit(type)),
+        return: this.visit(ctx.FunctionType),
+      };
+    }
+
+    // Array type
+    if (ctx.ArrayType) {
+      return {
+        type: 'ARRAY',
+        item: this.visit(ctx.ArrayType),
+      };
+    }
   }
 }
 

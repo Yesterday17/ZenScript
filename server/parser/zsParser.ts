@@ -627,49 +627,52 @@ export class ZenScriptParser extends Parser {
   });
 
   protected TypeAnnotation = this.RULE('TypeAnnotation', () => {
-    this.OR([
-      { ALT: () => this.CONSUME(ANY) },
-      { ALT: () => this.CONSUME(VOID) },
-      { ALT: () => this.CONSUME(BOOL) },
-      { ALT: () => this.CONSUME(BYTE) },
-      { ALT: () => this.CONSUME(SHORT) },
-      { ALT: () => this.CONSUME(INT) },
-      { ALT: () => this.CONSUME(LONG) },
-      { ALT: () => this.CONSUME(FLOAT) },
-      { ALT: () => this.CONSUME(DOUBLE) },
-      { ALT: () => this.CONSUME(STRING) },
-      {
-        ALT: () => {
-          this.AT_LEAST_ONE_SEP({
-            SEP: DOT,
-            DEF: () => {
-              this.CONSUME(IDENTIFIER);
-            },
-          });
+    this.OR({
+      DEF: [
+        { ALT: () => this.CONSUME(ANY) },
+        { ALT: () => this.CONSUME(VOID) },
+        { ALT: () => this.CONSUME(BOOL) },
+        { ALT: () => this.CONSUME(BYTE) },
+        { ALT: () => this.CONSUME(SHORT) },
+        { ALT: () => this.CONSUME(INT) },
+        { ALT: () => this.CONSUME(LONG) },
+        { ALT: () => this.CONSUME(FLOAT) },
+        { ALT: () => this.CONSUME(DOUBLE) },
+        { ALT: () => this.CONSUME(STRING) },
+        {
+          ALT: () => {
+            this.AT_LEAST_ONE_SEP({
+              SEP: DOT,
+              DEF: () => {
+                this.CONSUME(IDENTIFIER);
+              },
+            });
+          },
         },
-      },
-      {
-        ALT: () => {
-          this.CONSUME(FUNCTION);
-          this.CONSUME(BR_OPEN);
-          this.MANY_SEP({
-            SEP: COMMA,
-            DEF: () => {
-              this.SUBRULE(this.TypeAnnotation);
-            },
-          });
-          this.CONSUME(BR_CLOSE);
-          this.SUBRULE2(this.TypeAnnotation);
+        {
+          ALT: () => {
+            this.CONSUME(FUNCTION);
+            this.CONSUME(BR_OPEN);
+            this.MANY_SEP({
+              SEP: COMMA,
+              DEF: () => {
+                this.SUBRULE(this.TypeAnnotation, { LABEL: 'ParameterType' });
+              },
+            });
+            this.CONSUME(BR_CLOSE);
+            this.SUBRULE2(this.TypeAnnotation, { LABEL: 'FunctionType' });
+          },
         },
-      },
-      {
-        ALT: () => {
-          this.CONSUME(SQBR_OPEN);
-          this.SUBRULE3(this.TypeAnnotation);
-          this.CONSUME(SQBR_CLOSE);
+        {
+          ALT: () => {
+            this.CONSUME(SQBR_OPEN);
+            this.SUBRULE3(this.TypeAnnotation, { LABEL: 'ArrayType' });
+            this.CONSUME(SQBR_CLOSE);
+          },
         },
-      },
-    ]);
+      ],
+      ERR_MSG: 'Must be a type.',
+    });
     this.MANY(() => {
       this.CONSUME2(SQBR_OPEN);
       this.CONSUME2(SQBR_CLOSE);
