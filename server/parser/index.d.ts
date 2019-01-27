@@ -26,3 +26,13 @@ export interface ASTNodePackage extends ASTNode {
   type: string = 'package';
   item: string[];
 }
+
+export interface ASTNodeArray extends ASTNode {
+  type: string = 'array';
+  array: any[];
+}
+
+export interface ASTNodeMap extends ASTNode {
+  type: string = 'map';
+  map: Map;
+}

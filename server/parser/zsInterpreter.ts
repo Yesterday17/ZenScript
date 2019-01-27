@@ -1,12 +1,14 @@
-import { ZSParser } from './zsParser';
+import { CstNode, IToken } from 'chevrotain';
 import {
-  NodeContext,
   ASTNode,
+  ASTNodeArray,
+  ASTNodeDeclare,
   ASTNodePackage,
   ASTNodeProgram,
-  ASTNodeDeclare,
+  NodeContext,
+  ASTNodeMap,
 } from '.';
-import { CstNode, IToken } from 'chevrotain';
+import { ZSParser } from './zsParser';
 
 class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
   constructor() {
@@ -261,15 +263,39 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
     };
   }
 
-  protected ZSArray(ctx: NodeContext): ASTNode {
+  protected ZSArray(ctx: NodeContext): ASTNodeArray {
+    const arr: any[] = [];
+    if (ctx.AssignExpression) {
+      ctx.AssignExpression.forEach((item: any) => {
+        arr.push(this.visit(item));
+      });
+    }
+
     return {
       type: 'array',
+      array: arr,
     };
   }
 
-  protected ZSMap(ctx: NodeContext): ASTNode {
+  protected ZSMap(ctx: NodeContext): ASTNodeMap {
+    const map = new Map();
+    if (ctx.KEY) {
+      const keys = ctx.KEY.map((key: any) => this.visit(key));
+      const values = ctx.VALUE.map((value: any) => this.visit(value));
+      for (const i in keys) {
+        if (keys.hasOwnProperty(i) && values.hasOwnProperty(i)) {
+          if (map.has(keys[i])) {
+            // TODO: throw error here.
+          } else {
+            map.set(keys[i], values[i]);
+          }
+        }
+      }
+    }
+
     return {
       type: 'map',
+      map: map,
     };
   }
 
