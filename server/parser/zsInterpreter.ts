@@ -358,9 +358,11 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
   }
 
   protected TypeAnnotation(ctx: NodeContext): ASTNode {
+    let type;
+
     // Imported type
     if (ctx.IDENTIFIER) {
-      return {
+      type = {
         type: 'IMPORT',
         item: ctx.IDENTIFIER.map((identifier: IToken) => identifier.image),
       };
@@ -368,14 +370,14 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
 
     // Type from ANY - STRING
     if (Object.keys(ctx).length === 1) {
-      return {
+      type = {
         type: Object.keys(ctx)[0],
       };
     }
 
     // Function type
     if (ctx.FUNCTION) {
-      return {
+      type = {
         type: 'FUNCTION',
         item: ctx.ParameterType.map((type: any) => this.visit(type)),
         return: this.visit(ctx.FunctionType),
@@ -384,11 +386,21 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
 
     // Array type
     if (ctx.ArrayType) {
-      return {
+      type = {
         type: 'ARRAY',
         item: this.visit(ctx.ArrayType),
       };
     }
+
+    if (ctx.SQBR_OPEN) {
+      return {
+        type: 'A_ARRAY',
+        item: type,
+        level: ctx.SQBR_OPEN.length,
+      };
+    }
+
+    return type;
   }
 }
 
