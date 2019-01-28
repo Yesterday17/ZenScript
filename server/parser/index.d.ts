@@ -10,9 +10,10 @@ export interface ASTNode {
 
 export interface ASTNodeProgram extends ASTNode {
   type: string = 'program';
-  import: [];
-  global: [];
-  static: [];
+  import: Map;
+  global: Map;
+  static: Map;
+  function: Map;
 }
 
 export interface ASTNodeDeclare extends ASTNode {
@@ -20,6 +21,14 @@ export interface ASTNodeDeclare extends ASTNode {
   // TODO: Fix variable type
   vType: string;
   value: any;
+}
+
+export interface ASTNodeFunction extends ASTNode {
+  type: 'function';
+  fName: string;
+  fPara: any[];
+  fType: any;
+  fBody: any;
 }
 
 export interface ASTNodePackage extends ASTNode {

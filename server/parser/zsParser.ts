@@ -18,7 +18,6 @@ import {
   DOT,
   DOT2,
   DOUBLE,
-  DOUBLE_QUOTED_STRING,
   ELSE,
   EQ,
   FALSE,
@@ -50,7 +49,6 @@ import {
   RETURN,
   SEMICOLON,
   SHORT,
-  SINGLE_QUOTED_STRING,
   SQBR_CLOSE,
   SQBR_OPEN,
   STATIC,
@@ -166,7 +164,10 @@ export class ZenScriptParser extends Parser {
    */
   protected FunctionDeclaration = this.RULE('FunctionDeclaration', () => {
     this.CONSUME(FUNCTION);
-    this.CONSUME(IDENTIFIER, { ERR_MSG: 'Identifier Expected.' });
+    this.CONSUME(IDENTIFIER, {
+      LABEL: 'FunctionName',
+      ERR_MSG: 'Identifier Expected.',
+    });
     this.CONSUME(BR_OPEN, { ERR_MSG: `Missing '('` });
     this.OPTION(() => {
       this.SUBRULE(this.ParameterList);
@@ -532,44 +533,49 @@ export class ZenScriptParser extends Parser {
 
   protected BracketHandler = this.RULE('BracketHandler', () => {
     this.CONSUME(LT);
-    this.AT_LEAST_ONE(() => {
-      this.OR([
-        { ALT: () => this.CONSUME(IDENTIFIER) },
-        { ALT: () => this.CONSUME(INT_VALUE) },
-        { ALT: () => this.CONSUME(MUL) },
-        { ALT: () => this.CONSUME(MINUS) },
-        { ALT: () => this.CONSUME(COLON) },
-        { ALT: () => this.CONSUME(DOT) },
-        { ALT: () => this.CONSUME(ANY) },
-        { ALT: () => this.CONSUME(BOOL) },
-        { ALT: () => this.CONSUME(BYTE) },
-        { ALT: () => this.CONSUME(SHORT) },
-        { ALT: () => this.CONSUME(INT) },
-        { ALT: () => this.CONSUME(LONG) },
-        { ALT: () => this.CONSUME(FLOAT) },
-        { ALT: () => this.CONSUME(DOUBLE) },
-        { ALT: () => this.CONSUME(STRING) },
-        { ALT: () => this.CONSUME(FUNCTION) },
-        { ALT: () => this.CONSUME(IN) },
-        { ALT: () => this.CONSUME(VOID) },
-        { ALT: () => this.CONSUME(AS) },
-        { ALT: () => this.CONSUME(VERSION) },
-        { ALT: () => this.CONSUME(IF) },
-        { ALT: () => this.CONSUME(ELSE) },
-        { ALT: () => this.CONSUME(FOR) },
-        { ALT: () => this.CONSUME(RETURN) },
-        { ALT: () => this.CONSUME(VAR) },
-        { ALT: () => this.CONSUME(VAL) },
-        { ALT: () => this.CONSUME(GLOBAL_ZS) },
-        { ALT: () => this.CONSUME(STATIC) },
-        { ALT: () => this.CONSUME(INSTANCEOF) },
-        { ALT: () => this.CONSUME(WHILE) },
-        { ALT: () => this.CONSUME(BREAK) },
-        { ALT: () => this.CONSUME(NULL) },
-        { ALT: () => this.CONSUME(TRUE) },
-        { ALT: () => this.CONSUME(FALSE) },
-        { ALT: () => this.CONSUME(IMPORT) },
-      ]);
+    this.AT_LEAST_ONE_SEP({
+      SEP: COLON,
+      DEF: () => {
+        this.OR({
+          NAME: '$BracketHandlerItem',
+          DEF: [
+            { ALT: () => this.CONSUME(IDENTIFIER) },
+            { ALT: () => this.CONSUME(INT_VALUE) },
+            { ALT: () => this.CONSUME(MUL) },
+            { ALT: () => this.CONSUME(MINUS) },
+            { ALT: () => this.CONSUME(DOT) },
+            { ALT: () => this.CONSUME(ANY) },
+            { ALT: () => this.CONSUME(BOOL) },
+            { ALT: () => this.CONSUME(BYTE) },
+            { ALT: () => this.CONSUME(SHORT) },
+            { ALT: () => this.CONSUME(INT) },
+            { ALT: () => this.CONSUME(LONG) },
+            { ALT: () => this.CONSUME(FLOAT) },
+            { ALT: () => this.CONSUME(DOUBLE) },
+            { ALT: () => this.CONSUME(STRING) },
+            { ALT: () => this.CONSUME(FUNCTION) },
+            { ALT: () => this.CONSUME(IN) },
+            { ALT: () => this.CONSUME(VOID) },
+            { ALT: () => this.CONSUME(AS) },
+            { ALT: () => this.CONSUME(VERSION) },
+            { ALT: () => this.CONSUME(IF) },
+            { ALT: () => this.CONSUME(ELSE) },
+            { ALT: () => this.CONSUME(FOR) },
+            { ALT: () => this.CONSUME(RETURN) },
+            { ALT: () => this.CONSUME(VAR) },
+            { ALT: () => this.CONSUME(VAL) },
+            { ALT: () => this.CONSUME(GLOBAL_ZS) },
+            { ALT: () => this.CONSUME(STATIC) },
+            { ALT: () => this.CONSUME(INSTANCEOF) },
+            { ALT: () => this.CONSUME(WHILE) },
+            { ALT: () => this.CONSUME(BREAK) },
+            { ALT: () => this.CONSUME(NULL) },
+            { ALT: () => this.CONSUME(TRUE) },
+            { ALT: () => this.CONSUME(FALSE) },
+            { ALT: () => this.CONSUME(IMPORT) },
+          ],
+        });
+      },
     });
     this.CONSUME(GT);
   });
@@ -588,6 +594,7 @@ export class ZenScriptParser extends Parser {
   protected ZSMap = this.RULE('ZSMap', () => {
     this.CONSUME(A_OPEN);
     this.MANY_SEP({
+      NAME: '$MapEntry',
       SEP: COMMA,
       DEF: () => {
         this.SUBRULE(this.AssignExpression, { LABEL: 'KEY' });
@@ -608,7 +615,7 @@ export class ZenScriptParser extends Parser {
   });
 
   protected ParameterList = this.RULE('ParameterList', () => {
-    this.MANY_SEP({
+    this.AT_LEAST_ONE_SEP({
       SEP: COMMA,
       DEF: () => this.SUBRULE(this.Parameter),
     });

@@ -7,6 +7,7 @@ import {
   ASTNodeProgram,
   NodeContext,
   ASTNodeMap,
+  ASTNodeFunction,
 } from '.';
 import { ZSParser } from './zsParser';
 
@@ -19,9 +20,10 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
   public Program(ctx: NodeContext): ASTNodeProgram {
     const program: ASTNodeProgram = {
       type: 'program',
-      import: [],
-      global: [],
-      static: [],
+      import: new Map(),
+      global: new Map(),
+      static: new Map(),
+      function: new Map(),
     };
 
     if (ctx.ImportList) {
@@ -30,8 +32,23 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
 
     if (ctx.GlobalStaticDeclaration) {
       ctx.GlobalStaticDeclaration.forEach((element: any) => {
-        const node = this.visit(element);
-        program[node.type].push(node);
+        const node: ASTNodeDeclare = this.visit(element);
+        if (!program[node.type].has(node.vName)) {
+          program[node.type].set(node.vName, node);
+        } else {
+          // TODO: Error
+        }
+      });
+    }
+
+    if (ctx.FunctionDeclaration) {
+      ctx.FunctionDeclaration.forEach((element: any) => {
+        const func: ASTNodeFunction = this.visit(element);
+        if (!program.function.has(func.fName)) {
+          program.function.set(func.fName, func);
+        } else {
+          // TODO: Error
+        }
       });
     }
 
@@ -44,9 +61,7 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
    */
 
   public ImportList(ctx: NodeContext) {
-    const packages = ctx.Package.map((pkg: CstNode) => this.visit(pkg));
-
-    return packages;
+    return ctx.Package.map((pkg: CstNode) => this.visit(pkg));
   }
 
   public GlobalStaticDeclaration(ctx: NodeContext): ASTNodeDeclare {
@@ -69,9 +84,13 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
     return declaration;
   }
 
-  public FunctionDeclaration(ctx: NodeContext): ASTNode {
+  public FunctionDeclaration(ctx: NodeContext): ASTNodeFunction {
     return {
       type: 'function',
+      fName: ctx.FunctionName[0].image,
+      fPara: ctx.ParameterList ? this.visit(ctx.ParameterList) : [],
+      fType: ctx.TypeDeclare ? this.visit(ctx.TypeDeclare) : 'any',
+      fBody: this.visit(ctx.StatementBody),
     };
   }
 
@@ -251,18 +270,25 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
     };
   }
 
+  // TODO: Debug
   protected InBracket(ctx: NodeContext): ASTNode {
-    return {
-      type: 'inbracket',
-    };
+    return this.visit(ctx.AssignExpression);
   }
 
+  // TODO: Debug
   protected BracketHandler(ctx: NodeContext): ASTNode {
     return {
       type: 'bracket-handler',
+      item: ctx.$BracketHandlerItem.map((item: any) => this.visit(item)),
     };
   }
 
+  // TODO: Debug
+  protected BracketHandler$BracketHandlerItem(ctx: NodeContext) {
+    return ctx[Object.keys(ctx)[0]].image;
+  }
+
+  // TODO: Debug
   protected ZSArray(ctx: NodeContext): ASTNodeArray {
     const arr: any[] = [];
     if (ctx.AssignExpression) {
@@ -277,26 +303,30 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
     };
   }
 
+  // TODO: Debug
   protected ZSMap(ctx: NodeContext): ASTNodeMap {
     const map = new Map();
-    if (ctx.KEY) {
-      const keys = ctx.KEY.map((key: any) => this.visit(key));
-      const values = ctx.VALUE.map((value: any) => this.visit(value));
-      for (const i in keys) {
-        if (keys.hasOwnProperty(i) && values.hasOwnProperty(i)) {
-          if (map.has(keys[i])) {
-            // TODO: throw error here.
-          } else {
-            map.set(keys[i], values[i]);
-          }
+
+    if (ctx.$MapEntry) {
+      ctx.$MapEntry.forEach((entry: any) => {
+        const e = this.visit(entry);
+        if (!map.has(e[0])) {
+          map.set(e[0], e[1]);
+        } else {
+          // TODO: Error here.
         }
-      }
+      });
     }
 
     return {
       type: 'map',
       map: map,
     };
+  }
+
+  // TODO: Debug
+  protected ZSMap$MapEntry(ctx: NodeContext) {
+    return [this.visit(ctx.KEY), this.visit(ctx.VALUE)];
   }
 
   protected Package(ctx: NodeContext): ASTNodePackage {
@@ -306,15 +336,20 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
     };
   }
 
+  // TODO: Debug
   protected ParameterList(ctx: NodeContext): ASTNode {
     return {
       type: 'parameter-list',
+      item: ctx.Parameter.map((item: any) => this.visit(item)),
     };
   }
 
+  // TODO: Debug
   protected Parameter(ctx: NodeContext): ASTNode {
     return {
       type: 'parameter',
+      pName: ctx.IDENTIFIER[0].image,
+      pType: ctx.TypeDeclare ? this.visit(ctx.TypeDeclare[0]) : undefined,
     };
   }
 
@@ -323,18 +358,18 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
   }
 
   protected TypeAnnotation(ctx: NodeContext): ASTNode {
-    // Type from ANY - STRING
-    if (Object.keys(ctx).length === 1) {
-      return {
-        type: Object.keys(ctx)[0],
-      };
-    }
-
     // Imported type
     if (ctx.IDENTIFIER) {
       return {
         type: 'IMPORT',
         item: ctx.IDENTIFIER.map((identifier: IToken) => identifier.image),
+      };
+    }
+
+    // Type from ANY - STRING
+    if (Object.keys(ctx).length === 1) {
+      return {
+        type: Object.keys(ctx)[0],
       };
     }
 
