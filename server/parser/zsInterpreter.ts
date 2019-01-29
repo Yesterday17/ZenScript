@@ -336,7 +336,6 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
     };
   }
 
-  // TODO: Debug
   protected ParameterList(ctx: NodeContext): ASTNode {
     return {
       type: 'parameter-list',
@@ -344,7 +343,6 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
     };
   }
 
-  // TODO: Debug
   protected Parameter(ctx: NodeContext): ASTNode {
     return {
       type: 'parameter',
