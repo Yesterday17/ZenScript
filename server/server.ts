@@ -196,16 +196,19 @@ async function validateTextDocument(textDocument: TextDocument): Promise<void> {
   const ast: ASTNodeProgram = ZSInterpreter.visit(
     documentCSTs.get(textDocument.uri)
   );
-  connection.console.log(
-    JSON.stringify({
-      type: ast.type,
-      import: ast.import,
-      global: Array.from(ast.global),
-      static: Array.from(ast.static),
-      function: Array.from(ast.function),
-      error: ast.errors,
-    })
-  );
+
+  if (ast) {
+    connection.console.log(
+      JSON.stringify({
+        type: ast.type,
+        import: ast.import,
+        global: Array.from(ast.global),
+        static: Array.from(ast.static),
+        function: Array.from(ast.function),
+        error: ast.errors,
+      })
+    );
+  }
 
   // save errors
   ZSParser.errors.map(error => {
