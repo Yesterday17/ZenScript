@@ -31,6 +31,11 @@
   resolved "http://registry.npm.taobao.org/@types/node/download/@types/node-10.12.18.tgz#1d3ca764718915584fcd9f6344621b7672665c67"
   integrity sha1-HTynZHGJFVhPzZ9jRGIbdnJmXGc=
 
+"@types/prettier@^1.15.2":
+  version "1.15.2"
+  resolved "http://registry.npm.taobao.org/@types/prettier/download/@types/prettier-1.15.2.tgz#91594ea7cb6f3b1f7ea69f32621246654c7cc231"
+  integrity sha1-kVlOp8tvOx9+pp8yYhJGZUx8wjE=
+
 abbrev@1:
   version "1.1.1"
   resolved "http://registry.npm.taobao.org/abbrev/download/abbrev-1.1.1.tgz#f8f2c887ad10bf67f634f005b6987fed3179aac8"
@@ -500,10 +505,10 @@ cheerio@^1.0.0-rc.1:
     lodash "^4.15.0"
     parse5 "^3.0.1"
 
-chevrotain@^4.1.1:
-  version "4.1.1"
-  resolved "http://registry.npm.taobao.org/chevrotain/download/chevrotain-4.1.1.tgz#e1e601bf099e96e6a3377671b7d5a40c631cf8ce"
-  integrity sha1-4eYBvwmeluajN3Zxt9WkDGMc+M4=
+chevrotain@^4.2.0:
+  version "4.2.0"
+  resolved "http://registry.npm.taobao.org/chevrotain/download/chevrotain-4.2.0.tgz#45b4813f8f6f7c3f0d80391d28e0a4561950a4be"
+  integrity sha1-RbSBP49vfD8NgDkdKOCkVhlQpL4=
   dependencies:
     regexp-to-ast "0.3.5"
 
@@ -3000,6 +3005,11 @@ posix-character-classes@^0.1.0:
   version "0.1.1"
   resolved "http://registry.npm.taobao.org/posix-character-classes/download/posix-character-classes-0.1.1.tgz#01eac0fe3b5af71a2a6c02feabb8c1fef7e00eab"
   integrity sha1-AerA/jta9xoqbAL+q7jB/vfgDqs=
+
+prettier@^1.16.1:
+  version "1.16.1"
+  resolved "http://registry.npm.taobao.org/prettier/download/prettier-1.16.1.tgz#534c2c9d7853f8845e5e078384e71973bd74089f"
+  integrity sha1-U0wsnXhT+IReXgeDhOcZc710CJ8=
 
 pretty-hrtime@^1.0.0:
   version "1.0.3"
