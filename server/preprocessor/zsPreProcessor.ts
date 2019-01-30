@@ -3,12 +3,9 @@ import { IPreProcessor } from '../api/IPreProcessor';
 
 export function getPreProcessorList(text: string, list: string[]): string[] {
   const result = [text];
-  result[0].replace(/#([^\r\n]+)/g, (str, find) => {
+  result[0].match(/#([^\r\n]+)/g).forEach(find => {
     if (list.indexOf(find.split(' ')[0]) !== -1) {
       result.push(find);
-      return '';
-    } else {
-      return str;
     }
   });
   return result;
