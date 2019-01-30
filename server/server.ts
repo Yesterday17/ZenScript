@@ -37,6 +37,7 @@ import { PreProcessorCompletions } from './completion/preprocessor/preprocessors
 import { ZenScriptSettings } from './api';
 import { ZSInterpreter } from './parser/zsInterpreter';
 import { ASTNodeProgram } from './parser';
+import { ZSFormatter } from './services/zsFormat';
 
 // 创建一个服务的连接，连接使用 Node 的 IPC 作为传输
 // 并且引入所有 LSP 特性, 包括 preview / proposed
@@ -55,7 +56,6 @@ connection.onInitialize((params: InitializeParams) => {
 
   // No Folder is opened / foldername !== scripts
   // disable most of language server features
-  // TODO: Make it available for workspace
   let folder: WorkspaceFolder | undefined = undefined;
   folders.forEach(
     f =>
@@ -93,7 +93,7 @@ connection.onInitialize((params: InitializeParams) => {
       },
       hoverProvider: zGlobal.isProject,
       // TODO: Support ZenScript Formatting
-      documentFormattingProvider: false,
+      documentFormattingProvider: true,
     },
   };
 });
@@ -158,6 +158,7 @@ function getDocumentSettings(resource: string): Thenable<ZenScriptSettings> {
 documents.onDidClose(e => {
   documentSettings.delete(e.document.uri);
   documentTokens.delete(e.document.uri);
+  documentCSTs.delete(e.document.uri);
 });
 
 // The content of a text document has changed. This event is emitted
@@ -261,13 +262,6 @@ connection.onCompletion(
         return null;
       }
     }
-
-    // Debug
-    //
-    // connection.sendNotification(
-    //   'zenscript/logMessage',
-    //   `isProject: ${zGlobal.isProject}`
-    // );
 
     // TODO: 完成自动补全
     switch (triggerCharacter) {
@@ -378,6 +372,11 @@ connection.onHover(hoverPosition => {
     // Token not found, which means that hover is not needed
     return Promise.resolve(void 0);
   }
+});
+
+connection.onDocumentFormatting(params => {
+  const document = documents.get(params.textDocument.uri);
+  return null;
 });
 
 // apply all requests
