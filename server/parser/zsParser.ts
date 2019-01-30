@@ -76,6 +76,7 @@ import {
   AND_ASSIGN,
   XOR_ASSIGN,
   INSTANCEOF,
+  COMMENT,
 } from './zsLexer';
 
 export class ZenScriptParser extends Parser {
@@ -218,6 +219,7 @@ export class ZenScriptParser extends Parser {
       { ALT: () => this.SUBRULE(this.WhileStatement) },
       { ALT: () => this.SUBRULE(this.VersionStatement) },
       { ALT: () => this.SUBRULE(this.BreakStatement) },
+      { ALT: () => this.CONSUME(COMMENT) },
     ]);
   });
 
