@@ -26,11 +26,13 @@ export const LINE_COMMENT = createToken({
   name: 'LINE_COMMENT',
   pattern: /(?:\/\/|#).*/,
   categories: [COMMENT],
+  group: chevrotain.Lexer.SKIPPED,
 });
 export const BLOCK_COMMENT = createToken({
   name: 'BLOCK_COMMENT',
   pattern: /\/\*([^*]|\*+[^*/])*(\*+\/)?/,
   categories: [COMMENT],
+  group: chevrotain.Lexer.SKIPPED,
 });
 
 // Tokens

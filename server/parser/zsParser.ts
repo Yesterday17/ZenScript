@@ -219,7 +219,7 @@ export class ZenScriptParser extends Parser {
       { ALT: () => this.SUBRULE(this.WhileStatement) },
       { ALT: () => this.SUBRULE(this.VersionStatement) },
       { ALT: () => this.SUBRULE(this.BreakStatement) },
-      { ALT: () => this.CONSUME(COMMENT) },
+      // { ALT: () => this.CONSUME(COMMENT) },
     ]);
   });
 
