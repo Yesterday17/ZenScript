@@ -12,6 +12,10 @@
   "categories": [
     "Programming Languages"
   ],
+  "galleryBanner": {
+    "color": "#9999ff",
+    "theme": "light"
+  },
   "activationEvents": [
     "onLanguage:zenscript",
     "onView:priorityTree",
