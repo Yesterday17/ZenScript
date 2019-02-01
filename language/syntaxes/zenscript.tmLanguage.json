@@ -1,31 +1,14 @@
 {
-  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
   "name": "ZenScript",
+  "scopeName": "source.zenscript",
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
   "patterns": [
-    {
-      "include": "#keywords"
-    },
-    {
-      "include": "#doublestrings"
-    },
-    {
-      "include": "#singlestrings"
-    },
-    {
-      "include": "#values"
-    },
-    {
-      "include": "#brackethandlers"
-    },
-    {
-      "include": "#blockcomment"
-    },
-    {
-      "include": "#linecomment"
-    },
-    {
-      "include": "#preprocessor"
-    }
+    { "include": "#keywords" },
+    { "include": "#doublestrings" },
+    { "include": "#singlestrings" },
+    { "include": "#values" },
+    { "include": "#brackethandlers" },
+    { "include": "#comments" }
   ],
   "repository": {
     "keywords": {
@@ -48,7 +31,7 @@
         },
         {
           "name": "keyword.operator",
-          "match": "(\\.\\.|\\+=|\\+|-=|-|\\*=|\\*|\\/=|\\/|%=|%|\\|=|\\||\\|\\||&=|&&|&|\\^=|\\^|\\?|:|~=|~|;|<=|<|>=|>|==|=|!=|!|\\$)"
+          "match": "(\\.\\.|\\+=|\\+|-=|-|\\*=|\\*|\\/=|\\/(?!\\/|\\*)|%=|%|\\|=|\\||\\|\\||&=|&&|&|\\^=|\\^|\\?|:|~=|~|;|<=|<|>=|>|==|=|!=|!|\\$)"
         }
       ]
     },
@@ -105,21 +88,24 @@
         }
       ]
     },
-    "blockcomment": {
-      "name": "comment.blockcomment.zenscript",
-      "begin": "/\\*",
-      "end": "\\*/"
-    },
-    "linecomment": {
-      "name": "comment.linecomment.zenscript",
-      "begin": "//",
-      "end": "\\n"
-    },
-    "preprocessor": {
-      "name": "keyword.control.preprocessor",
-      "begin": "#",
-      "end": "\\n"
+    "comments": {
+      "patterns": [
+        {
+          "name": "comment.block.zenscript",
+          "begin": "/\\*",
+          "end": "\\*/"
+        },
+        {
+          "name": "comment.line.zenscript",
+          "begin": "//",
+          "end": "$\\n?"
+        },
+        {
+          "name": "comment.line.preprocessor",
+          "begin": "#",
+          "end": "$\\n?"
+        }
+      ]
     }
-  },
-  "scopeName": "source.zenscript"
+  }
 }
