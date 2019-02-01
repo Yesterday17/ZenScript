@@ -229,7 +229,9 @@ export class ZenScriptParser extends Parser {
    */
   protected ReturnStatement = this.RULE('ReturnStatement', () => {
     this.CONSUME(RETURN);
-    this.SUBRULE(this.Expression);
+    this.OPTION(() => {
+      this.SUBRULE(this.Expression);
+    });
     this.CONSUME(SEMICOLON, { ERR_MSG: '; expected' });
   });
 
