@@ -19,9 +19,8 @@
   },
   "activationEvents": [
     "onLanguage:zenscript",
-    "onView:priorityTree",
-    "onCommand:zenscript.command.gethistoryentry",
-    "onCommand:zenscript.command.addhistoryentry"
+    "workspaceContains:**/.zsrc",
+    "workspaceContains:**/.zs"
   ],
   "main": "./out/client/extension",
   "contributes": {

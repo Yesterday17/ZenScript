@@ -66,7 +66,7 @@ connection.onInitialize((params: InitializeParams) => {
           : folder)
   );
 
-  // whether a folder named `scripts` exist
+  // whether a folder named `scripts` exists
   if (folder) {
     zGlobal.baseFolder = folder.uri;
     reloadRCFile(connection);
