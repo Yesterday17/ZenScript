@@ -4,6 +4,10 @@ export interface NodeContext {
 
 export interface ASTNode {
   type: string;
+  start: number;
+  end?: number;
+
+  body: ASTNode[];
   errors?: any[];
   [key: string]: any;
 }
@@ -14,13 +18,14 @@ export interface ASTNodeProgram extends ASTNode {
   global: Map;
   static: Map;
   function: Map;
+  body: ASTNode[];
 }
 
 export interface ASTNodeDeclare extends ASTNode {
   vName: string;
   // TODO: Fix variable type
   vType: string;
-  value: any;
+  value: ASTNode;
 }
 
 export interface ASTNodeFunction extends ASTNode {
@@ -28,7 +33,6 @@ export interface ASTNodeFunction extends ASTNode {
   fName: string;
   fPara: any[];
   fType: any;
-  fBody: any;
 }
 
 export interface ASTNodePackage extends ASTNode {
