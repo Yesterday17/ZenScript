@@ -12,6 +12,7 @@
   "categories": [
     "Programming Languages"
   ],
+  "icon": "https://raw.githubusercontent.com/Yesterday17/ZenScript/master/assets/icon.png",
   "galleryBanner": {
     "color": "#9999ff",
     "theme": "light"
