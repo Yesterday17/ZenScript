@@ -96,8 +96,8 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
     declaration.value = this.visit(ctx.value);
 
     declaration.start = ctx.GLOBAL_ZS
-      ? (ctx.GLOBAL_ZS as IToken).startOffset
-      : (ctx.Static as IToken).startOffset;
+      ? (ctx.GLOBAL_ZS[0] as IToken).startOffset
+      : (ctx.STATIC[0] as IToken).startOffset;
     declaration.end = declaration.value.end;
 
     if (declaration.errors.length === 0) {
