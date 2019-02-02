@@ -42,6 +42,6 @@ export const zGlobal: ZSGlobal = {
     entities: new Map<number, EntityEntry>(),
   },
 
-  // preprocessor information
-  priority: new Map<string, PriorityTreeItem>(),
+  // zs file
+  zsFiles: new Map(),
 };

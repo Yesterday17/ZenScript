@@ -1,7 +1,6 @@
 import { IPreProcessor } from '../api/IPreProcessor';
 import { PriorityPreProcessorCompletion } from '../completion/preprocessor/priotiry';
 import { zGlobal } from '../api/global';
-import { ZSBaseName } from '../utils/path';
 
 class PriorityPreProcessor implements IPreProcessor {
   completion = PriorityPreProcessorCompletion;
@@ -10,12 +9,12 @@ class PriorityPreProcessor implements IPreProcessor {
       return;
     }
 
-    zGlobal.priority.set(path, {
-      name: ZSBaseName(path),
-      path: path,
-      priority: parseInt(args[1]),
-    });
+    zGlobal.zsFiles.get(path).priority = parseInt(args[1]);
   }
+}
+
+export interface IPriority {
+  priority: number;
 }
 
 export const PriorityHandler = new PriorityPreProcessor();

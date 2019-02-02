@@ -23,21 +23,14 @@ import {
   SimpleBracketHandlers,
 } from './completion/bracketHandler/bracketHandlers';
 import { Keywords } from './completion/completion';
-import { ZSLexer } from './parser/zsLexer';
-import { ZSParser } from './parser/zsParser';
-import {
-  getPreProcessorList,
-  PreProcessors,
-  PreProcessorHandlersMap,
-} from './preprocessor/zsPreProcessor';
 import { applyRequests } from './requests/requests';
 import { findToken } from './utils/findToken';
 import { reloadRCFile } from './utils/zsrcFile';
 import { PreProcessorCompletions } from './completion/preprocessor/preprocessors';
 import { ZenScriptSettings } from './api';
-import { ZSInterpreter } from './parser/zsInterpreter';
-import { ASTNodeProgram } from './parser';
 import { ZSFormatter } from './services/zsFormat';
+import { AllZSFiles } from './utils/path';
+import { ZenParsedFile } from './api/zenParsedFile';
 
 // 创建一个服务的连接，连接使用 Node 的 IPC 作为传输
 // 并且引入所有 LSP 特性, 包括 preview / proposed
@@ -70,6 +63,16 @@ connection.onInitialize((params: InitializeParams) => {
   if (folder) {
     zGlobal.baseFolder = folder.uri;
     reloadRCFile(connection);
+
+    // Load all files
+    AllZSFiles(Uri.parse(zGlobal.baseFolder).fsPath).forEach(file => {
+      // new parsed file
+      const zsFile = new ZenParsedFile(file);
+      // save to map first
+      zGlobal.zsFiles.set(Uri.file(file).toString(), zsFile);
+      // then preprocess(not parse to save time)
+      zsFile.load().preprocess();
+    });
   } else {
     zGlobal.isProject = false;
   }
@@ -121,10 +124,6 @@ let globalSettings: ZenScriptSettings = defaultSettings;
 // cache setting for all opened documents
 let documentSettings: Map<string, Thenable<ZenScriptSettings>> = new Map();
 
-// Tokens
-const documentTokens: Map<string, IToken[]> = new Map();
-const documentCSTs: Map<string, any> = new Map();
-
 connection.onDidChangeConfiguration(change => {
   if (hasConfigurationCapability) {
     // reset all the settings
@@ -157,8 +156,6 @@ function getDocumentSettings(resource: string): Thenable<ZenScriptSettings> {
 // 只保留打开文档的设置
 documents.onDidClose(e => {
   documentSettings.delete(e.document.uri);
-  documentTokens.delete(e.document.uri);
-  documentCSTs.delete(e.document.uri);
 });
 
 // The content of a text document has changed. This event is emitted
@@ -169,35 +166,23 @@ documents.onDidChangeContent(change => {
 
 async function validateTextDocument(textDocument: TextDocument): Promise<void> {
   let settings = await getDocumentSettings(textDocument.uri);
-
-  const preProcessedText = getPreProcessorList(
-    textDocument.getText(),
-    PreProcessors
-  );
-
-  // run preprocessors
-  preProcessedText.slice(1).forEach(preprocessor => {
-    const split = preprocessor.split(' ');
-    if (PreProcessorHandlersMap.has(split[0])) {
-      PreProcessorHandlersMap.get(split[0]).handle(textDocument.uri, split);
-    }
-  });
-
-  let text = preProcessedText[0];
-
-  const lexResult = ZSLexer.tokenize(text);
   const diagnostics: Diagnostic[] = [];
 
   // save lexing result
-  documentTokens.set(textDocument.uri, lexResult.tokens);
-  // save parsing result
-  documentCSTs.set(textDocument.uri, ZSParser.parse(lexResult.tokens));
+  if (!zGlobal.zsFiles.has(textDocument.uri)) {
+    zGlobal.zsFiles.set(
+      textDocument.uri,
+      new ZenParsedFile(Uri.parse(textDocument.uri).fsPath)
+    );
+  }
 
-  // FIXME: debug
-  const ast: ASTNodeProgram = ZSInterpreter.visit(
-    documentCSTs.get(textDocument.uri)
-  );
+  const file = zGlobal.zsFiles
+    .get(textDocument.uri)
+    .text(textDocument.getText())
+    .preprocess()
+    .parse();
 
+  const ast = file.ast;
   if (ast) {
     connection.console.log(
       JSON.stringify({
@@ -212,7 +197,7 @@ async function validateTextDocument(textDocument: TextDocument): Promise<void> {
   }
 
   // save errors
-  ZSParser.errors.map(error => {
+  zGlobal.zsFiles.get(textDocument.uri).parseErrors.map(error => {
     const diagnotic: Diagnostic = {
       severity: DiagnosticSeverity.Error,
       range: {
@@ -255,7 +240,10 @@ connection.onCompletion(
 
     let triggerCharacter = completion.context.triggerCharacter;
     if (!triggerCharacter) {
-      const token = findToken(documentTokens.get(document.uri), offset - 1);
+      const token = findToken(
+        zGlobal.zsFiles.get(document.uri).tokens,
+        offset - 1
+      );
       if (token.exist && token.found.token.image.length === 1) {
         triggerCharacter = token.found.token.image;
       } else {
@@ -348,11 +336,11 @@ connection.onHover(hoverPosition => {
 
   // Debug
   connection.console.log(
-    JSON.stringify(documentCSTs.get(hoverPosition.textDocument.uri))
+    JSON.stringify(zGlobal.zsFiles.get(hoverPosition.textDocument.uri).cst)
   );
 
   const token = findToken(
-    documentTokens.get(hoverPosition.textDocument.uri),
+    zGlobal.zsFiles.get(hoverPosition.textDocument.uri).tokens,
     offset
   );
 

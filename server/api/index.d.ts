@@ -7,6 +7,7 @@ import {
   ZSRCFile,
 } from './rcFile';
 import { PriorityTreeItem } from '../../api/requests/PriorityTreeRequest';
+import { ZenParsedFile } from './zenParsedFile';
 
 /**
  * Settings
@@ -41,6 +42,6 @@ export interface ZSGlobal {
 
   idMaps: IDMap;
 
-  // preprocessor
-  priority: Map<string, PriorityTreeItem>;
+  // zs file
+  zsFiles: Map<string, ZenParsedFile>;
 }
