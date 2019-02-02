@@ -686,6 +686,9 @@ export class ZenScriptParser extends Parser {
     });
     this.MANY(() => {
       this.CONSUME2(SQBR_OPEN);
+      this.OPTION(() => {
+        this.SUBRULE4(this.TypeAnnotation, { LABEL: 'ZenTypeAssociative' });
+      });
       this.CONSUME2(SQBR_CLOSE);
     });
   });
