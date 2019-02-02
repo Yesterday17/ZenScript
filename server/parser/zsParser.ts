@@ -83,7 +83,7 @@ export class ZenScriptParser extends Parser {
   constructor() {
     super(zsAllTokens, {
       maxLookahead: 4,
-      recoveryEnabled: false,
+      recoveryEnabled: true,
       ignoredIssues: {
         Statement: {
           OR: true,
