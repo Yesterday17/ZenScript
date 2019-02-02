@@ -144,6 +144,7 @@
   "scripts": {
     "vscode:prepublish": "yarn run update-vscode && yarn run compile",
     "debug-package": "yarn version --no-git-tag-version --patch && vsce package",
+    "patch": "yarn version --patch && vsce publish",
     "update-vscode": "vscode-install",
     "postinstall": "vscode-install",
     "compile": "tsc -b",
