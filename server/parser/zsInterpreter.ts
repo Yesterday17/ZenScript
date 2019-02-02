@@ -365,6 +365,10 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
     return ctx[Object.keys(ctx)[0]].image;
   }
 
+  protected BracketHandler$BracketHandlerItemGroup(ctx: NodeContext) {
+    return '';
+  }
+
   // TODO: Debug
   protected ZSArray(ctx: NodeContext): ASTNodeArray {
     const arr: any[] = [];
