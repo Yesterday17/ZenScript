@@ -30,6 +30,14 @@
           "match": "\\b(for|while)\\b"
         },
         {
+          "name": "keyword.control.class.zenscript",
+          "match": "\\b(zenClass|frigginClass)\\b"
+        },
+        {
+          "name": "keyword.control.class.constructor.zenscript",
+          "match": "\\b(zenConstructor|frigginConstructor)\\b"
+        },
+        {
           "name": "keyword.operator",
           "match": "(\\.\\.|\\+=|\\+|-=|-|\\*=|\\*|\\/=|\\/(?!\\/|\\*)|%=|%|\\|=|\\||\\|\\||&=|&&|&|\\^=|\\^|\\?|:|~=|~|;|<=|<|>=|>|==|=|!=|!|\\$)"
         }

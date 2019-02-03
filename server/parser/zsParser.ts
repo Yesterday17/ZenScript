@@ -77,6 +77,8 @@ import {
   XOR_ASSIGN,
   INSTANCEOF,
   COMMENT,
+  ZEN_CLASS,
+  ZEN_CONSTRUCTOR,
 } from './zsLexer';
 
 export class ZenScriptParser extends Parser {
@@ -111,8 +113,7 @@ export class ZenScriptParser extends Parser {
       this.OR([
         { ALT: () => this.SUBRULE(this.GlobalStaticDeclaration) },
         { ALT: () => this.SUBRULE(this.FunctionDeclaration) },
-        // TODO: Support ZenClass
-        // { ALT: () => this.SUBRULE(this.ZenClassDeclaration) },
+        { ALT: () => this.SUBRULE(this.ZenClassDeclaration) },
         { ALT: () => this.SUBRULE(this.Statement) },
       ])
     );
@@ -180,6 +181,57 @@ export class ZenScriptParser extends Parser {
     this.SUBRULE(this.StatementBody);
   });
 
+  protected ZenClassDeclaration = this.RULE('ZenClassDeclaration', () => {
+    this.CONSUME(ZEN_CLASS);
+    this.CONSUME(IDENTIFIER, { ERR_MSG: 'ClassName required' });
+    this.CONSUME(A_OPEN, { ERR_MSG: '{ expected' });
+    // TODO: reuse code
+    this.MANY(() => {
+      this.OR([
+        {
+          ALT: () => {
+            this.OR2([
+              { ALT: () => this.CONSUME(VAR) },
+              { ALT: () => this.CONSUME(VAL) },
+              { ALT: () => this.CONSUME(STATIC) },
+            ]);
+            this.CONSUME2(IDENTIFIER, {
+              ERR_MSG: 'Identifier expected',
+            });
+            this.OPTION(() => {
+              this.SUBRULE(this.TypeDeclare);
+            });
+            this.CONSUME(ASSIGN, {
+              ERR_MSG: 'Global and Static variables must be initialized.',
+            });
+            this.SUBRULE(this.Expression);
+            this.CONSUME(SEMICOLON, { ERR_MSG: '; expected' });
+          },
+        },
+        {
+          ALT: () => {
+            this.CONSUME(ZEN_CONSTRUCTOR);
+            this.CONSUME(BR_OPEN, { ERR_MSG: `Missing '('` });
+            this.OPTION2(() => {
+              this.SUBRULE(this.ParameterList);
+            });
+            this.CONSUME(BR_CLOSE, { ERR_MSG: `Missing ')'` });
+            this.OPTION3(() => {
+              this.SUBRULE2(this.TypeDeclare);
+            });
+            this.SUBRULE(this.StatementBody);
+          },
+        },
+        {
+          ALT: () => {
+            this.SUBRULE(this.FunctionDeclaration);
+          },
+        },
+      ]);
+    });
+    this.CONSUME(A_CLOSE, { ERR_MSG: '} expected' });
+  });
+
   /**
    * Statements (>=1)
    */
@@ -241,7 +293,9 @@ export class ZenScriptParser extends Parser {
       { ALT: () => this.CONSUME(VAL) }, // const
     ]);
 
-    this.CONSUME(IDENTIFIER, { ERR_MSG: 'Identifier expected.' });
+    this.CONSUME(IDENTIFIER, {
+      ERR_MSG: 'Identifier expected.',
+    });
     this.OPTION(() => {
       this.SUBRULE(this.TypeDeclare);
     });
@@ -267,7 +321,9 @@ export class ZenScriptParser extends Parser {
     this.AT_LEAST_ONE_SEP({
       SEP: COMMA,
       DEF: () => {
-        this.CONSUME(IDENTIFIER, { ERR_MSG: 'Identifier expected' });
+        this.CONSUME(IDENTIFIER, {
+          ERR_MSG: 'Identifier expected',
+        });
       },
     });
     this.CONSUME(IN);
@@ -498,7 +554,9 @@ export class ZenScriptParser extends Parser {
       { ALT: () => this.CONSUME(FLOAT_VALUE) },
       { ALT: () => this.CONSUME(STRING_VALUE) },
       { ALT: () => this.CONSUME(IDENTIFIER) },
-      { ALT: () => this.SUBRULE(this.LambdaFunctionDeclaration) },
+      {
+        ALT: () => this.SUBRULE(this.LambdaFunctionDeclaration),
+      },
       { ALT: () => this.SUBRULE(this.BracketHandler) },
       { ALT: () => this.SUBRULE(this.ZSArray) },
       { ALT: () => this.SUBRULE(this.ZSMap) },
@@ -672,17 +730,23 @@ export class ZenScriptParser extends Parser {
             this.MANY_SEP({
               SEP: COMMA,
               DEF: () => {
-                this.SUBRULE(this.TypeAnnotation, { LABEL: 'ParameterType' });
+                this.SUBRULE(this.TypeAnnotation, {
+                  LABEL: 'ParameterType',
+                });
               },
             });
             this.CONSUME(BR_CLOSE);
-            this.SUBRULE2(this.TypeAnnotation, { LABEL: 'FunctionType' });
+            this.SUBRULE2(this.TypeAnnotation, {
+              LABEL: 'FunctionType',
+            });
           },
         },
         {
           ALT: () => {
             this.CONSUME(SQBR_OPEN);
-            this.SUBRULE3(this.TypeAnnotation, { LABEL: 'ArrayType' });
+            this.SUBRULE3(this.TypeAnnotation, {
+              LABEL: 'ArrayType',
+            });
             this.CONSUME(SQBR_CLOSE);
           },
         },
@@ -692,7 +756,9 @@ export class ZenScriptParser extends Parser {
     this.MANY(() => {
       this.CONSUME2(SQBR_OPEN);
       this.OPTION(() => {
-        this.SUBRULE4(this.TypeAnnotation, { LABEL: 'ZenTypeAssociative' });
+        this.SUBRULE4(this.TypeAnnotation, {
+          LABEL: 'ZenTypeAssociative',
+        });
       });
       this.CONSUME2(SQBR_CLOSE);
     });

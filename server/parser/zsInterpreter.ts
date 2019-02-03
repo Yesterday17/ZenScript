@@ -27,7 +27,7 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
     this.validateVisitor();
   }
 
-  public Program(ctx: NodeContext): ASTNodeProgram {
+  protected Program(ctx: NodeContext): ASTNodeProgram {
     const program: ASTNodeProgram = {
       type: 'program',
       start: 0,
@@ -74,11 +74,11 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
    * =================================================================================================
    */
 
-  public ImportList(ctx: NodeContext) {
+  protected ImportList(ctx: NodeContext) {
     return ctx.Package.map((pkg: CstNode) => this.visit(pkg));
   }
 
-  public GlobalStaticDeclaration(ctx: NodeContext): ASTNodeDeclare {
+  protected GlobalStaticDeclaration(ctx: NodeContext): ASTNodeDeclare {
     const declaration: ASTNodeDeclare = {
       type: 'global',
       start: -1,
@@ -106,7 +106,7 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
     return declaration;
   }
 
-  public FunctionDeclaration(ctx: NodeContext): ASTNodeFunction {
+  protected FunctionDeclaration(ctx: NodeContext): ASTNodeFunction {
     return {
       type: 'function',
       start: (ctx.FunctionName[0] as IToken).startOffset,
@@ -117,7 +117,11 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
     };
   }
 
-  public BlockStatement(ctx: NodeContext): ASTNode {
+  protected ZenClassDeclaration(ctx: NodeContext) {
+    return '';
+  }
+
+  protected BlockStatement(ctx: NodeContext): ASTNode {
     return {
       type: 'block-statement',
       start: 0,

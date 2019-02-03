@@ -278,13 +278,17 @@ export const IMPORT = createToken({
   longer_alt: IDENTIFIER,
 });
 
-//TODO: Implement the following
-/**
- *  KEYWORDS.put("frigginClass", T_ZEN_CLASS);
- *  KEYWORDS.put("frigginConstructor", T_ZEN_CONSTRUCTOR);
- *  KEYWORDS.put("zenClass", T_ZEN_CLASS);
- *  KEYWORDS.put("zenConstructor", T_ZEN_CONSTRUCTOR);
- */
+export const ZEN_CLASS = createToken({
+  name: 'ZEN_CLASS',
+  pattern: /zenClass|frigginClass/,
+  longer_alt: IDENTIFIER,
+});
+
+export const ZEN_CONSTRUCTOR = createToken({
+  name: 'ZEN_CONSTRUCTOR',
+  pattern: /zenConstructor|frigginConstructor/,
+  longer_alt: IDENTIFIER,
+});
 
 export const zsAllTokens = [
   EOL,
@@ -367,6 +371,8 @@ export const zsAllTokens = [
   TRUE,
   FALSE,
   IMPORT,
+  ZEN_CLASS,
+  ZEN_CONSTRUCTOR,
   IDENTIFIER,
 ];
 
