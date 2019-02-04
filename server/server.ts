@@ -103,7 +103,11 @@ connection.onInitialize((params: InitializeParams) => {
 
 connection.onInitialized(() => {
   // Isn't a folder warn.
-  if (!zGlobal.isProject && globalSettings.showIsProjectWarn) {
+  if (
+    zGlobal.baseFolder !== '' &&
+    !zGlobal.isProject &&
+    globalSettings.showIsProjectWarn
+  ) {
     connection.window.showWarningMessage(
       `ZenScript didn't enable all its features!
       Please check your folder name, it must be 'scripts', or a folder in your workspace must be named 'scripts'.`

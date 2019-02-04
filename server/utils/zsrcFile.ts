@@ -9,6 +9,11 @@ import { Connection } from 'vscode-languageserver';
  */
 export function reloadRCFile(connection: Connection) {
   try {
+    if (!fs.existsSync(new URL(zGlobal.baseFolder + '/.zsrc'))) {
+      zGlobal.isProject = false;
+      return;
+    }
+
     zGlobal.rcFile = JSON.parse(
       fs.readFileSync(new URL(zGlobal.baseFolder + '/.zsrc'), {
         encoding: 'utf-8',
