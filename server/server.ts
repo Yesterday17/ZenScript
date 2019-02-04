@@ -39,8 +39,9 @@ let connection = createConnection(ProposedFeatures.all);
 // 创建一个简单的文本文档管理器，这个管理器仅仅支持同步所有文档
 let documents: TextDocuments = new TextDocuments();
 
-// 不支持配置
+// capabilities
 let hasConfigurationCapability: boolean = false;
+let hasWorkspaceFolderCapability: boolean = false;
 
 connection.onInitialize((params: InitializeParams) => {
   let capabilities = params.capabilities;
@@ -81,6 +82,8 @@ connection.onInitialize((params: InitializeParams) => {
   // If not, we will fall back using global settings
   hasConfigurationCapability =
     capabilities.workspace && !!capabilities.workspace.configuration;
+  hasWorkspaceFolderCapability =
+    capabilities.workspace && !!capabilities.workspace.workspaceFolders;
 
   return {
     capabilities: {
@@ -102,17 +105,22 @@ connection.onInitialize((params: InitializeParams) => {
 });
 
 connection.onInitialized(() => {
-  // Isn't a folder warn.
-  if (
-    zGlobal.baseFolder !== '' &&
-    !zGlobal.isProject &&
-    globalSettings.showIsProjectWarn
-  ) {
-    connection.window.showWarningMessage(
-      `ZenScript didn't enable all its features!
+  connection.workspace
+    .getConfiguration({ section: 'zenscript' })
+    .then(setting => {
+      globalSettings = { ...setting };
+      // Isn't a folder warn.
+      if (
+        zGlobal.baseFolder !== '' &&
+        !zGlobal.isProject &&
+        globalSettings.showIsProjectWarn
+      ) {
+        connection.window.showWarningMessage(
+          `ZenScript didn't enable all its features!
       Please check your folder name, it must be 'scripts', or a folder in your workspace must be named 'scripts'.`
-    );
-  }
+        );
+      }
+    });
 
   if (hasConfigurationCapability) {
     // Register for all configuration changes.
@@ -120,6 +128,12 @@ connection.onInitialized(() => {
       DidChangeConfigurationNotification.type,
       undefined
     );
+  }
+
+  if (hasWorkspaceFolderCapability) {
+    connection.workspace.onDidChangeWorkspaceFolders(_event => {
+      connection.console.log('Workspace folder change event received.');
+    });
   }
 });
 

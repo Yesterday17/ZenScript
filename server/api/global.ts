@@ -7,7 +7,6 @@ import {
   EntityEntry,
   FluidEntry,
 } from './rcFile';
-import { PriorityTreeItem } from '../../out/api/requests/PriorityTreeRequest';
 
 export const zGlobal: ZSGlobal = {
   // whether it's a project
