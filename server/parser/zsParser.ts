@@ -504,20 +504,27 @@ export class ZenScriptParser extends Parser {
           },
         },
         {
+          GATE:
+            this.LA(1).tokenType === IDENTIFIER && this.LA(1).image === 'to',
           ALT: () => {
-            this.CONSUME(DOT2);
-            // TODO: Add identifier `to`
+            this.CONSUME2(IDENTIFIER);
             this.SUBRULE(this.AssignExpression);
           },
         },
         {
           ALT: () => {
-            this.CONSUME(SQBR_OPEN);
+            this.CONSUME(DOT2);
             this.SUBRULE2(this.AssignExpression);
+          },
+        },
+        {
+          ALT: () => {
+            this.CONSUME(SQBR_OPEN);
+            this.SUBRULE3(this.AssignExpression);
             this.CONSUME(SQBR_CLOSE);
             this.OPTION(() => {
               this.CONSUME(ASSIGN);
-              this.SUBRULE3(this.AssignExpression);
+              this.SUBRULE4(this.AssignExpression);
             });
           },
         },
@@ -527,7 +534,7 @@ export class ZenScriptParser extends Parser {
             this.MANY_SEP({
               SEP: COMMA,
               DEF: () => {
-                this.SUBRULE4(this.AssignExpression);
+                this.SUBRULE5(this.AssignExpression);
               },
             });
             this.CONSUME(BR_CLOSE);

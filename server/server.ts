@@ -1,4 +1,3 @@
-import { IToken } from 'chevrotain';
 import * as path from 'path';
 import { URL } from 'url';
 import {
@@ -28,7 +27,6 @@ import { findToken } from './utils/findToken';
 import { reloadRCFile } from './utils/zsrcFile';
 import { PreProcessorCompletions } from './completion/preprocessor/preprocessors';
 import { ZenScriptSettings } from './api';
-import { ZSFormatter } from './services/zsFormat';
 import { AllZSFiles } from './utils/path';
 import { ZenParsedFile } from './api/zenParsedFile';
 
@@ -209,6 +207,7 @@ async function validateTextDocument(textDocument: TextDocument): Promise<void> {
         global: Array.from(ast.global),
         static: Array.from(ast.static),
         function: Array.from(ast.function),
+        body: ast.body,
         error: ast.errors,
       })
     );
