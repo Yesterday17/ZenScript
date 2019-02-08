@@ -1,6 +1,8 @@
 {
   "zenscript.maxNumberOfProblems.desc": "Controls the maximum number of problems produced by the server.",
   "zenscript.maxHistoryEntries.desc": "Controls the maximum number of history entries responsed by the server.",
+  "zenscript.showIsProjectWarn.desc": "Whether to show warning of isProject.",
+  "zenscript.autoshowLTCompletion.desc": "Whether to show autocompletion after typing <.",
   "zenscript.trace.server.desc": "Traces the communication between VS Code and the language server.",
 
   "zenscript.command.gethistoryentry.title": "Show History Entries",

@@ -1,6 +1,8 @@
 {
   "zenscript.maxNumberOfProblems.desc": "最大问题数。",
   "zenscript.maxHistoryEntries.desc": "最多记录的历史条目数量。",
+  "zenscript.showIsProjectWarn.desc": "是否显示“该目录并非工作目录”的警告。",
+  "zenscript.autoshowLTCompletion.desc": "是否在输入“<”后显示自动补全。",
   "zenscript.trace.server.desc": " 跟踪 VSCode 与 Language server之间的交互。",
 
   "zenscript.command.historyentry.title": "显示历史条目",

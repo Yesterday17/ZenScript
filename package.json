@@ -93,7 +93,13 @@
           "scope": "window",
           "type": "boolean",
           "default": true,
-          "description": ""
+          "description": "%zenscript.showIsProjectWarn.desc%"
+        },
+        "zenscript.autoshowLTCompletion": {
+          "scope": "resource",
+          "type": "boolean",
+          "default": true,
+          "description": "%zenscript.autoshowLTCompletion.desc%"
         },
         "zenscript.trace.server": {
           "scope": "window",

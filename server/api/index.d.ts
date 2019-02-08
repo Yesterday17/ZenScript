@@ -17,6 +17,7 @@ export interface ZenScriptSettings {
   maxHistoryEntries: number;
 
   showIsProjectWarn: boolean;
+  autoshowLTCompletion: boolean;
 }
 
 /**

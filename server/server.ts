@@ -106,12 +106,12 @@ connection.onInitialized(() => {
   connection.workspace
     .getConfiguration({ section: 'zenscript' })
     .then(setting => {
-      globalSettings = { ...setting };
+      zGlobal.setting = { ...setting };
       // Isn't a folder warn.
       if (
         zGlobal.baseFolder !== '' &&
         !zGlobal.isProject &&
-        globalSettings.showIsProjectWarn
+        zGlobal.setting.showIsProjectWarn
       ) {
         connection.window.showWarningMessage(
           `ZenScript didn't enable all its features!
@@ -135,8 +135,6 @@ connection.onInitialized(() => {
   }
 });
 
-let globalSettings: ZenScriptSettings = defaultSettings;
-
 // cache setting for all opened documents
 let documentSettings: Map<string, Thenable<ZenScriptSettings>> = new Map();
 
@@ -145,7 +143,7 @@ connection.onDidChangeConfiguration(change => {
     // reset all the settings
     documentSettings.clear();
   } else {
-    globalSettings = <ZenScriptSettings>(
+    zGlobal.setting = <ZenScriptSettings>(
       (change.settings.zenscript || defaultSettings)
     );
   }
@@ -156,7 +154,7 @@ connection.onDidChangeConfiguration(change => {
 
 function getDocumentSettings(resource: string): Thenable<ZenScriptSettings> {
   if (!hasConfigurationCapability) {
-    return Promise.resolve(globalSettings);
+    return Promise.resolve(zGlobal.setting);
   }
   let result = documentSettings.get(resource);
   if (!result) {
@@ -244,68 +242,77 @@ connection.onDidChangeWatchedFiles(_change => {
 
 // 负责处理自动补全的条目
 // 发送较为简单的消息
-connection.onCompletion(
-  (completion): CompletionItem[] => {
-    // 获得当前正在修改的 document
-    const document = documents.get(completion.textDocument.uri);
-    // 当前补全的位置
-    const position = completion.position;
-    // 当前补全的 offset
-    const offset = document.offsetAt(position);
-    // 当前文档的文本
-    const content = document.getText();
+connection.onCompletion(async completion => {
+  // 获得当前正在修改的 document
+  const document = documents.get(completion.textDocument.uri);
+  // 当前补全的位置
+  const position = completion.position;
+  // 当前补全的 offset
+  const offset = document.offsetAt(position);
+  // 当前文档的文本
+  const content = document.getText();
+  // triggerred automatically or manually
+  const manuallyTriggerred = completion.context.triggerCharacter === undefined;
 
-    let triggerCharacter = completion.context.triggerCharacter;
-    if (!triggerCharacter) {
-      const token = findToken(
-        zGlobal.zsFiles.get(document.uri).tokens,
-        offset - 1
-      );
-      if (token.exist && token.found.token.image.length === 1) {
-        triggerCharacter = token.found.token.image;
-      } else {
-        return null;
-      }
-    }
-
-    // TODO: 完成自动补全
-    switch (triggerCharacter) {
-      case '#':
-        return PreProcessorCompletions;
-      case '.':
-        break;
-      case ':':
-        // 位于 <> 内的内容
-        let predecessor: string[] = [];
-
-        // 寻找 inBracket
-        for (let i = offset - 1; i >= 0; i--) {
-          // 当 : 与 < 不再同一行时直接返回 null
-          if (content[i] === '\n') {
-            return;
-          }
-
-          if (content[i] === '<') {
-            predecessor = document
-              .getText({
-                start: document.positionAt(i + 1),
-                end: document.positionAt(offset - 1),
-              })
-              .split(':');
-            break;
-          }
-        }
-
-        return BracketHandlerMap.get(predecessor[0])
-          ? BracketHandlerMap.get(predecessor[0]).next(predecessor)
-          : null;
-      case '<':
-        return [...SimpleBracketHandlers];
-      default:
-        return [...Keywords];
+  let triggerCharacter = completion.context.triggerCharacter;
+  if (manuallyTriggerred) {
+    const token = findToken(
+      zGlobal.zsFiles.get(document.uri).tokens,
+      offset - 1
+    );
+    if (token.exist && token.found.token.image.length === 1) {
+      triggerCharacter = token.found.token.image;
+    } else {
+      return null;
     }
   }
-);
+
+  // TODO: 完成自动补全
+  switch (triggerCharacter) {
+    case '#':
+      return PreProcessorCompletions;
+    case '.':
+      break;
+    case ':':
+      // 位于 <> 内的内容
+      let predecessor: string[] = [];
+
+      // 寻找 inBracket
+      for (let i = offset - 1; i >= 0; i--) {
+        // 当 : 与 < 不再同一行时直接返回 null
+        if (content[i] === '\n') {
+          return;
+        }
+
+        if (content[i] === '<') {
+          predecessor = document
+            .getText({
+              start: document.positionAt(i + 1),
+              end: document.positionAt(offset - 1),
+            })
+            .split(':');
+          break;
+        }
+      }
+
+      return BracketHandlerMap.get(predecessor[0])
+        ? BracketHandlerMap.get(predecessor[0]).next(predecessor)
+        : null;
+    case '<':
+      if (manuallyTriggerred) {
+        return [...SimpleBracketHandlers];
+      }
+
+      return await documentSettings
+        .get(completion.textDocument.uri)
+        .then(setting => {
+          return setting.autoshowLTCompletion ? [...SimpleBracketHandlers] : [];
+        });
+
+    default:
+      return [...Keywords];
+  }
+});
 
 // 负责处理自动补全条目选中时的信息
 // 将完整的信息发送至 Client
