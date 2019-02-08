@@ -38,7 +38,7 @@ export interface ZSGlobal {
   items: Map<string, ItemEntry[]>;
   enchantments: Map<string, EnchantmentEntry[]>;
   entities: Map<string, EntityEntry[]>;
-  fluids: Map<string, FluidEntry[]>;
+  fluids: Map<string, FluidEntry>;
 
   idMaps: IDMap;
 

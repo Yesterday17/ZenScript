@@ -29,11 +29,12 @@ class Liquid implements IBracketHandler {
   next(predecessor: string[]): CompletionItem[] {
     switch (predecessor.length) {
       case 1:
-        // liquid:[modid]
+        // liquid:[liquid]
         const result = Array.from(zGlobal.fluids.keys()).map(key => {
+          const fluid = zGlobal.fluids.get(key);
           return {
-            label: key,
-            kind: BracketHandlerKind,
+            label: fluid.name,
+            kind: CompletionItemKind.Value,
             data: {
               triggerCharacter: ':',
               predecessor,
@@ -41,21 +42,6 @@ class Liquid implements IBracketHandler {
           } as CompletionItem;
         });
         return result;
-      case 2:
-        // liquid:modid:[liquid]
-        return zGlobal.fluids.has(predecessor[1])
-          ? zGlobal.fluids.get(predecessor[1]).map((fluid, i) => {
-              return {
-                label: fluid.name,
-                kind: CompletionItemKind.Value,
-                data: {
-                  triggerCharacter: ':',
-                  predecessor,
-                  position: i,
-                },
-              } as CompletionItem;
-            })
-          : [];
       default:
         return [];
     }
@@ -64,26 +50,8 @@ class Liquid implements IBracketHandler {
   detail(item: CompletionItem): CompletionItem {
     switch (item.data.predecessor.length) {
       case 1:
-        // liquid:[modid]
-        if (!zGlobal.mods.has(item.label)) {
-          // For example, minecraft
-          // TODO: Add description for minecraft.
-          return item;
-        }
-        const mod = zGlobal.mods.get(item.label);
-        return {
-          ...item,
-          detail: mod.name,
-          documentation: {
-            kind: 'markdown',
-            value: mod.description,
-          },
-        };
-      case 2:
-        // liquid:modid:[liquid]
-        const liquidFound = zGlobal.fluids.get(item.data.predecessor[1])[
-          item.data.position
-        ];
+        // liquid:[liquid]
+        const liquidFound = zGlobal.fluids.get(item.data.predecessor[1]);
         return {
           ...item,
           detail: liquidFound.name,

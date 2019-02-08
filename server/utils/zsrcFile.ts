@@ -64,13 +64,9 @@ export function reloadRCFile(connection: Connection) {
 
     // Fluids
     zGlobal.fluids.clear();
-    zGlobal.rcFile.fluids.forEach(value => {
-      if (!zGlobal.fluids.has(value.resourceLocation.domain)) {
-        zGlobal.fluids.set(value.resourceLocation.domain, [value]);
-      } else {
-        zGlobal.fluids.get(value.resourceLocation.domain).push(value);
-      }
-    });
+    zGlobal.rcFile.fluids.forEach(value =>
+      zGlobal.fluids.set(value.resourceLocation.domain, value)
+    );
   } catch (e) {
     connection.console.error(e.message);
   }

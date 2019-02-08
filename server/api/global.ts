@@ -34,7 +34,7 @@ export const zGlobal: ZSGlobal = {
   items: new Map<string, ItemEntry[]>(),
   enchantments: new Map<string, EnchantmentEntry[]>(),
   entities: new Map<string, EntityEntry[]>(),
-  fluids: new Map<string, FluidEntry[]>(),
+  fluids: new Map<string, FluidEntry>(),
 
   idMaps: {
     items: new Map<number, ItemEntry>(),
