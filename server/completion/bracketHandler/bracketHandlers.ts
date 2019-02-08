@@ -34,7 +34,7 @@ export const SimpleBracketHandlers: CompletionItem[] = BracketHandlers.map(
   (item: IBracketHandler) => {
     return {
       label: item.handler.label,
-      kind: BracketHandlerKind,
+      kind: CompletionItemKind.Class,
       data: { triggerCharacter: '<' },
     };
   }
@@ -43,7 +43,7 @@ export const SimpleBracketHandlers: CompletionItem[] = BracketHandlers.map(
 export const DetailBracketHandlers: CompletionItem[] = BracketHandlers.map(
   (item: IBracketHandler) => {
     return {
-      kind: BracketHandlerKind,
+      kind: CompletionItemKind.Class,
       ...item.handler,
     };
   }

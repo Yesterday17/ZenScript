@@ -9,4 +9,5 @@ export const defaultSettings: ZenScriptSettings = {
 
   showIsProjectWarn: true,
   autoshowLTCompletion: true,
+  modIdItemCompletion: false,
 };

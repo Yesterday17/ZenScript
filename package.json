@@ -101,6 +101,12 @@
           "default": true,
           "description": "%zenscript.autoshowLTCompletion.desc%"
         },
+        "zenscript.modIdItemCompletion": {
+          "scope": "resource",
+          "type": "boolean",
+          "default": false,
+          "description": "%zenscript.modIdItemCompletion.desc%"
+        },
         "zenscript.trace.server": {
           "scope": "window",
           "type": "string",

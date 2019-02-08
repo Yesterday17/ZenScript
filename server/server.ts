@@ -29,6 +29,7 @@ import { PreProcessorCompletions } from './completion/preprocessor/preprocessors
 import { ZenScriptSettings } from './api';
 import { AllZSFiles } from './utils/path';
 import { ZenParsedFile } from './api/zenParsedFile';
+import { ItemBracketHandler } from './completion/bracketHandler/item';
 
 // 创建一个服务的连接，连接使用 Node 的 IPC 作为传输
 // 并且引入所有 LSP 特性, 包括 preview / proposed
@@ -299,15 +300,12 @@ connection.onCompletion(async completion => {
         ? BracketHandlerMap.get(predecessor[0]).next(predecessor)
         : null;
     case '<':
-      if (manuallyTriggerred) {
-        return [...SimpleBracketHandlers];
-      }
-
-      return await documentSettings
-        .get(completion.textDocument.uri)
-        .then(setting => {
-          return setting.autoshowLTCompletion ? [...SimpleBracketHandlers] : [];
-        });
+      const setting = await documentSettings.get(completion.textDocument.uri);
+      return manuallyTriggerred || setting.autoshowLTCompletion
+        ? setting.modIdItemCompletion
+          ? [...SimpleBracketHandlers, ...ItemBracketHandler.next(['item'])]
+          : [...SimpleBracketHandlers]
+        : [];
 
     default:
       return [...Keywords];

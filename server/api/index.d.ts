@@ -18,6 +18,7 @@ export interface ZenScriptSettings {
 
   showIsProjectWarn: boolean;
   autoshowLTCompletion: boolean;
+  modIdItemCompletion: boolean;
 }
 
 /**
