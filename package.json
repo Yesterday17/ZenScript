@@ -4,7 +4,7 @@
   "description": "For Modpack makers.",
   "repository": "https://github.com/Yesterday17/ZenScript",
   "license": "MIT",
-  "version": "0.1.19",
+  "version": "0.1.20",
   "publisher": "yesterday17",
   "engines": {
     "vscode": "^1.30.0"
@@ -160,17 +160,12 @@
     "update-vscode": "vscode-install",
     "postinstall": "vscode-install",
     "compile": "tsc -b",
-    "watch": "tsc -b -w",
-    "package": "gulp package"
+    "watch": "tsc -b -w"
   },
   "devDependencies": {
     "@types/mocha": "^2.2.42",
     "@types/node": "^10.12.18",
     "del": "^3.0.0",
-    "gulp": "^4.0.0",
-    "gulp-filter": "^5.1.0",
-    "gulp-sourcemaps": "^2.6.4",
-    "gulp-typescript": "^5.0.0",
     "tslint": "^5.12.0",
     "typescript": "^3.2.2",
     "vsce": "^1.54.0",
