@@ -4,8 +4,9 @@ import { zGlobal } from '../../api/global';
 import { BracketHandlerKind } from './bracketHandlers';
 
 class Entity implements IBracketHandler {
+  name = 'entity';
   handler: CompletionItem = {
-    label: 'entity',
+    label: this.name,
     detail: 'Access Entities.',
     documentation: {
       kind: 'markdown',

@@ -4,8 +4,9 @@ import { BracketHandlerKind } from './bracketHandlers';
 import { zGlobal } from '../../api/global';
 
 class Enchantment implements IBracketHandler {
+  name = 'enchantment';
   handler: CompletionItem = {
-    label: 'enchantment',
+    label: this.name,
     detail: 'Access Enchantment definitions.',
     documentation: {
       kind: 'markdown',

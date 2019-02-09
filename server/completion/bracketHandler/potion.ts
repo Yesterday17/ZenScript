@@ -2,8 +2,9 @@ import { CompletionItem } from 'vscode-languageserver';
 import { IBracketHandler } from '../../api/IBracketHandler';
 
 class Potion implements IBracketHandler {
+  name = 'potion';
   handler: CompletionItem = {
-    label: 'potion',
+    label: this.name,
     detail: 'Access Potions.',
     documentation: {
       kind: 'markdown',

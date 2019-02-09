@@ -20,6 +20,7 @@ import {
   BracketHandlerMap,
   DetailBracketHandlers,
   SimpleBracketHandlers,
+  BracketHandlers,
 } from './completion/bracketHandler/bracketHandlers';
 import { Keywords } from './completion/completion';
 import { applyRequests } from './requests/requests';
@@ -294,6 +295,13 @@ connection.onCompletion(async completion => {
             .split(':');
           break;
         }
+      }
+
+      if (
+        BracketHandlers.map(handler => handler.name).indexOf(predecessor[0]) ===
+        -1
+      ) {
+        predecessor = ['item', ...predecessor];
       }
 
       return BracketHandlerMap.get(predecessor[0])

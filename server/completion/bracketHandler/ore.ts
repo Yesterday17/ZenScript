@@ -2,8 +2,9 @@ import { CompletionItem } from 'vscode-languageserver';
 import { IBracketHandler } from '../../api/IBracketHandler';
 
 class Ore implements IBracketHandler {
+  name = 'ore';
   handler: CompletionItem = {
-    label: 'ore',
+    label: this.name,
     detail: 'Access Ore Dictionaries.',
     documentation: {
       kind: 'markdown',

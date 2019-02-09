@@ -4,8 +4,10 @@ import { zGlobal } from '../../api/global';
 import { BracketHandlerKind } from './bracketHandlers';
 
 class Liquid implements IBracketHandler {
+  name: string;
   handler: CompletionItem;
   constructor(alias: string) {
+    this.name = alias;
     this.handler = {
       label: alias,
       detail: 'Access liquids.',

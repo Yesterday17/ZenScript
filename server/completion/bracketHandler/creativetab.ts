@@ -2,8 +2,9 @@ import { CompletionItem } from 'vscode-languageserver';
 import { IBracketHandler } from '../../api/IBracketHandler';
 
 class CreativeTab implements IBracketHandler {
+  name = 'creativetab';
   handler: CompletionItem = {
-    label: 'creativetab',
+    label: this.name,
     detail: 'Access creative Tabs.',
     documentation: {
       kind: 'markdown',

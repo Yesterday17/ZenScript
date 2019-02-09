@@ -12,7 +12,7 @@ import { IBracketHandler } from '../../api/IBracketHandler';
 export const BracketHandlerKind: CompletionItemKind = CompletionItemKind.Unit;
 
 // TODO: Support all the bracketHandlers here.
-const BracketHandlers: IBracketHandler[] = [
+export const BracketHandlers: IBracketHandler[] = [
   CreativeTabBracketHandler,
   DamageSourceBracketHandler,
   EnchantmentBracketHandler,

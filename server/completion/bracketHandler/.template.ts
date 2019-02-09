@@ -8,8 +8,9 @@ import { CompletionItem } from 'vscode-languageserver';
 import { IBracketHandler } from '../../api/IBracketHandler';
 
 class Template implements IBracketHandler {
+  name = 'template';
   handler: CompletionItem = {
-    label: 'TemplateBracketHandler',
+    label: this.name,
     detail: 'Access xxx.',
     documentation: {
       kind: 'markdown',

@@ -2,8 +2,9 @@ import { CompletionItem, CompletionItemKind } from 'vscode-languageserver';
 import { IBracketHandler } from '../../api/IBracketHandler';
 
 class DamageSource implements IBracketHandler {
+  name = 'damageSource';
   handler: CompletionItem = {
-    label: 'damageSource',
+    label: this.name,
     detail: 'Refer to IDamageSources.',
     documentation: {
       kind: 'markdown',
