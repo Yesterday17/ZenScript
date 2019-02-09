@@ -9,7 +9,6 @@
     "language": true,
     "i18n": true,
     "zenscript.code-workspace": true,
-    "package.nls.*.json": true,
     "yarn.lock": true,
     "*.vsix": true
   }
