@@ -84,7 +84,7 @@ import {
 export class ZenScriptParser extends Parser {
   constructor() {
     super(zsAllTokens, {
-      maxLookahead: 4,
+      maxLookahead: 2,
       recoveryEnabled: true,
       ignoredIssues: {
         Statement: {
@@ -262,16 +262,24 @@ export class ZenScriptParser extends Parser {
    */
   protected Statement = this.RULE('Statement', () => {
     this.OR([
-      { ALT: () => this.SUBRULE(this.StatementBody) },
-      { ALT: () => this.SUBRULE(this.ExpressionStatement) },
-      { ALT: () => this.SUBRULE(this.ReturnStatement) },
-      { ALT: () => this.SUBRULE(this.DeclareStatement) },
+      {
+        GATE: this.LA(1).tokenType === A_OPEN,
+        ALT: () => this.SUBRULE(this.StatementBody),
+      },
+      {
+        // GATE: this.LA(1).tokenType === RETURN,
+        ALT: () => this.SUBRULE(this.ReturnStatement),
+      },
+      {
+        GATE: this.LA(1).tokenType === VAL || this.LA(1).tokenType === VAR,
+        ALT: () => this.SUBRULE(this.DeclareStatement),
+      },
       { ALT: () => this.SUBRULE(this.IfStatement) },
       { ALT: () => this.SUBRULE(this.ForStatement) },
       { ALT: () => this.SUBRULE(this.WhileStatement) },
       { ALT: () => this.SUBRULE(this.VersionStatement) },
       { ALT: () => this.SUBRULE(this.BreakStatement) },
-      // { ALT: () => this.CONSUME(COMMENT) },
+      { ALT: () => this.SUBRULE(this.ExpressionStatement) },
     ]);
   });
 
@@ -308,7 +316,9 @@ export class ZenScriptParser extends Parser {
 
   protected IfStatement = this.RULE('IfStatement', () => {
     this.CONSUME(IF);
-    this.SUBRULE(this.Expression);
+    this.CONSUME(BR_OPEN);
+    this.SUBRULE(this.AssignExpression);
+    this.CONSUME(BR_CLOSE);
     this.SUBRULE(this.Statement);
     this.OPTION(() => {
       this.CONSUME(ELSE);
@@ -407,7 +417,7 @@ export class ZenScriptParser extends Parser {
         { ALT: () => this.CONSUME(MINUS) },
         { ALT: () => this.CONSUME(TILDE) },
       ]);
-      this.SUBRULE2(this.AddExpression);
+      this.SUBRULE2(this.MultiplyExpression);
     });
   });
 
@@ -520,7 +530,7 @@ export class ZenScriptParser extends Parser {
         {
           ALT: () => {
             this.CONSUME(SQBR_OPEN);
-            this.SUBRULE3(this.AssignExpression);
+            this.SUBRULE3(this.AssignExpression, { LABEL: 'INDEX' });
             this.CONSUME(SQBR_CLOSE);
             this.OPTION(() => {
               this.CONSUME(ASSIGN);
@@ -570,7 +580,13 @@ export class ZenScriptParser extends Parser {
       { ALT: () => this.CONSUME(TRUE) },
       { ALT: () => this.CONSUME(FALSE) },
       { ALT: () => this.CONSUME(NULL) },
-      { ALT: () => this.SUBRULE(this.InBracket) },
+      {
+        ALT: () => {
+          this.CONSUME(BR_OPEN);
+          this.SUBRULE(this.AssignExpression);
+          this.CONSUME(BR_CLOSE);
+        },
+      },
     ]);
   });
 
@@ -593,12 +609,6 @@ export class ZenScriptParser extends Parser {
       this.SUBRULE(this.StatementBody);
     }
   );
-
-  protected InBracket = this.RULE('InBracket', () => {
-    this.CONSUME(BR_OPEN);
-    this.SUBRULE(this.AssignExpression);
-    this.CONSUME(BR_CLOSE);
-  });
 
   protected BracketHandler = this.RULE('BracketHandler', () => {
     this.CONSUME(LT);
