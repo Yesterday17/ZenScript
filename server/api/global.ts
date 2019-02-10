@@ -36,11 +36,6 @@ export const zGlobal: ZSGlobal = {
   entities: new Map<string, EntityEntry[]>(),
   fluids: new Map<string, FluidEntry>(),
 
-  idMaps: {
-    items: new Map<number, ItemEntry>(),
-    entities: new Map<number, EntityEntry>(),
-  },
-
   // zs file
   zsFiles: new Map(),
 };

@@ -24,11 +24,6 @@ export interface ZenScriptSettings {
 /**
  * Global
  */
-export interface IDMap {
-  items: Map<number, ItemEntry>;
-  entities: Map<number, EntityEntry>;
-}
-
 export interface ZSGlobal {
   isProject: boolean;
   baseFolder: string;
@@ -41,8 +36,6 @@ export interface ZSGlobal {
   enchantments: Map<string, EnchantmentEntry[]>;
   entities: Map<string, EntityEntry[]>;
   fluids: Map<string, FluidEntry>;
-
-  idMaps: IDMap;
 
   // zs file
   zsFiles: Map<string, ZenParsedFile>;

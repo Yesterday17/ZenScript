@@ -20,21 +20,21 @@ export interface ModEntry {
 }
 
 export interface ItemEntry {
-  id: number;
   name: string;
   unlocalizedName: string;
+  modName: string;
   resourceLocation: ResourceLocation;
+  metadata: number;
+
   maxStackSize: number;
   maxDamage: number;
-  bFull3D: boolean;
-  hasSubtypes: boolean;
+
   canRepair: boolean;
-  containerItem: number | null;
-  tabToDisplayOn: number | null;
+  tooltips: string[];
+  creativeTabStrings: string[];
 }
 
 export interface CreativeTabEntry {
-  index: number;
   label: string;
   translatedLabel: string;
   hasSearchBar: boolean;

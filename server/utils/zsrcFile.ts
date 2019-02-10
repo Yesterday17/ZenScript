@@ -28,15 +28,12 @@ export function reloadRCFile(connection: Connection) {
 
     // Items
     zGlobal.items.clear();
-    zGlobal.idMaps.items.clear();
     zGlobal.rcFile.items.forEach(value => {
       if (!zGlobal.items.has(value.resourceLocation.domain)) {
         zGlobal.items.set(value.resourceLocation.domain, [value]);
       } else {
         zGlobal.items.get(value.resourceLocation.domain).push(value);
       }
-
-      zGlobal.idMaps.items.set(value.id, value);
     });
 
     // Enchantments
@@ -51,15 +48,12 @@ export function reloadRCFile(connection: Connection) {
 
     // Entities
     zGlobal.entities.clear();
-    zGlobal.idMaps.entities.clear();
     zGlobal.rcFile.entities.forEach(value => {
       if (!zGlobal.entities.has(value.resourceLocation.domain)) {
         zGlobal.entities.set(value.resourceLocation.domain, [value]);
       } else {
         zGlobal.entities.get(value.resourceLocation.domain).push(value);
       }
-
-      zGlobal.idMaps.entities.set(value.id, value);
     });
 
     // Fluids
