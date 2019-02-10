@@ -1,6 +1,7 @@
 import { CompletionItem, CompletionItemKind } from 'vscode-languageserver';
-import { IBracketHandler } from '../../api/IBracketHandler';
 import { zGlobal } from '../../api/global';
+import { IBracketHandler } from '../../api/IBracketHandler';
+import { ItemEntry } from '../../api/rcFile';
 import { BracketHandlerKind } from './bracketHandlers';
 
 class Item implements IBracketHandler {
@@ -39,13 +40,14 @@ class Item implements IBracketHandler {
     switch (predecessor.length) {
       case 1:
         // item:[modid]
-        const result = Array.from(zGlobal.items.keys()).map(key => {
+        const result = zGlobal.items.keys.map(key => {
           return {
             label: key,
             kind: BracketHandlerKind,
             data: {
-              triggerCharacter: ':',
               predecessor,
+              triggerCharacter: ':',
+              completion: 1,
             },
           } as CompletionItem;
         });
@@ -53,17 +55,39 @@ class Item implements IBracketHandler {
       case 2:
         // item:modid:[item]
         return zGlobal.items.has(predecessor[1])
-          ? zGlobal.items.get(predecessor[1]).map((item, i) => {
+          ? zGlobal.items.getStorage(predecessor[1]).values.map((item, i) => {
               return {
-                label: item.resourceLocation.path,
+                label:
+                  item.slice(item.length - 2) === ':0'
+                    ? item.slice(0, item.length - 2)
+                    : item,
                 kind: CompletionItemKind.Value,
                 data: {
-                  triggerCharacter: ':',
                   predecessor,
-                  position: i,
+                  triggerCharacter: ':',
+                  completion: 2,
+                  item: [...predecessor.slice(1), item].join(':'),
                 },
               } as CompletionItem;
             })
+          : [];
+      case 3:
+        // item:modid:item:[metadata]
+        return zGlobal.items.has(predecessor.slice(1).join(':'))
+          ? zGlobal.items
+              .getStorage(predecessor.slice(1).join(':'))
+              .values.map((item, i) => {
+                return {
+                  label: item,
+                  kind: CompletionItemKind.Value,
+                  data: {
+                    predecessor,
+                    triggerCharacter: ':',
+                    completion: 3,
+                    item: [...predecessor.slice(1), item].join(':'),
+                  },
+                } as CompletionItem;
+              })
           : [];
       default:
         return [];
@@ -71,7 +95,7 @@ class Item implements IBracketHandler {
   }
 
   detail(item: CompletionItem): CompletionItem {
-    switch (item.data.predecessor.length) {
+    switch (item.data.completion) {
       case 1:
         // item:[modid]
         if (!zGlobal.mods.has(item.label)) {
@@ -89,10 +113,11 @@ class Item implements IBracketHandler {
           },
         };
       case 2:
-        // item:modid:[item]
-        const itemFound = zGlobal.items.get(item.data.predecessor[1])[
-          item.data.position
-        ];
+      case 3:
+        // item:modid:[item]:[metadata];
+        const itemFound: ItemEntry = zGlobal.items.get(
+          item.data.item
+        ) as ItemEntry;
         return {
           ...item,
           detail: itemFound.name,
@@ -102,7 +127,8 @@ class Item implements IBracketHandler {
               `UnlocalizedName: ${itemFound.unlocalizedName}  \n` +
               `MaxStackSize: ${itemFound.maxStackSize}  \n` +
               `MaxDamage: ${itemFound.maxDamage}  \n` +
-              `CanRepair: ${itemFound.canRepair}  \n`,
+              `CanRepair: ${itemFound.canRepair}  \n` +
+              `Tooltips:  \n${itemFound.tooltips.join('  \n')}`,
           },
         };
       default:

@@ -14,23 +14,23 @@ import {
   WorkspaceFolder,
 } from 'vscode-languageserver';
 import Uri from 'vscode-uri';
+import { ZenScriptSettings } from './api';
 import { zGlobal } from './api/global';
 import { defaultSettings } from './api/setting';
+import { ZenParsedFile } from './api/zenParsedFile';
 import {
   BracketHandlerMap,
+  BracketHandlers,
   DetailBracketHandlers,
   SimpleBracketHandlers,
-  BracketHandlers,
 } from './completion/bracketHandler/bracketHandlers';
+import { ItemBracketHandler } from './completion/bracketHandler/item';
 import { Keywords } from './completion/completion';
+import { PreProcessorCompletions } from './completion/preprocessor/preprocessors';
 import { applyRequests } from './requests/requests';
 import { findToken } from './utils/findToken';
-import { reloadRCFile } from './utils/zsrcFile';
-import { PreProcessorCompletions } from './completion/preprocessor/preprocessors';
-import { ZenScriptSettings } from './api';
 import { AllZSFiles } from './utils/path';
-import { ZenParsedFile } from './api/zenParsedFile';
-import { ItemBracketHandler } from './completion/bracketHandler/item';
+import { reloadRCFile } from './utils/zsrcFile';
 
 // 创建一个服务的连接，连接使用 Node 的 IPC 作为传输
 // 并且引入所有 LSP 特性, 包括 preview / proposed
@@ -325,26 +325,32 @@ connection.onCompletion(async completion => {
 // TODO: 发送正确的信息
 connection.onCompletionResolve(
   (item: CompletionItem): CompletionItem => {
-    if (item.data === undefined) {
-      return;
-    }
-
-    switch (item.data.triggerCharacter) {
-      case ':':
-        if (
-          item.data.predecessor instanceof Array &&
-          item.data.predecessor.length > 0
-        ) {
-          return BracketHandlerMap.get(item.data.predecessor[0]).detail(item);
-        } else {
+    if (item.data) {
+      switch (item.data.triggerCharacter) {
+        case ':':
+          if (
+            item.data.predecessor instanceof Array &&
+            item.data.predecessor.length > 0
+          ) {
+            return BracketHandlerMap.get(item.data.predecessor[0]).detail(item);
+          } else {
+            return;
+          }
+        case '<':
+          const handler = DetailBracketHandlers.find(
+            i => i.label === item.label
+          );
+          if (handler) {
+            return handler;
+          } else if (false) {
+            // FIXME: use configuration instead.
+            return ItemBracketHandler.detail(item);
+          } else {
+            return;
+          }
+        default:
           return;
-        }
-      case '<':
-        return DetailBracketHandlers.find(i => {
-          return i.label === item.label;
-        });
-      default:
-        return;
+      }
     }
   }
 );

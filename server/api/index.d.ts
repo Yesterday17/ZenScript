@@ -1,12 +1,11 @@
+import { RCStorage } from '../utils/rcStorage';
 import {
-  ItemEntry,
-  EntityEntry,
   EnchantmentEntry,
+  EntityEntry,
   FluidEntry,
   ModEntry,
   ZSRCFile,
 } from './rcFile';
-import { PriorityTreeItem } from '../../api/requests/PriorityTreeRequest';
 import { ZenParsedFile } from './zenParsedFile';
 
 /**
@@ -32,7 +31,7 @@ export interface ZSGlobal {
   // .zsrc File
   rcFile: ZSRCFile;
   mods: Map<string, ModEntry>;
-  items: Map<string, ItemEntry[]>;
+  items: RCStorage;
   enchantments: Map<string, EnchantmentEntry[]>;
   entities: Map<string, EntityEntry[]>;
   fluids: Map<string, FluidEntry>;

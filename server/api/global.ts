@@ -1,12 +1,7 @@
-import { defaultSettings } from './setting';
 import { ZSGlobal } from '.';
-import {
-  ModEntry,
-  ItemEntry,
-  EnchantmentEntry,
-  EntityEntry,
-  FluidEntry,
-} from './rcFile';
+import { RCStorage } from '../utils/rcStorage';
+import { EnchantmentEntry, EntityEntry, FluidEntry, ModEntry } from './rcFile';
+import { defaultSettings } from './setting';
 
 export const zGlobal: ZSGlobal = {
   // whether it's a project
@@ -31,7 +26,7 @@ export const zGlobal: ZSGlobal = {
   },
 
   mods: new Map<string, ModEntry>(),
-  items: new Map<string, ItemEntry[]>(),
+  items: new RCStorage('item', 3),
   enchantments: new Map<string, EnchantmentEntry[]>(),
   entities: new Map<string, EntityEntry[]>(),
   fluids: new Map<string, FluidEntry>(),

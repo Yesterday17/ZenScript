@@ -1,7 +1,7 @@
 import * as fs from 'fs';
-import { zGlobal } from '../api/global';
 import { URL } from 'url';
 import { Connection } from 'vscode-languageserver';
+import { zGlobal } from '../api/global';
 
 /**
  * Reload /scripts/.zsrc
@@ -29,11 +29,12 @@ export function reloadRCFile(connection: Connection) {
     // Items
     zGlobal.items.clear();
     zGlobal.rcFile.items.forEach(value => {
-      if (!zGlobal.items.has(value.resourceLocation.domain)) {
-        zGlobal.items.set(value.resourceLocation.domain, [value]);
-      } else {
-        zGlobal.items.get(value.resourceLocation.domain).push(value);
-      }
+      const key = [
+        value.resourceLocation.domain,
+        value.resourceLocation.path,
+        value.metadata,
+      ].join(':');
+      zGlobal.items.set(key, value);
     });
 
     // Enchantments
