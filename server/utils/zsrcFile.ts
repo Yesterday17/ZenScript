@@ -65,7 +65,7 @@ export function reloadRCFile(connection: Connection) {
     // Fluids
     zGlobal.fluids.clear();
     zGlobal.rcFile.fluids.forEach(value =>
-      zGlobal.fluids.set(value.resourceLocation.domain, value)
+      zGlobal.fluids.set(value.unlocalizedName, value)
     );
   } catch (e) {
     connection.console.error(e.message);
