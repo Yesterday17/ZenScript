@@ -76,7 +76,6 @@ import {
   AND_ASSIGN,
   XOR_ASSIGN,
   INSTANCEOF,
-  COMMENT,
   ZEN_CLASS,
   ZEN_CONSTRUCTOR,
 } from './zsLexer';

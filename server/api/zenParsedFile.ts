@@ -1,6 +1,8 @@
 import { ILexingResult, IToken } from 'chevrotain';
 import { readFileSync } from 'fs';
 import Uri from 'vscode-uri';
+import { CommentEntry } from '../parser';
+import { ZSCommentScanner } from '../parser/zsComment';
 import { ZSInterpreter } from '../parser/zsInterpreter';
 import { ZSLexer } from '../parser/zsLexer';
 import { ZSParser } from '../parser/zsParser';
@@ -20,6 +22,7 @@ export class ZenParsedFile implements IPriority {
   }
   content: string;
 
+  comments: CommentEntry[];
   private lexResult: ILexingResult;
   tokens: IToken[];
 
@@ -65,6 +68,9 @@ export class ZenParsedFile implements IPriority {
    * @param text the text to parse, undefined if no update
    */
   parse() {
+    // Scan & locate comments
+    this.comments = ZSCommentScanner.scan(this.content);
+
     // Lexing
     this.lexResult = ZSLexer.tokenize(this.content);
     this.tokens = this.lexResult.tokens;

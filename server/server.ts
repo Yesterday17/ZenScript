@@ -89,24 +89,31 @@ connection.onInitialize((params: InitializeParams) => {
     capabilities: {
       textDocumentSync: documents.syncKind,
       completionProvider: {
+        // Completion
         resolveProvider: true,
         triggerCharacters: [
-          '#', // #*auto_preprocessor*
-          '.', // recipes.*autocomplete*
-          ':', // ore:*Autocomplete*
-          '<', // <*autocomplete*:*autocomplete*>
+          '#', // #preprocessor
+          '.', // recipes.autocomplete
+          ':', // ore:autocomplete
+          '<', // <autocomplete>
         ],
       },
-      hoverProvider: zGlobal.isProject,
+      signatureHelpProvider: {
+        triggerCharacters: ['('],
+      },
+      hoverProvider: true,
       // TODO: Support ZenScript Formatting
-      documentFormattingProvider: true,
+      documentFormattingProvider: false,
     },
   };
 });
 
 connection.onInitialized(() => {
   connection.workspace
-    .getConfiguration({ section: 'zenscript' })
+    .getConfiguration({
+      scopeUri: 'window',
+      section: 'zenscript',
+    })
     .then(setting => {
       zGlobal.setting = { ...setting };
       // Isn't a folder warn.
@@ -115,6 +122,7 @@ connection.onInitialized(() => {
         !zGlobal.isProject &&
         zGlobal.setting.showIsProjectWarn
       ) {
+        // TODO: Localize the following string
         connection.window.showWarningMessage(
           `ZenScript didn't enable all its features!
       Please check your folder name, it must be 'scripts', or a folder in your workspace must be named 'scripts'.`
@@ -137,7 +145,17 @@ connection.onInitialized(() => {
   }
 });
 
+connection.onSignatureHelp(params => {
+  // return {
+  //   signatures: [{ label: 'test', documentation: 'document', parameters: [] }],
+  //   activeSignature: 0,
+  //   activeParameter: null,
+  // };
+  return null;
+});
+
 // cache setting for all opened documents
+// TODO: Make it global
 let documentSettings: Map<string, Thenable<ZenScriptSettings>> = new Map();
 
 connection.onDidChangeConfiguration(change => {

@@ -49,3 +49,9 @@ export interface ASTNodeMap extends ASTNode {
   type: string = 'map';
   map: Map;
 }
+
+export interface CommentEntry {
+  content: string;
+  start: number;
+  end: number;
+}
