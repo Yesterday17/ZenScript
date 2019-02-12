@@ -1,5 +1,4 @@
-#priotiry 1000
-
+#priority 1000
 // Line Comment
 /* 
  * Block Comment
