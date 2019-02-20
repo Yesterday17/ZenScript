@@ -11,16 +11,35 @@ import {
 } from '.';
 import { ZSParser } from './zsParser';
 
+/**
+ * Sort a node and its bodys' body.
+ * @param node The root node to sort body
+ */
 function sortBody(node: ASTNode): ASTNode {
-  node.body.sort((a, b) => a.start - b.start);
+  if (node.body.length > 0) {
+    sortBody(node.body[0]);
+    node.body.sort((a, b) => {
+      sortBody(a);
+      sortBody(b);
+      return a.start - b.start;
+    });
+  }
   return node;
 }
 
+/**
+ * Push a node to a parent.
+ * @param node The parent node.
+ * @param value The child node
+ */
 function pushBody(node: ASTNode, value: ASTNode): ASTNode {
   node.body.push(value);
   return node;
 }
 
+/**
+ * Interpreter
+ */
 class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
   constructor() {
     super();
@@ -38,6 +57,7 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
       body: [],
     };
 
+    // If ImportList Exists
     if (ctx.ImportList) {
       program.import = this.visit(ctx.ImportList);
     }
@@ -66,6 +86,7 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
       });
     }
     sortBody(program);
+    program.start = program.body[0].start;
     return program;
   }
 
