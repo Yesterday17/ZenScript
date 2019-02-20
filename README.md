@@ -19,10 +19,11 @@ If you're just editing `.zs` files, you can only have syntax highlight and simpl
 
 The following table shows the version of `Probe` used in different `Zenscript` versions:
 
-| Probe                                                                   | ZenScript       | Compatable with previous version |
-| ----------------------------------------------------------------------- | --------------- | -------------------------------- |
-| [0.1.17](https://minecraft.curseforge.com/projects/probe/files/2671457) | 0.1.22 ~        | `Partially`                      |
-| [0.1.16](https://minecraft.curseforge.com/projects/probe/files/2666387) | 0.1.10 ~ 0.1.21 | `NO_PREVIOUS_VERSION`            |
+| Probe                                                                   | ZenScript       | Compatable with previous ZenScript version |
+| ----------------------------------------------------------------------- | --------------- | ------------------------------------------ |
+| [0.1.18](https://minecraft.curseforge.com/projects/probe/files/2671457) | 0.1.25 ~        | `true`                                     |
+| [0.1.17](https://minecraft.curseforge.com/projects/probe/files/2671457) | 0.1.22 ~ 0.1.24 | `Partially`                                |
+| [0.1.16](https://minecraft.curseforge.com/projects/probe/files/2666387) | 0.1.10 ~ 0.1.21 | `NO_PREVIOUS_VERSION`                      |
 
 ## Extension Settings
 

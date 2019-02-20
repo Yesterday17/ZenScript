@@ -82,4 +82,5 @@ export interface ZSRCFile {
   enchantments: EnchantmentEntry[];
   entities: EntityEntry[];
   fluids: FluidEntry[];
+  oredictionary: string[];
 }

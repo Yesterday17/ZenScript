@@ -23,6 +23,7 @@ export const zGlobal: ZSGlobal = {
     enchantments: [],
     entities: [],
     fluids: [],
+    oredictionary: [],
   },
 
   mods: new Map<string, ModEntry>(),

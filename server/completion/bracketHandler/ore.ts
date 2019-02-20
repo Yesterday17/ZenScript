@@ -1,5 +1,6 @@
-import { CompletionItem } from 'vscode-languageserver';
+import { CompletionItem, CompletionItemKind } from 'vscode-languageserver';
 import { IBracketHandler } from '../../api/IBracketHandler';
+import { zGlobal } from '../../api/global';
 
 class Ore implements IBracketHandler {
   name = 'ore';
@@ -25,7 +26,14 @@ class Ore implements IBracketHandler {
   };
 
   next(predecessor: string[]): CompletionItem[] {
-    return [];
+    return predecessor.length === 1
+      ? zGlobal.rcFile.oredictionary.map(od => {
+          return {
+            label: od,
+            kind: CompletionItemKind.Value,
+          } as CompletionItem;
+        })
+      : [];
   }
 
   detail(item: CompletionItem): CompletionItem {
