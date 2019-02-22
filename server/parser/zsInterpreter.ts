@@ -86,7 +86,11 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
       });
     }
     sortBody(program);
-    program.start = program.body[0].start;
+
+    // Update if body exists
+    if (program.body.length > 0) {
+      program.start = program.body[0].start;
+    }
     return program;
   }
 
@@ -138,8 +142,12 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
     };
   }
 
-  protected ZenClassDeclaration(ctx: NodeContext) {
-    return '';
+  protected ZenClassDeclaration(ctx: NodeContext): ASTNode {
+    return {
+      type: 'zenclass',
+      start: 0,
+      body: [],
+    };
   }
 
   protected BlockStatement(ctx: NodeContext): ASTNode {
