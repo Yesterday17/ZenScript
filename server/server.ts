@@ -377,26 +377,21 @@ connection.onCompletionResolve(
 connection.onHover(hoverPosition => {
   // 获得当前正在修改的 document
   const document = documents.get(hoverPosition.textDocument.uri);
-  // 当前鼠标指向的位置
-  const position = hoverPosition.position;
 
   // when document doesn't exist, return void
   if (!document) {
     return Promise.resolve(void 0);
   }
 
-  // Get offset
-  const offset = document.offsetAt(position);
+  // Get offset of current mouse
+  const offset = document.offsetAt(hoverPosition.position);
+
+  const parsedFile = zGlobal.zsFiles.get(hoverPosition.textDocument.uri);
 
   // Debug
-  connection.console.log(
-    JSON.stringify(zGlobal.zsFiles.get(hoverPosition.textDocument.uri).cst)
-  );
+  connection.console.log(JSON.stringify(parsedFile.cst));
 
-  const token = findToken(
-    zGlobal.zsFiles.get(hoverPosition.textDocument.uri).tokens,
-    offset
-  );
+  const token = findToken(parsedFile.tokens, offset);
 
   if (token.exist) {
     const hover: Hover = {
