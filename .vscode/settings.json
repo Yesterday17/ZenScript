@@ -1,15 +1,16 @@
 // Place your settings in this file to overwrite default and user settings.
 {
   "files.exclude": {
-    "assets": true,
+    "*.vsix": true,
     "api": true,
+    "assets": true,
     "client": true,
+    "docs": true,
+    "i18n": true,
+    "language": true,
     "server": true,
     "test": true,
-    "language": true,
-    "i18n": true,
-    "zenscript.code-workspace": true,
     "yarn.lock": true,
-    "*.vsix": true
+    "zenscript.code-workspace": true
   }
 }

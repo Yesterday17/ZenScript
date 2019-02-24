@@ -24,6 +24,9 @@
     {
       "name": "Test Large Modpack",
       "path": "test\\large-modpack\\scripts"
+    },
+    {
+      "path": "docs"
     }
   ],
   "settings": {
@@ -38,6 +41,6 @@
       "out": true
     },
     "prettier.tslintIntegration": true,
-    "editor.tabSize": 2,
+    "editor.tabSize": 2
   }
 }
