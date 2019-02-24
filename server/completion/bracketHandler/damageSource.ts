@@ -45,6 +45,7 @@ class DamageSource implements IBracketHandler {
       ].map(key => {
         return {
           label: key,
+          detail: 'Vanilla',
           kind: CompletionItemKind.Value,
           data: {
             triggerCharacter: ':',
