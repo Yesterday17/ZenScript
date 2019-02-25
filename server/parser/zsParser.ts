@@ -83,7 +83,7 @@ import {
 export class ZenScriptParser extends Parser {
   constructor() {
     super(zsAllTokens, {
-      maxLookahead: 2,
+      // maxLookahead: 2,
       recoveryEnabled: true,
       ignoredIssues: {
         Statement: {
@@ -410,7 +410,7 @@ export class ZenScriptParser extends Parser {
 
   protected AddExpression = this.RULE('AddExpression', () => {
     this.SUBRULE(this.MultiplyExpression);
-    this.OPTION(() => {
+    this.MANY(() => {
       this.OR([
         { ALT: () => this.CONSUME(PLUS) },
         { ALT: () => this.CONSUME(MINUS) },
@@ -422,7 +422,7 @@ export class ZenScriptParser extends Parser {
 
   protected MultiplyExpression = this.RULE('MultiplyExpression', () => {
     this.SUBRULE(this.UnaryExpression);
-    this.OPTION(() => {
+    this.MANY(() => {
       this.OR([
         { ALT: () => this.CONSUME(MUL) },
         { ALT: () => this.CONSUME(DIV) },
@@ -450,7 +450,7 @@ export class ZenScriptParser extends Parser {
 
   protected AndExpression = this.RULE('AndExpression', () => {
     this.SUBRULE(this.CompareExpression);
-    this.OPTION(() => {
+    this.MANY(() => {
       this.CONSUME(AND);
       this.SUBRULE2(this.CompareExpression);
     });
@@ -458,7 +458,7 @@ export class ZenScriptParser extends Parser {
 
   protected AndAndExpression = this.RULE('AndAndExpression', () => {
     this.SUBRULE(this.OrExpression);
-    this.OPTION(() => {
+    this.MANY(() => {
       this.CONSUME(AND2);
       this.SUBRULE2(this.OrExpression);
     });
@@ -466,7 +466,7 @@ export class ZenScriptParser extends Parser {
 
   protected OrExpression = this.RULE('OrExpression', () => {
     this.SUBRULE(this.XorExpression);
-    this.OPTION(() => {
+    this.MANY(() => {
       this.CONSUME(OR);
       this.SUBRULE2(this.XorExpression);
     });
@@ -474,7 +474,7 @@ export class ZenScriptParser extends Parser {
 
   protected OrOrExpression = this.RULE('OrOrExpression', () => {
     this.SUBRULE(this.AndAndExpression);
-    this.OPTION(() => {
+    this.MANY(() => {
       this.CONSUME(OR2);
       this.SUBRULE2(this.AndAndExpression);
     });
@@ -482,7 +482,7 @@ export class ZenScriptParser extends Parser {
 
   protected XorExpression = this.RULE('XorExpression', () => {
     this.SUBRULE(this.AndExpression);
-    this.OPTION(() => {
+    this.MANY(() => {
       this.CONSUME(XOR);
       this.SUBRULE2(this.AndExpression);
     });
