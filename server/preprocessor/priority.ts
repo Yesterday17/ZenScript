@@ -15,6 +15,7 @@ class PriorityPreProcessor implements IPreProcessor {
 
 export interface IPriority {
   priority: number;
+  loader: string;
 }
 
 export const PriorityHandler = new PriorityPreProcessor();

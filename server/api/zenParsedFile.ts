@@ -31,6 +31,7 @@ export class ZenParsedFile implements IPriority {
   ast: any;
 
   priority: number = 0;
+  loader: string = '';
 
   constructor(fspath: string) {
     this.fspath = fspath;
