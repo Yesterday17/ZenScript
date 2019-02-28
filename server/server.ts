@@ -101,7 +101,7 @@ connection.onInitialized(() => {
           folder = f;
         } else if (
           zGlobal.setting.supportMinecraftFolderMode &&
-          fbase.match(/^\.?minecraft/) &&
+          // fbase.match(/^\.?minecraft/) &&
           existsSync(path.join(fpath, 'scripts'))
         ) {
           // Rejudge minecraft folder mode
