@@ -1,6 +1,8 @@
 {
   "zenscript.maxNumberOfProblems.desc": "Controls the maximum number of problems produced by the server.",
   "zenscript.maxHistoryEntries.desc": "Controls the maximum number of history entries responsed by the server.",
+
+  "zenscript.supportMinecraftFolderMode.desc": "Whether your active folder is 'minecraft' like, which means that the extension detects ./scripts/.zsrc, not ./.zsrc.",
   "zenscript.showIsProjectWarn.desc": "Whether to show warning of isProject.",
   "zenscript.autoshowLTCompletion.desc": "Whether to show autocompletion after typing <.",
   "zenscript.modIdItemCompletion.desc": "Whether to show modid autocompletion with bracketHandlers.",

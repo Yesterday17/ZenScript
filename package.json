@@ -89,6 +89,12 @@
           "default": 20,
           "description": "%zenscript.maxHistoryEntries.desc%"
         },
+        "zenscript.supportMinecraftFolderMode": {
+          "scope": "resource",
+          "type": "boolean",
+          "default": false,
+          "description": "%zenscript.supportMinecraftFolderMode.desc%"
+        },
         "zenscript.showIsProjectWarn": {
           "scope": "window",
           "type": "boolean",

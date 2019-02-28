@@ -15,6 +15,7 @@ export interface ZenScriptSettings {
   maxNumberOfProblems: number;
   maxHistoryEntries: number;
 
+  supportMinecraftFolderMode: boolean;
   showIsProjectWarn: boolean;
   autoshowLTCompletion: boolean;
   modIdItemCompletion: boolean;

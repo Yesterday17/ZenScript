@@ -1,3 +1,4 @@
+import { existsSync } from 'fs';
 import * as path from 'path';
 import { URL } from 'url';
 import {
@@ -43,40 +44,12 @@ let documents: TextDocuments = new TextDocuments();
 let hasConfigurationCapability: boolean = false;
 let hasWorkspaceFolderCapability: boolean = false;
 
+// All the folders
+let folders: WorkspaceFolder[];
+
 connection.onInitialize((params: InitializeParams) => {
   let capabilities = params.capabilities;
-
-  const folders = params.workspaceFolders ? [...params.workspaceFolders] : [];
-
-  // No Folder is opened / foldername !== scripts
-  // disable most of language server features
-  let folder: WorkspaceFolder | undefined = undefined;
-  folders.forEach(
-    f =>
-      (folder =
-        f.name === 'scripts' ||
-        path.basename(Uri.parse(f.uri).fsPath) === 'scripts'
-          ? f
-          : folder)
-  );
-
-  // whether a folder named `scripts` exists
-  if (folder) {
-    zGlobal.baseFolder = folder.uri;
-    reloadRCFile(connection);
-
-    // Load all files
-    AllZSFiles(Uri.parse(zGlobal.baseFolder).fsPath).forEach(file => {
-      // new parsed file
-      const zsFile = new ZenParsedFile(file);
-      // save to map first
-      zGlobal.zsFiles.set(Uri.file(file).toString(), zsFile);
-      // then preprocess(not parse to save time)
-      zsFile.load().preprocess();
-    });
-  } else {
-    zGlobal.isProject = false;
-  }
+  folders = params.workspaceFolders ? [...params.workspaceFolders] : [];
 
   // Does the client support the `workspace/configuration` request?
   // If not, we will fall back using global settings
@@ -111,14 +84,55 @@ connection.onInitialize((params: InitializeParams) => {
 connection.onInitialized(() => {
   connection.workspace
     .getConfiguration({
-      scopeUri: 'window',
+      scopeUri: 'resource',
       section: 'zenscript',
     })
     .then(setting => {
+      // Override the global setting.
       zGlobal.setting = { ...setting };
+
+      // No Folder is opened / foldername !== scripts
+      // disable most of language server features
+      let folder: WorkspaceFolder | undefined = undefined;
+      folders.forEach(f => {
+        const fpath = Uri.parse(f.uri).fsPath,
+          fbase = path.basename(fpath);
+        if (f.name === 'scripts' || fbase === 'scripts') {
+          folder = f;
+        } else if (
+          zGlobal.setting.supportMinecraftFolderMode &&
+          fbase.match(/^\.?minecraft/) &&
+          existsSync(path.join(fpath, 'scripts'))
+        ) {
+          // Rejudge minecraft folder mode
+          folder = {
+            ...f,
+            uri: Uri.file(path.join(fpath, 'scripts')).toString(),
+          };
+        }
+      });
+
+      // whether the target folder exists
+      if (folder) {
+        zGlobal.baseFolder = folder.uri;
+        reloadRCFile(connection);
+
+        // Load all files
+        AllZSFiles(Uri.parse(zGlobal.baseFolder).fsPath).forEach(file => {
+          // new parsed file
+          const zsFile = new ZenParsedFile(file);
+          // save to map first
+          zGlobal.zsFiles.set(Uri.file(file).toString(), zsFile);
+          // then preprocess(not parse to save time)
+          zsFile.load().preprocess();
+        });
+      } else {
+        zGlobal.isProject = false;
+      }
+
       // Isn't a folder warn.
       if (
-        zGlobal.baseFolder !== '' &&
+        zGlobal.baseFolder === '' &&
         !zGlobal.isProject &&
         zGlobal.setting.showIsProjectWarn
       ) {

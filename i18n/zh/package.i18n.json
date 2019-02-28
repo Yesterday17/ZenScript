@@ -1,6 +1,8 @@
 {
   "zenscript.maxNumberOfProblems.desc": "最大问题数。",
   "zenscript.maxHistoryEntries.desc": "最多记录的历史条目数量。",
+
+  "zenscript.supportMinecraftFolderMode.desc": "是否为 minecraft 目录模式，即寻找./scripts/.zsrc，而不是./.zsrc。",
   "zenscript.showIsProjectWarn.desc": "是否显示“该目录并非工作目录”的警告。",
   "zenscript.autoshowLTCompletion.desc": "是否在输入“<”后显示自动补全。",
   "zenscript.modIdItemCompletion.desc": "是否启用<modid:item_name>的自动补全（缺省item:）。",
