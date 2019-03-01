@@ -28,6 +28,7 @@ export interface ZSGlobal {
   isProject: boolean;
   baseFolder: string;
   setting: ZenScriptSettings;
+  documentSettings: Map<string, Thenable<ZenScriptSettings>>;
 
   // .zsrc File
   rcFile: ZSRCFile;

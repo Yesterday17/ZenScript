@@ -101,6 +101,7 @@ connection.onInitialized(() => {
           folder = f;
         } else if (
           zGlobal.setting.supportMinecraftFolderMode &&
+          // TODO: Add configuration for the following judge:
           // fbase.match(/^\.?minecraft/) &&
           existsSync(path.join(fpath, 'scripts'))
         ) {
@@ -168,14 +169,10 @@ connection.onSignatureHelp(params => {
   return null;
 });
 
-// cache setting for all opened documents
-// TODO: Make it global
-let documentSettings: Map<string, Thenable<ZenScriptSettings>> = new Map();
-
 connection.onDidChangeConfiguration(change => {
   if (hasConfigurationCapability) {
     // reset all the settings
-    documentSettings.clear();
+    zGlobal.documentSettings.clear();
   } else {
     zGlobal.setting = <ZenScriptSettings>(
       (change.settings.zenscript || defaultSettings)
@@ -186,24 +183,24 @@ connection.onDidChangeConfiguration(change => {
   documents.all().forEach(validateTextDocument);
 });
 
-function getDocumentSettings(resource: string): Thenable<ZenScriptSettings> {
+function getdocumentSettings(resource: string): Thenable<ZenScriptSettings> {
   if (!hasConfigurationCapability) {
     return Promise.resolve(zGlobal.setting);
   }
-  let result = documentSettings.get(resource);
+  let result = zGlobal.documentSettings.get(resource);
   if (!result) {
     result = connection.workspace.getConfiguration({
       scopeUri: resource,
       section: 'zenscript',
     });
-    documentSettings.set(resource, result);
+    zGlobal.documentSettings.set(resource, result);
   }
   return result;
 }
 
 // 只保留打开文档的设置
 documents.onDidClose(e => {
-  documentSettings.delete(e.document.uri);
+  zGlobal.documentSettings.delete(e.document.uri);
 });
 
 // The content of a text document has changed. This event is emitted
@@ -213,7 +210,7 @@ documents.onDidChangeContent(change => {
 });
 
 async function validateTextDocument(textDocument: TextDocument): Promise<void> {
-  let settings = await getDocumentSettings(textDocument.uri);
+  let settings = await getdocumentSettings(textDocument.uri);
   const diagnostics: Diagnostic[] = [];
 
   // save lexing result
@@ -340,7 +337,9 @@ connection.onCompletion(async completion => {
         ? BracketHandlerMap.get(predecessor[0]).next(predecessor)
         : null;
     case '<':
-      const setting = await documentSettings.get(completion.textDocument.uri);
+      const setting = await zGlobal.documentSettings.get(
+        completion.textDocument.uri
+      );
       return manuallyTriggerred || setting.autoshowLTCompletion
         ? setting.modIdItemCompletion
           ? [...SimpleBracketHandlers, ...ItemBracketHandler.next(['item'])]

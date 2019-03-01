@@ -12,6 +12,7 @@ export const zGlobal: ZSGlobal = {
 
   // global setting(default)
   setting: defaultSettings,
+  documentSettings: new Map(),
 
   // .zsrc file
   rcFile: {
