@@ -198,7 +198,7 @@ function getdocumentSettings(resource: string): Thenable<ZenScriptSettings> {
   return result;
 }
 
-// 只保留打开文档的设置
+// Delete configuration of closed documents.
 documents.onDidClose(e => {
   zGlobal.documentSettings.delete(e.document.uri);
 });
@@ -298,7 +298,7 @@ connection.onCompletion(async completion => {
     }
   }
 
-  // TODO: 完成自动补全
+  // TODO: Finish AutoCompletion of `.`
   switch (triggerCharacter) {
     case '#':
       return PreProcessorCompletions;
@@ -308,7 +308,8 @@ connection.onCompletion(async completion => {
       // 位于 <> 内的内容
       let predecessor: string[] = [];
 
-      // 寻找 inBracket
+      // Find inBracket
+      // TODO: Use Token instead.
       for (let i = offset - 1; i >= 0; i--) {
         // 当 : 与 < 不再同一行时直接返回 null
         if (content[i] === '\n') {
@@ -353,11 +354,13 @@ connection.onCompletion(async completion => {
 
 // 负责处理自动补全条目选中时的信息
 // 将完整的信息发送至 Client
-// TODO: 发送正确的信息
 connection.onCompletionResolve(
   (item: CompletionItem): CompletionItem => {
     if (item.data) {
       switch (item.data.triggerCharacter) {
+        case '.':
+          // TODO: Completion for `.`
+          break;
         case ':':
           if (
             item.data.predecessor instanceof Array &&
@@ -373,12 +376,10 @@ connection.onCompletionResolve(
           );
           if (handler) {
             return handler;
-          } else if (false) {
-            // FIXME: use configuration instead.
-            return ItemBracketHandler.detail(item);
-          } else {
-            return;
           }
+        // else here should return
+        // and jumped to default
+        // so `else return;` can be deleted
         default:
           return;
       }
