@@ -18,6 +18,15 @@ export const zGlobal: ZSGlobal = {
   rcFile: {
     mcVersion: '',
     forgeVersion: '',
+    probeVersion: '',
+    config: {
+      mods: true,
+      items: true,
+      enchantments: true,
+      entities: true,
+      fluids: true,
+      oredictionary: true,
+    },
 
     mods: [],
     items: [],

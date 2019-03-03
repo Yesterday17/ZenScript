@@ -1,6 +1,7 @@
 export interface ArtifactVersion {
   label: string;
   version: string;
+  range: string;
 }
 
 export interface ResourceLocation {
@@ -16,7 +17,9 @@ export interface ModEntry {
   version: string;
   authorList: string[];
   credits: string;
-  parentMod: string;
+  requiredMods: ArtifactVersion[];
+  dependencies: ArtifactVersion[];
+  dependants: ArtifactVersion[];
 }
 
 export interface ItemEntry {
@@ -73,9 +76,20 @@ export interface FluidEntry {
   flowing: ResourceLocation;
 }
 
+export interface ProbeConfig {
+  mods: boolean;
+  items: boolean;
+  enchantments: boolean;
+  entities: boolean;
+  fluids: boolean;
+  oredictionary: boolean;
+}
+
 export interface ZSRCFile {
   mcVersion: string;
   forgeVersion: string;
+  probeVersion: string;
+  config: ProbeConfig;
 
   mods: ModEntry[];
   items: ItemEntry[];
