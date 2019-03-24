@@ -665,27 +665,38 @@ export class ZenScriptParser extends Parser {
 
   protected ZSArray = this.RULE('ZSArray', () => {
     this.CONSUME(SQBR_OPEN);
-    this.MANY_SEP({
-      SEP: COMMA,
-      DEF: () => {
-        this.SUBRULE(this.AssignExpression);
-      },
+    this.OPTION(() => {
+      this.SUBRULE(this.AssignExpression);
+      this.MANY(() => {
+        this.CONSUME(COMMA);
+        this.SUBRULE2(this.AssignExpression);
+      });
+      this.OPTION2(() => {
+        this.CONSUME2(COMMA);
+      });
     });
     this.CONSUME(SQBR_CLOSE);
   });
 
   protected ZSMap = this.RULE('ZSMap', () => {
     this.CONSUME(A_OPEN);
-    this.MANY_SEP({
-      NAME: '$MapEntry',
-      SEP: COMMA,
-      DEF: () => {
-        this.SUBRULE(this.AssignExpression, { LABEL: 'KEY' });
-        this.CONSUME(COLON);
-        this.SUBRULE2(this.AssignExpression, { LABEL: 'VALUE' });
-      },
+    this.OPTION(() => {
+      this.SUBRULE(this.ZSMapEntry);
+      this.MANY(() => {
+        this.CONSUME(COMMA);
+        this.SUBRULE2(this.ZSMapEntry);
+      });
+      this.OPTION2(() => {
+        this.CONSUME2(COMMA);
+      });
     });
     this.CONSUME(A_CLOSE);
+  });
+
+  protected ZSMapEntry = this.RULE('ZSMapEntry', () => {
+    this.SUBRULE(this.AssignExpression, { LABEL: 'KEY' });
+    this.CONSUME(COLON);
+    this.SUBRULE2(this.AssignExpression, { LABEL: 'VALUE' });
   });
 
   protected Package = this.RULE('Package', () => {

@@ -423,8 +423,8 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
   protected ZSMap(ctx: NodeContext): ASTNodeMap {
     const map = new Map();
 
-    if (ctx.$MapEntry) {
-      ctx.$MapEntry.forEach((entry: any) => {
+    if (ctx.ZSMapEntry) {
+      ctx.ZSMapEntry.forEach((entry: any) => {
         const e = this.visit(entry);
         if (!map.has(e[0])) {
           map.set(e[0], e[1]);
@@ -443,7 +443,7 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
   }
 
   // TODO: Debug
-  protected ZSMap$MapEntry(ctx: NodeContext) {
+  protected ZSMapEntry(ctx: NodeContext) {
     return [this.visit(ctx.KEY), this.visit(ctx.VALUE)];
   }
 
