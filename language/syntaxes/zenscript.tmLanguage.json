@@ -13,12 +13,12 @@
   "repository": {
     "brackethandlers": {
       "name": "variable.language.brackethandler.zenscript",
-      "begin": "\\<",
+      "begin": "\\<(?=[^<> ]+:)",
       "end": "\\>",
       "patterns": [
         {
           "name": "variable.parameter.brackethandler.zenscript",
-          "match": "(?<=\\<)(.*?)(?=\\>)"
+          "match": "[^<> ]+"
         }
       ]
     },
