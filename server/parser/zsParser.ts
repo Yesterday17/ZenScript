@@ -654,6 +654,7 @@ export class ZenScriptParser extends Parser {
                 { ALT: () => this.CONSUME(TRUE) },
                 { ALT: () => this.CONSUME(FALSE) },
                 { ALT: () => this.CONSUME(IMPORT) },
+                { ALT: () => this.CONSUME(DIV) }, // #7
               ],
             });
           },
