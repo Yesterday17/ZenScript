@@ -41,6 +41,8 @@
       "out": true
     },
     "prettier.tslintIntegration": true,
-    "editor.tabSize": 2
+    "editor.tabSize": 2,
+    "npm.packageManager": "yarn",
+    "tslint.packageManager": "yarn"
   }
 }
