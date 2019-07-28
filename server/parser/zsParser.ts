@@ -262,7 +262,7 @@ export class ZenScriptParser extends Parser {
   protected Statement = this.RULE('Statement', () => {
     this.OR([
       {
-        GATE: this.LA(1).tokenType === A_OPEN,
+        GATE: () => this.LA(1).tokenType === A_OPEN,
         ALT: () => this.SUBRULE(this.StatementBody),
       },
       {
@@ -270,7 +270,8 @@ export class ZenScriptParser extends Parser {
         ALT: () => this.SUBRULE(this.ReturnStatement),
       },
       {
-        GATE: this.LA(1).tokenType === VAL || this.LA(1).tokenType === VAR,
+        GATE: () =>
+          this.LA(1).tokenType === VAL || this.LA(1).tokenType === VAR,
         ALT: () => this.SUBRULE(this.DeclareStatement),
       },
       { ALT: () => this.SUBRULE(this.IfStatement) },
@@ -513,7 +514,7 @@ export class ZenScriptParser extends Parser {
           },
         },
         {
-          GATE:
+          GATE: () =>
             this.LA(1).tokenType === IDENTIFIER && this.LA(1).image === 'to',
           ALT: () => {
             this.CONSUME2(IDENTIFIER);

@@ -160,9 +160,10 @@
     ]
   },
   "scripts": {
-    "vscode:prepublish": "yarn update-vscode && yarn compile",
+    "prepublish": "yarn update-vscode && yarn compile",
     "debug-package": "yarn version --no-git-tag-version --patch && vsce package",
-    "patch": "yarn version --patch && vsce publish --yarn",
+    "patch": "yarn version --patch && yarn run publish",
+    "publish": "yarn prepublish && vsce publish --yarn",
     "update-vscode": "vscode-install",
     "postinstall": "vscode-install",
     "compile": "tsc -b",
@@ -179,7 +180,7 @@
     "vscode-nls-dev": "^3.3.1"
   },
   "dependencies": {
-    "chevrotain": "^4.2.0",
+    "chevrotain": "^4.8.1",
     "vscode-languageclient": "^5.2.1",
     "vscode-languageserver": "^5.2.1",
     "vscode-nls": "^4.0.0",

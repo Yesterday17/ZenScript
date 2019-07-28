@@ -28,7 +28,7 @@
   resolved "https://registry.yarnpkg.com/@types/node/-/node-12.6.8.tgz#e469b4bf9d1c9832aee4907ba8a051494357c12c"
   integrity sha512-aX+gFgA5GHcDi89KG5keey2zf0WfZk/HAQotEamsK2kbey+8yGKcson0hbK8E+v0NArlCJQCqMP161YhV6ZXLg==
 
-"@types/node@^10.12.18":
+"@types/node@^10.14.13":
   version "10.14.13"
   resolved "https://registry.yarnpkg.com/@types/node/-/node-10.14.13.tgz#ac786d623860adf39a3f51d629480aacd6a6eec7"
   integrity sha512-yN/FNNW1UYsRR1wwAoyOwqvDuLDtVXnaJTZ898XIw/Q5cCaeVAlVwvsmXLX5PuiScBYwZsZU4JYSHB3TvfdwvQ==
@@ -211,12 +211,12 @@ cheerio@^1.0.0-rc.1:
     lodash "^4.15.0"
     parse5 "^3.0.1"
 
-chevrotain@^4.2.0:
-  version "4.2.0"
-  resolved "http://registry.npm.taobao.org/chevrotain/download/chevrotain-4.2.0.tgz#45b4813f8f6f7c3f0d80391d28e0a4561950a4be"
-  integrity sha1-RbSBP49vfD8NgDkdKOCkVhlQpL4=
+chevrotain@^4.8.1:
+  version "4.8.1"
+  resolved "https://registry.yarnpkg.com/chevrotain/-/chevrotain-4.8.1.tgz#9a4d120ae31f63ab3260c589f9eb9362d51acb2b"
+  integrity sha512-Dd2oHFdscdm8MSmG0ejTXdMlqKR5ryeKuwLpsf1ZOs3l8HD/jPfIY0MYs9Eh4X3gm9h0CR155zpVYFK+uAI3tA==
   dependencies:
-    regexp-to-ast "0.3.5"
+    regexp-to-ast "0.4.0"
 
 cliui@^5.0.0:
   version "5.0.0"
@@ -1088,10 +1088,10 @@ readable-stream@^3.1.1:
     string_decoder "^1.1.1"
     util-deprecate "^1.0.1"
 
-regexp-to-ast@0.3.5:
-  version "0.3.5"
-  resolved "http://registry.npm.taobao.org/regexp-to-ast/download/regexp-to-ast-0.3.5.tgz#dedadd11bbb5f849df76b4e84b0b5335831c0473"
-  integrity sha1-3trdEbu1+EnfdrToSwtTNYMcBHM=
+regexp-to-ast@0.4.0:
+  version "0.4.0"
+  resolved "https://registry.yarnpkg.com/regexp-to-ast/-/regexp-to-ast-0.4.0.tgz#f3dbcb42726cd71902ba50193f63eab5325cd7cb"
+  integrity sha512-4qf/7IsIKfSNHQXSwial1IFmfM1Cc/whNBQqRwe0V2stPe7KmN1U0tWQiIx6JiirgSrisjE0eECdNf7Tav1Ntw==
 
 remove-trailing-separator@^1.0.1:
   version "1.1.0"
@@ -1315,7 +1315,7 @@ tslib@^1.8.0, tslib@^1.8.1:
   resolved "https://registry.yarnpkg.com/tslib/-/tslib-1.10.0.tgz#c3c19f95973fb0a62973fb09d90d961ee43e5c8a"
   integrity sha512-qOebF53frne81cf0S9B41ByenJ3/IuH8yJKngAX35CmiZySA0khhkovshKK+jGCaMnVomla7gVlIcc3EvKPbTQ==
 
-tslint@^5.12.0:
+tslint@^5.18.0:
   version "5.18.0"
   resolved "https://registry.yarnpkg.com/tslint/-/tslint-5.18.0.tgz#f61a6ddcf372344ac5e41708095bbf043a147ac6"
   integrity sha512-Q3kXkuDEijQ37nXZZLKErssQVnwCV/+23gFEMROi8IlbaBG6tXqLPQJ5Wjcyt/yHPKBC+hD5SzuGaMora+ZS6w==
@@ -1371,7 +1371,7 @@ typescript@^2.6.2:
   resolved "https://registry.yarnpkg.com/typescript/-/typescript-2.9.2.tgz#1cbf61d05d6b96269244eb6a3bce4bd914e0f00c"
   integrity sha512-Gr4p6nFNaoufRIY4NMdpQRNmgxVIGMs4Fcu/ujdYk3nAZqk7supzBE9idmvfZIlH/Cuj//dvi+019qEue9lV0w==
 
-typescript@^3.2.2:
+typescript@^3.5.3:
   version "3.5.3"
   resolved "https://registry.yarnpkg.com/typescript/-/typescript-3.5.3.tgz#c830f657f93f1ea846819e929092f5fe5983e977"
   integrity sha512-ACzBtm/PhXBDId6a6sDJfroT2pOWt/oOnk4/dElG5G33ZL776N3Y6/6bKZJBFpd+b05F3Ct9qDjMeJmRWtE2/g==
@@ -1437,7 +1437,7 @@ vinyl@^2.1.0:
     remove-trailing-separator "^1.0.1"
     replace-ext "^1.0.0"
 
-vsce@^1.54.0:
+vsce@^1.66.0:
   version "1.66.0"
   resolved "https://registry.yarnpkg.com/vsce/-/vsce-1.66.0.tgz#8cf1d64a4825d5d0523ea5efd0bf41e2c6829565"
   integrity sha512-Zf4+WD4PhEcOr7jkU08SI9lwFqDhmhk73YOCGQ/tNLaBy+PnnX4eSdqj9LdzDLuI2dsyomJLXzDSNgxuaInxCQ==
@@ -1497,7 +1497,7 @@ vscode-languageserver@^5.2.1:
     vscode-languageserver-protocol "3.14.1"
     vscode-uri "^1.0.6"
 
-vscode-nls-dev@^3.2.3:
+vscode-nls-dev@^3.3.1:
   version "3.3.1"
   resolved "https://registry.yarnpkg.com/vscode-nls-dev/-/vscode-nls-dev-3.3.1.tgz#15fc03e0c9ca5a150abb838690d9554ac06f77e4"
   integrity sha512-fug18D7CXb8pv8JoQ0D0JmZaIYDQoKLiyZxkAy5P8Cln/FwlNsdzwQILDph62EdGY5pvsJ2Jd1T5qgHAExe/tg==
@@ -1533,7 +1533,7 @@ vscode-uri@^1.0.6:
   resolved "http://registry.npm.taobao.org/vscode-uri/download/vscode-uri-1.0.6.tgz#6b8f141b0bbc44ad7b07e94f82f168ac7608ad4d"
   integrity sha1-a48UGwu8RK17B+lPgvForHYIrU0=
 
-vscode@^1.1.26:
+vscode@^1.1.35:
   version "1.1.35"
   resolved "https://registry.yarnpkg.com/vscode/-/vscode-1.1.35.tgz#f8c6beb905738b874d539ddb3784e5feeec71c0a"
   integrity sha512-xPnxzQU40LOS2yPyzWW+WKpTV6qA3z16TcgpZ9O38UWLA157Zz4GxUx5H7Gd07pxzw0GqvusbF4D+5GBgNxvEQ==
