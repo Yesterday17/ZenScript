@@ -27,7 +27,7 @@ class Enchantment implements IBracketHandler {
   next(predecessor: string[]): CompletionItem[] {
     switch (predecessor.length) {
       case 1:
-        // item:[modid]
+        // enchantment:[modid]
         const result = Array.from(zGlobal.enchantments.keys()).map(key => {
           return {
             label: key,
@@ -40,11 +40,18 @@ class Enchantment implements IBracketHandler {
         });
         return result;
       case 2:
-        // item:modid:[item]
+        // enchantment:modid:[enchantment]
         return zGlobal.enchantments.has(predecessor[1])
           ? zGlobal.enchantments.get(predecessor[1]).map((item, i) => {
+              const enchantmentFound = zGlobal.enchantments.get(predecessor[1])[
+                i
+              ];
               return {
                 label: item.resourceLocation.path,
+                filterText: [
+                  enchantmentFound.name,
+                  enchantmentFound.unlocalizedName,
+                ].join(''),
                 kind: CompletionItemKind.Value,
                 data: {
                   triggerCharacter: ':',
@@ -62,7 +69,7 @@ class Enchantment implements IBracketHandler {
   detail(item: CompletionItem): CompletionItem {
     switch (item.data.predecessor.length) {
       case 1:
-        // item:[modid]
+        // enchantment:[modid]
         if (!zGlobal.mods.has(item.label)) {
           // For example, minecraft
           // TODO: Add description for minecraft.
@@ -78,7 +85,7 @@ class Enchantment implements IBracketHandler {
           },
         };
       case 2:
-        // item:modid:[item]
+        // enchantment:modid:[enchantment]
         const enchantmentFound = zGlobal.enchantments.get(
           item.data.predecessor[1]
         )[item.data.position];

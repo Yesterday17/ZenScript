@@ -27,7 +27,7 @@ class Entity implements IBracketHandler {
   next(predecessor: string[]): CompletionItem[] {
     switch (predecessor.length) {
       case 1:
-        // item:[modid]
+        // entity:[modid]
         const result = Array.from(zGlobal.entities.keys()).map(key => {
           return {
             label: key,
@@ -40,11 +40,13 @@ class Entity implements IBracketHandler {
         });
         return result;
       case 2:
-        // item:modid:[item]
+        // entity:modid:[item]
         return zGlobal.entities.has(predecessor[1])
           ? zGlobal.entities.get(predecessor[1]).map((item, i) => {
+              const entityFound = zGlobal.entities.get(predecessor[1])[i];
               return {
                 label: item.resourceLocation.path,
+                filterText: entityFound.name,
                 kind: CompletionItemKind.Value,
                 data: {
                   triggerCharacter: ':',
@@ -62,7 +64,7 @@ class Entity implements IBracketHandler {
   detail(item: CompletionItem): CompletionItem {
     switch (item.data.predecessor.length) {
       case 1:
-        // item:[modid]
+        // entity:[modid]
         if (!zGlobal.mods.has(item.label)) {
           // For example, minecraft
           // TODO: Add description for minecraft.
@@ -78,7 +80,7 @@ class Entity implements IBracketHandler {
           },
         };
       case 2:
-        // item:modid:[item]
+        // entity:modid:[item]
         const entityFound = zGlobal.entities.get(item.data.predecessor[1])[
           item.data.position
         ];

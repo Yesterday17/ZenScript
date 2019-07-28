@@ -36,10 +36,12 @@ class Liquid implements IBracketHandler {
           const fluid = zGlobal.fluids.get(key);
           return {
             label: fluid.name,
+            filterText: [fluid.name, fluid.unlocalizedName].join(''),
             kind: CompletionItemKind.Value,
             data: {
               triggerCharacter: ':',
               predecessor,
+              key,
             },
           } as CompletionItem;
         });
@@ -53,17 +55,17 @@ class Liquid implements IBracketHandler {
     switch (item.data.predecessor.length) {
       case 1:
         // liquid:[liquid]
-        const liquidFound = zGlobal.fluids.get(item.data.predecessor[1]);
+        const fluid = zGlobal.fluids.get(item.data.key);
         return {
           ...item,
-          detail: liquidFound.name,
+          detail: fluid.name,
           documentation: {
             kind: 'markdown',
             value:
-              `UnlocalizedName: ${liquidFound.unlocalizedName}  \n` +
-              `Rarity: ${liquidFound.rarity}  \n` +
-              `Density: ${liquidFound.density}  \n` +
-              `Color: ${liquidFound.color}  \n`,
+              `UnlocalizedName: ${fluid.unlocalizedName}  \n` +
+              `Rarity: ${fluid.rarity}  \n` +
+              `Density: ${fluid.density}  \n` +
+              `Color: ${fluid.color}  \n`,
           },
         };
       default:
