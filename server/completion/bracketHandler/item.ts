@@ -59,14 +59,17 @@ class Item implements IBracketHandler {
               const itemFound: ItemEntry = zGlobal.items.get(
                 [...predecessor.slice(1), item].join(':')
               ) as ItemEntry;
+              const itemLabel =
+                item.slice(item.length - 2) === ':0'
+                  ? item.slice(0, item.length - 2)
+                  : item;
               return {
-                label:
-                  item.slice(item.length - 2) === ':0'
-                    ? item.slice(0, item.length - 2)
-                    : item,
-                filterText: [itemFound.name, itemFound.unlocalizedName].join(
-                  ''
-                ),
+                label: itemLabel,
+                filterText: [
+                  itemFound.name,
+                  itemFound.unlocalizedName,
+                  itemFound.resourceLocation.path,
+                ].join(''),
                 kind: CompletionItemKind.Value,
                 data: {
                   predecessor,
@@ -88,9 +91,11 @@ class Item implements IBracketHandler {
                 ) as ItemEntry;
                 return {
                   label: item,
-                  filterText: [itemFound.name, itemFound.unlocalizedName].join(
-                    ''
-                  ),
+                  filterText: [
+                    itemFound.name,
+                    itemFound.unlocalizedName,
+                    itemFound.resourceLocation.path,
+                  ].join(''),
                   kind: CompletionItemKind.Value,
                   data: {
                     predecessor,

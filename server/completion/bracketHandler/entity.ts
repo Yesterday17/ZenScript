@@ -43,10 +43,9 @@ class Entity implements IBracketHandler {
         // entity:modid:[item]
         return zGlobal.entities.has(predecessor[1])
           ? zGlobal.entities.get(predecessor[1]).map((item, i) => {
-              const entityFound = zGlobal.entities.get(predecessor[1])[i];
               return {
                 label: item.resourceLocation.path,
-                filterText: entityFound.name,
+                filterText: [item.name, item.resourceLocation.path].join(''),
                 kind: CompletionItemKind.Value,
                 data: {
                   triggerCharacter: ':',

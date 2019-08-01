@@ -51,6 +51,7 @@ class Enchantment implements IBracketHandler {
                 filterText: [
                   enchantmentFound.name,
                   enchantmentFound.unlocalizedName,
+                  enchantmentFound.resourceLocation.path,
                 ].join(''),
                 kind: CompletionItemKind.Value,
                 data: {

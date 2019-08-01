@@ -36,7 +36,11 @@ class Liquid implements IBracketHandler {
           const fluid = zGlobal.fluids.get(key);
           return {
             label: fluid.name,
-            filterText: [fluid.name, fluid.unlocalizedName].join(''),
+            filterText: [
+              fluid.name,
+              fluid.unlocalizedName,
+              fluid.resourceLocation.path,
+            ].join(''),
             kind: CompletionItemKind.Value,
             data: {
               triggerCharacter: ':',
