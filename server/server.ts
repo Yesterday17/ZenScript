@@ -187,15 +187,16 @@ function getdocumentSettings(resource: string): Thenable<ZenScriptSettings> {
   if (!hasConfigurationCapability) {
     return Promise.resolve(zGlobal.setting);
   }
-  let result = zGlobal.documentSettings.get(resource);
-  if (!result) {
-    result = connection.workspace.getConfiguration({
-      scopeUri: resource,
-      section: 'zenscript',
-    });
-    zGlobal.documentSettings.set(resource, result);
+  if (!zGlobal.documentSettings.has(resource)) {
+    zGlobal.documentSettings.set(
+      resource,
+      connection.workspace.getConfiguration({
+        scopeUri: resource,
+        section: 'zenscript',
+      })
+    );
   }
-  return result;
+  return zGlobal.documentSettings.get(resource);
 }
 
 // Delete configuration of closed documents.
