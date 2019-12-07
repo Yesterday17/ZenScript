@@ -40,7 +40,6 @@
       "**/bower_components": true,
       "out": true
     },
-    "prettier.tslintIntegration": true,
     "editor.tabSize": 2,
     "npm.packageManager": "yarn",
     "tslint.packageManager": "yarn"

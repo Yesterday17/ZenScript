@@ -171,19 +171,19 @@
   },
   "devDependencies": {
     "@types/mocha": "^2.2.42",
-    "@types/node": "^10.14.13",
+    "@types/node": "^10.17.0",
     "del": "^3.0.0",
-    "tslint": "^5.18.0",
-    "typescript": "^3.5.3",
-    "vsce": "^1.66.0",
-    "vscode": "^1.1.35",
+    "tslint": "^5.20.1",
+    "typescript": "^3.7.3",
+    "vsce": "^1.70.0",
+    "vscode": "^1.1.36",
     "vscode-nls-dev": "^3.3.1"
   },
   "dependencies": {
     "chevrotain": "^4.8.1",
     "vscode-languageclient": "^5.2.1",
     "vscode-languageserver": "^5.2.1",
-    "vscode-nls": "^4.0.0",
-    "vscode-uri": "^1.0.6"
+    "vscode-nls": "^4.1.1",
+    "vscode-uri": "1.0.6"
   }
 }

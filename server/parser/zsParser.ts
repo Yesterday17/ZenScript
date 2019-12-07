@@ -201,10 +201,12 @@ export class ZenScriptParser extends Parser {
             this.OPTION(() => {
               this.SUBRULE(this.TypeDeclare);
             });
-            this.CONSUME(ASSIGN, {
-              ERR_MSG: 'Global and Static variables must be initialized.',
+            this.OPTION2(() => {
+              this.CONSUME(ASSIGN, {
+                ERR_MSG: 'Global and Static variables must be initialized.',
+              });
+              this.SUBRULE(this.Expression);
             });
-            this.SUBRULE(this.Expression);
             this.CONSUME(SEMICOLON, { ERR_MSG: '; expected' });
           },
         },
@@ -212,11 +214,11 @@ export class ZenScriptParser extends Parser {
           ALT: () => {
             this.CONSUME(ZEN_CONSTRUCTOR);
             this.CONSUME(BR_OPEN, { ERR_MSG: `Missing '('` });
-            this.OPTION2(() => {
+            this.OPTION3(() => {
               this.SUBRULE(this.ParameterList);
             });
             this.CONSUME(BR_CLOSE, { ERR_MSG: `Missing ')'` });
-            this.OPTION3(() => {
+            this.OPTION4(() => {
               this.SUBRULE2(this.TypeDeclare);
             });
             this.SUBRULE(this.StatementBody);
