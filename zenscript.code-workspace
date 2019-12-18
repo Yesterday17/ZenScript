@@ -23,10 +23,7 @@
     },
     {
       "name": "Test Large Modpack",
-      "path": "test\\large-modpack\\scripts"
-    },
-    {
-      "path": "docs"
+      "path": "test/large-modpack/scripts"
     }
   ],
   "settings": {
