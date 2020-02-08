@@ -7,7 +7,7 @@
   "version": "0.1.37",
   "publisher": "yesterday17",
   "engines": {
-    "vscode": "^1.30.0"
+    "vscode": "^1.41.0"
   },
   "categories": [
     "Programming Languages"
@@ -170,8 +170,8 @@
     "watch": "tsc -b -w"
   },
   "devDependencies": {
-    "@types/mocha": "^2.2.42",
     "@types/node": "^10.17.0",
+    "@types/vscode": "^1.41.0",
     "del": "^3.0.0",
     "tslint": "^5.20.1",
     "typescript": "^3.7.3",
@@ -181,8 +181,9 @@
   },
   "dependencies": {
     "chevrotain": "^4.8.1",
-    "vscode-languageclient": "^5.2.1",
-    "vscode-languageserver": "^5.2.1",
+    "vscode-languageclient": "^6.1.0",
+    "vscode-languageserver": "^6.1.0",
+    "vscode-languageserver-textdocument": "^1.0.0",
     "vscode-nls": "^4.1.1",
     "vscode-uri": "1.0.6"
   }

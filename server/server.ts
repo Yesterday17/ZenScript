@@ -10,10 +10,11 @@ import {
   Hover,
   InitializeParams,
   ProposedFeatures,
-  TextDocument,
   TextDocuments,
+  TextDocumentSyncKind,
   WorkspaceFolder,
 } from 'vscode-languageserver';
+import { TextDocument } from 'vscode-languageserver-textdocument';
 import Uri from 'vscode-uri';
 import { ZenScriptSettings } from './api';
 import { zGlobal } from './api/global';
@@ -38,7 +39,7 @@ import { reloadRCFile } from './utils/zsrcFile';
 let connection = createConnection(ProposedFeatures.all);
 
 // 创建一个简单的文本文档管理器，这个管理器仅仅支持同步所有文档
-let documents: TextDocuments = new TextDocuments();
+let documents = new TextDocuments(TextDocument);
 
 // capabilities
 let hasConfigurationCapability: boolean = false;
@@ -60,7 +61,7 @@ connection.onInitialize((params: InitializeParams) => {
 
   return {
     capabilities: {
-      textDocumentSync: documents.syncKind,
+      textDocumentSync: TextDocumentSyncKind.Full,
       completionProvider: {
         // Completion
         resolveProvider: true,
