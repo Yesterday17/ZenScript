@@ -1,12 +1,25 @@
-.vscode/**
-.vscode-test/**
-out/test/**
+# Source file
 src/**
-.gitignore
-vsc-extension-quickstart.md
+
+# Build files
 **/tsconfig.json
+**/tsconfig-base.json
 **/tslint.json
 **/*.map
 **/*.ts
-test/**
+*.tsbuildinfo
+
+# VSCode files
 *.code-workspace
+.vscode/**
+.vscode-test/**
+
+# Test files
+test/**
+out/test/**
+
+# Git files
+.gitignore
+
+# node_modules
+node_modules/**/*.md
