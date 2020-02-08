@@ -5,8 +5,7 @@ import {
   PriorityTreeItem,
 } from '../../api/requests/PriorityTreeRequest';
 
-// TODO: implement RequestBase when the [feature](https://github.com/Microsoft/TypeScript/issues/14600) is available.
-export class PriorityTreeGetRequest /* implements RequestBase */ {
+export class PriorityTreeGetRequest {
   static onRequest(connection: Connection) {
     connection.onRequest(PriorityTreeGetRequestType, () => {
       return Array.from(zGlobal.zsFiles.values())

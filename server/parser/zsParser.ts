@@ -86,11 +86,6 @@ export class ZenScriptParser extends Parser {
     super(zsAllTokens, {
       maxLookahead: 2,
       recoveryEnabled: true,
-      ignoredIssues: {
-        Statement: {
-          OR: true,
-        },
-      },
     });
     this.performSelfAnalysis();
   }
