@@ -10,4 +10,4 @@ export const PriorityTreeGetRequestType: RequestType0<
   PriorityTreeItem[],
   any,
   any
-> = new RequestType0('zenscript/getHistoryEntries');
+> = new RequestType0('zenscript/getPriorityTree');

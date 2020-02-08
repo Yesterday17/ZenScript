@@ -1,5 +1,5 @@
 import { ILexingResult, IToken } from 'chevrotain';
-import { readFileSync } from 'fs';
+import { Connection } from 'vscode-languageserver';
 import { URI } from 'vscode-uri';
 import { CommentEntry } from '../parser';
 import { ZSCommentScanner } from '../parser/zsComment';
@@ -12,13 +12,16 @@ import {
   PreProcessorHandlersMap,
   PreProcessors,
 } from '../preprocessor/zsPreProcessor';
-import { ZSBaseName } from '../utils/path';
+import * as fs from '../utils/fs';
+import * as path from '../utils/path';
 
 export class ZenParsedFile implements IPriority {
   name: string;
-  fspath: string;
+  uri: URI;
+  connection: Connection;
+
   get path() {
-    return URI.file(this.fspath).toString();
+    return this.uri.toString();
   }
   content: string;
 
@@ -33,17 +36,17 @@ export class ZenParsedFile implements IPriority {
   priority: number = 0;
   loader: string = '';
 
-  constructor(fspath: string) {
-    this.fspath = fspath;
-    this.name = ZSBaseName(fspath);
+  constructor(uri: URI, connection: Connection) {
+    this.uri = uri;
+    this.connection = connection;
+    this.name = path.basename(uri);
   }
 
   /**
    * Load file from `this.path`
    */
-  load() {
-    this.content = readFileSync(this.fspath, { encoding: 'utf8' });
-    return this;
+  async load() {
+    this.content = await fs.readFileString(this.uri, this.connection);
   }
 
   text(text: string) {

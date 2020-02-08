@@ -1,5 +1,5 @@
-import { existsSync } from 'fs';
-import * as path from 'path';
+import * as fs from './utils/fs';
+import * as path from './utils/path';
 import { URL } from 'url';
 import {
   CompletionItem,
@@ -50,7 +50,7 @@ let folders: WorkspaceFolder[];
 
 connection.onInitialize((params: InitializeParams) => {
   let capabilities = params.capabilities;
-  folders = params.workspaceFolders ? [...params.workspaceFolders] : [];
+  folders = params.workspaceFolders ?? [];
 
   // Does the client support the `workspace/configuration` request?
   // If not, we will fall back using global settings
@@ -88,46 +88,51 @@ connection.onInitialized(() => {
       scopeUri: 'resource',
       section: 'zenscript',
     })
-    .then(setting => {
+    .then(async setting => {
       // Override the global setting.
       zGlobal.setting = { ...setting };
 
       // No Folder is opened / foldername !== scripts
       // disable most of language server features
-      let folder: WorkspaceFolder | undefined = undefined;
-      folders.forEach(f => {
-        const fpath = URI.parse(f.uri).fsPath,
-          fbase = path.basename(fpath);
+      let folder: WorkspaceFolder;
+      for (const f of folders) {
+        const furi = URI.parse(f.uri),
+          fbase = path.basename(furi);
         if (f.name === 'scripts' || fbase === 'scripts') {
           folder = f;
         } else if (
           zGlobal.setting.supportMinecraftFolderMode &&
           // TODO: Add configuration for the following judge:
           // fbase.match(/^\.?minecraft/) &&
-          existsSync(path.join(fpath, 'scripts'))
+          (await fs.exists(path.join(furi, 'scripts'), connection))
         ) {
           // Rejudge minecraft folder mode
           folder = {
             ...f,
-            uri: URI.file(path.join(fpath, 'scripts')).toString(),
+            uri: path.join(furi, 'scripts').toString(),
           };
         }
-      });
+      }
 
       // whether the target folder exists
       if (folder) {
         zGlobal.baseFolder = folder.uri;
-        reloadRCFile(connection);
+        await reloadRCFile(connection);
 
         // Load all files
-        AllZSFiles(URI.parse(zGlobal.baseFolder).fsPath).forEach(file => {
+        const files = await AllZSFiles(
+          URI.parse(zGlobal.baseFolder),
+          connection
+        );
+        for (const file of files) {
           // new parsed file
-          const zsFile = new ZenParsedFile(file);
+          const zsFile = new ZenParsedFile(file, connection);
           // save to map first
-          zGlobal.zsFiles.set(URI.file(file).toString(), zsFile);
+          zGlobal.zsFiles.set(file.toString(), zsFile);
           // then preprocess(not parse to save time)
-          zsFile.load().preprocess();
-        });
+          await zsFile.load();
+          zsFile.preprocess();
+        }
       } else {
         zGlobal.isProject = false;
       }
@@ -219,7 +224,7 @@ async function validateTextDocument(textDocument: TextDocument): Promise<void> {
   if (!zGlobal.zsFiles.has(textDocument.uri)) {
     zGlobal.zsFiles.set(
       textDocument.uri,
-      new ZenParsedFile(URI.parse(textDocument.uri).fsPath)
+      new ZenParsedFile(URI.parse(textDocument.uri), connection)
     );
   }
 
@@ -262,12 +267,12 @@ async function validateTextDocument(textDocument: TextDocument): Promise<void> {
 }
 
 // 当 Watch 的文件确实发生变动
-connection.onDidChangeWatchedFiles(_change => {
+connection.onDidChangeWatchedFiles(async _change => {
   for (const change of _change.changes) {
     if (
       new URL(change.uri).hash === new URL(zGlobal.baseFolder + '/.zsrc').hash
     ) {
-      reloadRCFile(connection);
+      await reloadRCFile(connection);
       break;
     }
   }

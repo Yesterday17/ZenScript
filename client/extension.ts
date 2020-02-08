@@ -10,9 +10,10 @@ import {
   CommandHistoryEntryAdd,
   CommandHistoryEntryGet,
 } from './command/historyEntry';
-import { StatusBar } from './view/statusbar';
 import { CommandOpenFile } from './command/openFile';
+import { applyRequests } from './request/requests';
 import { PriorityTreeDataView } from './view/priority';
+import { StatusBar } from './view/statusbar';
 
 let client: LanguageClient;
 
@@ -64,6 +65,8 @@ export function activate(context: ExtensionContext) {
 
   // Register when language server is reqdy
   client.onReady().then(() => {
+    // Register requests
+    applyRequests(client);
     // Priority TreeDataView
     PriorityTreeDataView.register(client, context);
   });
@@ -72,9 +75,9 @@ export function activate(context: ExtensionContext) {
   client.start();
 }
 
-export function deactivate(): Thenable<void> | undefined {
+export function deactivate(): Thenable<void> {
   if (!client) {
-    return undefined;
+    return;
   }
   return client.stop();
 }

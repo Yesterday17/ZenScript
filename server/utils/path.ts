@@ -1,21 +1,35 @@
-import { readdirSync, statSync } from 'fs';
-import * as path from 'path';
+import { posix } from 'path';
+import { Connection } from 'vscode-languageserver';
 import { URI } from 'vscode-uri';
+import * as fs from '../utils/fs';
 
-export function ZSBaseName(uri: string): string {
-  return path.basename(URI.parse(uri).fsPath);
+export function join(uri: URI, ...append: string[]): URI {
+  return URI.from({
+    scheme: uri.scheme,
+    authority: uri.authority,
+    path: posix.join(uri.path, ...append),
+    query: uri.query,
+    fragment: uri.fragment,
+  });
 }
 
-export function AllZSFiles(dPath: string): string[] {
-  const result: string[] = [];
-  readdirSync(dPath).forEach(file => {
-    const content = path.resolve(dPath, file);
-    const stat = statSync(content);
-    if (stat.isFile() && path.extname(file) === '.zs') {
+export function basename(uri: URI): string {
+  return posix.basename(uri.path);
+}
+
+export async function AllZSFiles(
+  dPath: URI,
+  connection: Connection
+): Promise<URI[]> {
+  const result: URI[] = [];
+  const data = await fs.readDirectory(dPath, connection);
+  for (const [name, type] of data) {
+    const content = join(dPath, name);
+    if (fs.isFile(type) && posix.extname(name) === '.zs') {
       result.push(content);
-    } else if (stat.isDirectory()) {
-      result.push(...AllZSFiles(content));
+    } else if (fs.isDirectory(type)) {
+      result.push(...(await AllZSFiles(content, connection)));
     }
-  });
+  }
   return result;
 }

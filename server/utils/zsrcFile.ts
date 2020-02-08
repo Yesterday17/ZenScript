@@ -1,24 +1,26 @@
-import * as fs from 'fs';
-import { URL } from 'url';
 import { Connection } from 'vscode-languageserver';
+import { URI } from 'vscode-uri';
 import { zGlobal } from '../api/global';
+import * as fs from '../utils/fs';
 
 /**
  * Reload /scripts/.zsrc
  * @param connection connection
  */
-export function reloadRCFile(connection: Connection) {
+export async function reloadRCFile(connection: Connection) {
   try {
-    if (!fs.existsSync(new URL(zGlobal.baseFolder + '/.zsrc'))) {
+    if (
+      !(await fs.exists(URI.parse(zGlobal.baseFolder + '/.zsrc'), connection))
+    ) {
       zGlobal.isProject = false;
       return;
     }
 
-    zGlobal.rcFile = JSON.parse(
-      fs.readFileSync(new URL(zGlobal.baseFolder + '/.zsrc'), {
-        encoding: 'utf-8',
-      })
+    const json = await fs.readFileString(
+      URI.parse(zGlobal.baseFolder + '/.zsrc'),
+      connection
     );
+    zGlobal.rcFile = JSON.parse(json);
 
     // Reload Mods
     zGlobal.mods.clear();

@@ -1,5 +1,5 @@
+import { Uri, window } from 'vscode';
 import { CommandBase } from '../api/CommandBase';
-import { workspace, Uri, window } from 'vscode';
 
 class OpenFile extends CommandBase {
   public command = 'zenscript.command.openfile';
