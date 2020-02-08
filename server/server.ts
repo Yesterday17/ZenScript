@@ -396,7 +396,7 @@ connection.onHover(hoverPosition => {
 
   // when document doesn't exist, return void
   if (!document) {
-    return Promise.resolve(void 0);
+    return Promise.resolve(undefined);
   }
 
   // Get offset of current mouse
@@ -413,7 +413,7 @@ connection.onHover(hoverPosition => {
     const hover: Hover = {
       contents: {
         kind: 'plaintext',
-        value: token.found.token.tokenType.tokenName,
+        value: token.found.token.tokenType.name,
       },
       range: {
         start: document.positionAt(token.found.token.startOffset),
@@ -423,7 +423,7 @@ connection.onHover(hoverPosition => {
     return Promise.resolve(hover);
   } else {
     // Token not found, which means that hover is not needed
-    return Promise.resolve(void 0);
+    return Promise.resolve(undefined);
   }
 });
 
