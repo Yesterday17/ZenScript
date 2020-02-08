@@ -1,6 +1,6 @@
 import { ILexingResult, IToken } from 'chevrotain';
 import { readFileSync } from 'fs';
-import Uri from 'vscode-uri';
+import { URI } from 'vscode-uri';
 import { CommentEntry } from '../parser';
 import { ZSCommentScanner } from '../parser/zsComment';
 import { ZSInterpreter } from '../parser/zsInterpreter';
@@ -18,7 +18,7 @@ export class ZenParsedFile implements IPriority {
   name: string;
   fspath: string;
   get path() {
-    return Uri.file(this.fspath).toString();
+    return URI.file(this.fspath).toString();
   }
   content: string;
 

@@ -15,7 +15,7 @@ import {
   WorkspaceFolder,
 } from 'vscode-languageserver';
 import { TextDocument } from 'vscode-languageserver-textdocument';
-import Uri from 'vscode-uri';
+import { URI } from 'vscode-uri';
 import { ZenScriptSettings } from './api';
 import { zGlobal } from './api/global';
 import { defaultSettings } from './api/setting';
@@ -96,7 +96,7 @@ connection.onInitialized(() => {
       // disable most of language server features
       let folder: WorkspaceFolder | undefined = undefined;
       folders.forEach(f => {
-        const fpath = Uri.parse(f.uri).fsPath,
+        const fpath = URI.parse(f.uri).fsPath,
           fbase = path.basename(fpath);
         if (f.name === 'scripts' || fbase === 'scripts') {
           folder = f;
@@ -109,7 +109,7 @@ connection.onInitialized(() => {
           // Rejudge minecraft folder mode
           folder = {
             ...f,
-            uri: Uri.file(path.join(fpath, 'scripts')).toString(),
+            uri: URI.file(path.join(fpath, 'scripts')).toString(),
           };
         }
       });
@@ -120,11 +120,11 @@ connection.onInitialized(() => {
         reloadRCFile(connection);
 
         // Load all files
-        AllZSFiles(Uri.parse(zGlobal.baseFolder).fsPath).forEach(file => {
+        AllZSFiles(URI.parse(zGlobal.baseFolder).fsPath).forEach(file => {
           // new parsed file
           const zsFile = new ZenParsedFile(file);
           // save to map first
-          zGlobal.zsFiles.set(Uri.file(file).toString(), zsFile);
+          zGlobal.zsFiles.set(URI.file(file).toString(), zsFile);
           // then preprocess(not parse to save time)
           zsFile.load().preprocess();
         });
@@ -219,7 +219,7 @@ async function validateTextDocument(textDocument: TextDocument): Promise<void> {
   if (!zGlobal.zsFiles.has(textDocument.uri)) {
     zGlobal.zsFiles.set(
       textDocument.uri,
-      new ZenParsedFile(Uri.parse(textDocument.uri).fsPath)
+      new ZenParsedFile(URI.parse(textDocument.uri).fsPath)
     );
   }
 

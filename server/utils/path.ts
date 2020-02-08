@@ -1,9 +1,9 @@
-import Uri from 'vscode-uri';
-import * as path from 'path';
 import { readdirSync, statSync } from 'fs';
+import * as path from 'path';
+import { URI } from 'vscode-uri';
 
 export function ZSBaseName(uri: string): string {
-  return path.basename(Uri.parse(uri).fsPath);
+  return path.basename(URI.parse(uri).fsPath);
 }
 
 export function AllZSFiles(dPath: string): string[] {
