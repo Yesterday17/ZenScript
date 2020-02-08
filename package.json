@@ -160,12 +160,10 @@
     ]
   },
   "scripts": {
-    "prepublish": "yarn update-vscode && yarn compile",
+    "prepublish": "yarn compile",
     "debug-package": "yarn version --no-git-tag-version --patch && vsce package",
     "patch": "yarn version --patch && yarn run publish",
     "publish": "yarn prepublish && vsce publish --yarn",
-    "update-vscode": "vscode-install",
-    "postinstall": "vscode-install",
     "compile": "tsc -b",
     "watch": "tsc -b -w"
   },
@@ -174,9 +172,8 @@
     "@types/vscode": "^1.41.0",
     "del": "^3.0.0",
     "tslint": "^5.20.1",
-    "typescript": "^3.7.3",
-    "vsce": "^1.70.0",
-    "vscode": "^1.1.36",
+    "typescript": "^3.7.5",
+    "vsce": "^1.73.0",
     "vscode-nls-dev": "^3.3.1"
   },
   "dependencies": {
