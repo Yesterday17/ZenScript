@@ -7,18 +7,39 @@ export interface ASTNode {
   start: number;
   end?: number;
 
-  body: ASTNode[];
-  errors?: any[];
-  [key: string]: any;
+  errors?: ASTError[];
 }
 
-export interface ASTNodeProgram extends ASTNode {
-  type: string = 'program';
-  import: Map;
-  global: Map;
-  static: Map;
-  function: Map;
+export interface ASTError {
+  start: number;
+  end: number;
+  reason: string;
+  detail: string;
+}
+
+export interface ASTBody extends ASTNode {
   body: ASTNode[];
+}
+
+export interface ASTSymbolTable {
+  subtables: ASTSymbolTable[];
+  table: Map<String, ASTSymbol>;
+}
+
+export interface ASTSymbol {
+  name: string;
+  type: 'variable' | 'function';
+  static: boolean;
+  global: boolean;
+}
+
+export interface ASTScope extends ASTNode {
+  //
+}
+
+export interface ASTNodeProgram extends ASTNode, ASTBody, ASTSymbolTable {
+  type: string = 'Program';
+  import: Map;
 }
 
 export interface ASTNodeDeclare extends ASTNode {
@@ -28,7 +49,7 @@ export interface ASTNodeDeclare extends ASTNode {
   value: ASTNode;
 }
 
-export interface ASTNodeFunction extends ASTNode {
+export interface ASTNodeFunction extends ASTNode, ASTBody {
   type: 'function';
   fName: string;
   fPara: any[];

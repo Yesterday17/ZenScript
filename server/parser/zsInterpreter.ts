@@ -8,6 +8,7 @@ import {
   NodeContext,
   ASTNodeMap,
   ASTNodeFunction,
+  ASTBody,
 } from '.';
 import { ZSParser } from './zsParser';
 
@@ -15,12 +16,9 @@ import { ZSParser } from './zsParser';
  * Sort a node and its bodys' body.
  * @param node The root node to sort body
  */
-function sortBody(node: ASTNode): ASTNode {
+function sortBody(node: ASTBody): ASTNode {
   if (node.body.length > 0) {
-    sortBody(node.body[0]);
     node.body.sort((a, b) => {
-      sortBody(a);
-      sortBody(b);
       return a.start - b.start;
     });
   }
@@ -32,7 +30,7 @@ function sortBody(node: ASTNode): ASTNode {
  * @param node The parent node.
  * @param value The child node
  */
-function pushBody(node: ASTNode, value: ASTNode): ASTNode {
+function pushBody(node: ASTBody, value: ASTNode): ASTNode {
   node.body.push(value);
   return node;
 }
@@ -47,51 +45,52 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
   }
 
   protected Program(ctx: NodeContext): ASTNodeProgram {
-    const program: ASTNodeProgram = {
-      type: 'program',
+    const node: ASTNodeProgram = {
+      type: 'Program',
+      import: !!ctx.ImportList ? this.visit(ctx.ImportList) : new Map(),
       start: 0,
-      import: new Map(),
-      global: new Map(),
-      static: new Map(),
-      function: new Map(),
       body: [],
+      subtables: [],
+      table: new Map(),
     };
 
-    // If ImportList Exists
-    if (ctx.ImportList) {
-      program.import = this.visit(ctx.ImportList);
-    }
-
     if (ctx.GlobalStaticDeclaration) {
-      ctx.GlobalStaticDeclaration.forEach((element: any) => {
-        const node: ASTNodeDeclare = this.visit(element);
-        if (!program[node.type].has(node.vName)) {
-          program[node.type].set(node.vName, node);
-          pushBody(program, node);
-        } else {
-          // TODO: Error
-        }
-      });
+      // ctx.GlobalStaticDeclaration.forEach((element: any) => {
+      //   const child: ASTNodeDeclare = this.visit(element);
+      //   if (!node[child.type].has(child.vName)) {
+      //     node[child.type].set(child.vName, node);
+      //     pushBody(node, node);
+      //   } else {
+      //     // TODO: Error
+      //   }
+      // });
     }
 
     if (ctx.FunctionDeclaration) {
       ctx.FunctionDeclaration.forEach((element: any) => {
         const func: ASTNodeFunction = this.visit(element);
-        if (!program.function.has(func.fName)) {
-          program.function.set(func.fName, func);
-          pushBody(program, func);
-        } else {
+        if (node.table.has(func.fName)) {
           // TODO: Error
+          return;
         }
+        // TODO: Override
+        // FIXME: global/static
+        node.table.set(func.fName, {
+          name: func.fName,
+          type: 'function',
+          global: false,
+          static: false,
+        });
+        pushBody(node, func);
       });
     }
-    sortBody(program);
+    sortBody(node);
 
     // Update if body exists
-    if (program.body.length > 0) {
-      program.start = program.body[0].start;
+    if (node.body.length > 0) {
+      node.start = node.body[0].start;
     }
-    return program;
+    return node;
   }
 
   /**
@@ -111,7 +110,7 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
       vName: '',
       vType: 'any',
       value: undefined,
-      body: [],
+
       errors: [],
     };
 
@@ -146,7 +145,6 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
     return {
       type: 'zenclass',
       start: 0,
-      body: [],
     };
   }
 
@@ -154,7 +152,6 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
     return {
       type: 'block-statement',
       start: 0,
-      body: [],
     };
   }
 
@@ -167,7 +164,6 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
     return {
       type: 'statement-body',
       start: 0,
-      body: [],
     };
   }
 
@@ -178,7 +174,6 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
     return {
       type: 'statement',
       start: 0,
-      body: [],
     };
   }
 
@@ -190,7 +185,6 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
     return {
       type: 'return',
       start: 0,
-      body: [],
     };
   }
 
@@ -198,7 +192,6 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
     return {
       type: 'declare',
       start: 0,
-      body: [],
     };
   }
 
@@ -206,7 +199,6 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
     return {
       type: 'if',
       start: 0,
-      body: [],
     };
   }
 
@@ -214,7 +206,6 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
     return {
       type: 'for',
       start: 0,
-      body: [],
     };
   }
 
@@ -222,7 +213,6 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
     return {
       type: 'while',
       start: 0,
-      body: [],
     };
   }
 
@@ -230,7 +220,6 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
     return {
       type: 'version',
       start: 0,
-      body: [],
     };
   }
 
@@ -238,7 +227,6 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
     return {
       type: 'break',
       start: 0,
-      body: [],
     };
   }
 
@@ -246,7 +234,6 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
     return {
       type: 'expression-statement',
       start: 0,
-      body: [],
     };
   }
 
@@ -258,7 +245,6 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
     return {
       type: 'expression',
       start: 0,
-      body: [],
     };
   }
 
@@ -266,7 +252,6 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
     return {
       type: 'exp-assign',
       start: 0,
-      body: [],
     };
   }
 
@@ -274,7 +259,6 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
     return {
       type: 'exp-unary',
       start: 0,
-      body: [],
     };
   }
 
@@ -282,7 +266,6 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
     return {
       type: 'exp-add',
       start: 0,
-      body: [],
     };
   }
 
@@ -290,7 +273,6 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
     return {
       type: 'exp-mul',
       start: 0,
-      body: [],
     };
   }
 
@@ -298,7 +280,6 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
     return {
       type: 'exp-comp',
       start: 0,
-      body: [],
     };
   }
 
@@ -306,7 +287,6 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
     return {
       type: 'exp-and',
       start: 0,
-      body: [],
     };
   }
 
@@ -314,7 +294,6 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
     return {
       type: 'exp-andand',
       start: 0,
-      body: [],
     };
   }
 
@@ -322,7 +301,6 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
     return {
       type: 'exp-or',
       start: 0,
-      body: [],
     };
   }
 
@@ -330,7 +308,6 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
     return {
       type: 'exp-oror',
       start: 0,
-      body: [],
     };
   }
 
@@ -338,7 +315,6 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
     return {
       type: 'exp-xor',
       start: 0,
-      body: [],
     };
   }
 
@@ -346,7 +322,6 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
     return {
       type: 'exp-cond',
       start: 0,
-      body: [],
     };
   }
 
@@ -354,7 +329,6 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
     return {
       type: 'exp-post',
       start: 0,
-      body: [],
     };
   }
 
@@ -362,7 +336,6 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
     return {
       type: 'exp-primary',
       start: 0,
-      body: [],
     };
   }
 
@@ -374,7 +347,6 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
     return {
       type: 'lambda-function',
       start: 0,
-      body: [],
     };
   }
 
@@ -387,9 +359,8 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
   protected BracketHandler(ctx: NodeContext): ASTNode {
     return {
       type: 'bracket-handler',
-      item: ctx.$BracketHandlerItem.map((item: any) => this.visit(item)),
+      // item: ctx.$BracketHandlerItem.map((item: any) => this.visit(item)),
       start: (ctx.LT[0] as IToken).startOffset,
-      body: [],
     };
   }
 
@@ -415,7 +386,6 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
       type: 'array',
       array: arr,
       start: 0,
-      body: [],
     };
   }
 
@@ -438,7 +408,6 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
       type: 'map',
       map: map,
       start: 0,
-      body: [],
     };
   }
 
@@ -452,26 +421,23 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
       type: 'package',
       item: ctx.IDENTIFIER.map((identifier: IToken) => identifier.image),
       start: (ctx.IDENTIFIER[0] as IToken).startOffset,
-      body: [],
     };
   }
 
   protected ParameterList(ctx: NodeContext): ASTNode {
     return {
       type: 'parameter-list',
-      item: ctx.Parameter.map((item: any) => this.visit(item)),
+      // item: ctx.Parameter.map((item: any) => this.visit(item)),
       start: 0,
-      body: [],
     };
   }
 
   protected Parameter(ctx: NodeContext): ASTNode {
     return {
       type: 'parameter',
-      pName: ctx.IDENTIFIER[0].image,
-      pType: ctx.TypeDeclare ? this.visit(ctx.TypeDeclare[0]) : undefined,
+      // pName: ctx.IDENTIFIER[0].image,
+      // pType: ctx.TypeDeclare ? this.visit(ctx.TypeDeclare[0]) : undefined,
       start: 0,
-      body: [],
     };
   }
 
@@ -487,8 +453,7 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
       type = {
         type: 'IMPORT',
         start: (ctx.IDENTIFIER[0] as IToken).startOffset,
-        item: ctx.IDENTIFIER.map((identifier: IToken) => identifier.image),
-        body: [],
+        // item: ctx.IDENTIFIER.map((identifier: IToken) => identifier.image),
       };
     }
 
@@ -497,7 +462,6 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
       type = {
         type: Object.keys(ctx)[0],
         start: 0,
-        body: [],
       };
     }
 
@@ -505,10 +469,9 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
     if (ctx.FUNCTION) {
       type = {
         type: 'FUNCTION',
-        item: ctx.ParameterType.map((type: any) => this.visit(type)),
+        // item: ctx.ParameterType.map((type: any) => this.visit(type)),
         start: (ctx.FUNCTION[0] as IToken).startOffset,
-        return: this.visit(ctx.FunctionType),
-        body: [],
+        // return: this.visit(ctx.FunctionType),
       };
     }
 
@@ -518,8 +481,7 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
       type = {
         type: 'ARRAY',
         start: body.start,
-        item: body,
-        body: [],
+        // item: body,
       };
     }
 
@@ -527,8 +489,8 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
       return {
         type: 'A_ARRAY',
         start: type.start,
-        level: ctx.SQBR_OPEN.length,
-        body: [type],
+        // level: ctx.SQBR_OPEN.length,
+        // body: [type],
       };
     }
 

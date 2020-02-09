@@ -1,5 +1,3 @@
-import * as fs from './utils/fs';
-import * as path from './utils/path';
 import { URL } from 'url';
 import {
   CompletionItem,
@@ -31,6 +29,8 @@ import { Keywords } from './completion/completion';
 import { PreProcessorCompletions } from './completion/preprocessor/preprocessors';
 import { applyRequests } from './requests/requests';
 import { findToken } from './utils/findToken';
+import * as fs from './utils/fs';
+import * as path from './utils/path';
 import { AllZSFiles } from './utils/path';
 import { reloadRCFile } from './utils/zsrcFile';
 
@@ -206,14 +206,12 @@ function getdocumentSettings(resource: string): Thenable<ZenScriptSettings> {
 }
 
 // Delete configuration of closed documents.
-documents.onDidClose(e => {
-  zGlobal.documentSettings.delete(e.document.uri);
+documents.onDidClose(event => {
+  zGlobal.documentSettings.delete(event.document.uri);
 });
 
-// The content of a text document has changed. This event is emitted
-// when the text document first opened or when its content has changed.
-documents.onDidChangeContent(change => {
-  validateTextDocument(change.document);
+documents.onDidChangeContent(event => {
+  validateTextDocument(event.document);
 });
 
 async function validateTextDocument(textDocument: TextDocument): Promise<void> {
@@ -240,9 +238,9 @@ async function validateTextDocument(textDocument: TextDocument): Promise<void> {
       JSON.stringify({
         type: ast.type,
         import: ast.import,
-        global: Array.from(ast.global),
-        static: Array.from(ast.static),
-        function: Array.from(ast.function),
+        // global: Array.from(ast.global),
+        // static: Array.from(ast.static),
+        // function: Array.from(ast.function),
         body: ast.body,
         error: ast.errors,
       })
@@ -408,6 +406,11 @@ connection.onHover(hoverPosition => {
   const offset = document.offsetAt(hoverPosition.position);
 
   const parsedFile = zGlobal.zsFiles.get(hoverPosition.textDocument.uri);
+
+  // FIXME: find out why parsedFile is not parsed
+  if (!parsedFile.isParsed) {
+    parsedFile.parse();
+  }
 
   // Debug
   connection.console.log(JSON.stringify(parsedFile.cst));

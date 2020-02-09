@@ -15,15 +15,27 @@ import {
 import * as fs from '../utils/fs';
 import * as path from '../utils/path';
 
+enum ParseStep {
+  NotLoaded = 0,
+  Loaded = 1,
+  Preprocessed = 2,
+  Parsed = 3,
+}
+
 export class ZenParsedFile implements IPriority {
   name: string;
   uri: URI;
-  connection: Connection;
+  private connection: Connection;
 
   get path() {
     return this.uri.toString();
   }
   content: string;
+
+  private step: ParseStep = ParseStep.NotLoaded;
+  get isParsed() {
+    return this.step === ParseStep.Parsed;
+  }
 
   comments: CommentEntry[];
   private lexResult: ILexingResult;
@@ -47,10 +59,12 @@ export class ZenParsedFile implements IPriority {
    */
   async load() {
     this.content = await fs.readFileString(this.uri, this.connection);
+    this.step = ParseStep.Loaded;
   }
 
   text(text: string) {
     this.content = text;
+    this.step = ParseStep.Loaded;
     return this;
   }
 
@@ -64,6 +78,7 @@ export class ZenParsedFile implements IPriority {
       }
     });
 
+    this.step = ParseStep.Preprocessed;
     return this;
   }
 
@@ -83,8 +98,12 @@ export class ZenParsedFile implements IPriority {
     this.cst = { ...ZSParser.parse(this.tokens) };
     this.parseErrors = [...ZSParser.errors];
 
-    // Interpreting
-    this.ast = ZSInterpreter.visit(this.cst);
+    if (this.parseErrors.length === 0) {
+      // Interpreting
+      this.ast = ZSInterpreter.visit(this.cst);
+    }
+
+    this.step = ParseStep.Parsed;
     return this;
   }
 }
