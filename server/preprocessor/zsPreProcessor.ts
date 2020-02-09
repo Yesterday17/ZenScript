@@ -1,21 +1,14 @@
 import { PriorityHandler } from './priority';
 import { IPreProcessor } from '../api/IPreProcessor';
+import { IToken } from 'chevrotain';
+import { LINE_COMMENT_PREPROCESSOR } from '../parser/zsLexer';
 
-export function getPreProcessorList(text: string, p: string[]): string[] {
-  const result: string[] = [];
-  const list = text.match(/#[^\r\n]+/g);
-
-  if (list) {
-    list
-      .map(find => find.substr(1))
-      .forEach(find => {
-        if (p.indexOf(find.split(' ')[0]) !== -1) {
-          result.push(find);
-        }
-      });
-  }
-
-  return result;
+export function preparePreprocessors(comments: IToken[], path: string) {
+  comments
+    .filter(t => t.tokenType === LINE_COMMENT_PREPROCESSOR)
+    .map(t => t.image.substr(1).split(' '))
+    .filter(t => PreProcessors.includes(t[0]))
+    .forEach(t => PreProcessorHandlersMap.get(t[0]).handle(path, t));
 }
 
 const PreProcessors = [

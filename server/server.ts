@@ -133,9 +133,9 @@ connection.onInitialized(() => {
           const zsFile = new ZenParsedFile(file, connection);
           // save to map first
           zGlobal.zsFiles.set(file.toString(), zsFile);
-          // then preprocess(not parse to save time)
+          // then lex(not parse to save time)
           await zsFile.load();
-          zsFile.preprocess();
+          zsFile.lex();
         }
       } else {
         zGlobal.isProject = false;
@@ -233,7 +233,7 @@ async function validateTextDocument(textDocument: TextDocument): Promise<void> {
   const file = zGlobal.zsFiles
     .get(textDocument.uri)
     .text(textDocument.getText())
-    .preprocess()
+    .lex()
     .parse();
 
   const ast = file.ast;
@@ -417,9 +417,12 @@ connection.onHover(hoverPosition => {
   }
 
   // Debug
-  connection.console.log(JSON.stringify(parsedFile.cst));
+  connection.console.log(JSON.stringify(parsedFile.comments));
 
-  const token = findToken(parsedFile.tokens, offset);
+  let token = findToken(parsedFile.tokens, offset);
+  if (!token.exist) {
+    token = findToken(parsedFile.comments, offset);
+  }
 
   if (token.exist) {
     const hover: Hover = {

@@ -17,22 +17,23 @@ export const WHITE_SPACE = createToken({
   group: chevrotain.Lexer.SKIPPED,
 });
 
-export const COMMENT = createToken({
-  name: 'COMMENT',
-  pattern: chevrotain.Lexer.NA,
-  group: chevrotain.Lexer.SKIPPED,
-});
+// Comment
 export const LINE_COMMENT = createToken({
   name: 'LINE_COMMENT',
-  pattern: /(?:\/\/|#).*/,
-  categories: [COMMENT],
-  group: chevrotain.Lexer.SKIPPED,
+  pattern: /\/\/.*/,
+  group: 'COMMENT',
 });
+
+export const LINE_COMMENT_PREPROCESSOR = createToken({
+  name: 'LINE_COMMENT_PREPROCESSOR',
+  pattern: /#.*/,
+  group: 'COMMENT',
+});
+
 export const BLOCK_COMMENT = createToken({
   name: 'BLOCK_COMMENT',
   pattern: /\/\*([^*]|\*+[^*/])*(\*+\/)?/,
-  categories: [COMMENT],
-  group: chevrotain.Lexer.SKIPPED,
+  group: 'COMMENT',
 });
 
 // Tokens
@@ -293,8 +294,8 @@ export const ZEN_CONSTRUCTOR = createToken({
 export const zsAllTokens = [
   EOL,
   WHITE_SPACE,
-  COMMENT,
   LINE_COMMENT,
+  LINE_COMMENT_PREPROCESSOR,
   BLOCK_COMMENT,
   FLOAT_VALUE,
   INT_VALUE,
