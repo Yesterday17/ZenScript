@@ -151,10 +151,10 @@
               ],
               "default": "output"
             },
-            "streamPort":{
-              "type":"number",
+            "streamPort": {
+              "type": "number",
               "description": "%zenscript.trace.server.streamPort.desc%",
-              "default":7000
+              "default": 7000
             }
           }
         }
@@ -194,11 +194,10 @@
     ]
   },
   "scripts": {
-    "prepublish": "yarn compile",
     "package": "vsce package",
     "debug-package": "yarn version --no-git-tag-version --patch && vsce package",
     "patch": "yarn version --patch && yarn run publish",
-    "publish": "yarn prepublish && vsce publish --yarn",
+    "publish": "yarn compile && vsce publish --yarn",
     "compile": "tsc -b",
     "watch": "tsc -b -w"
   },

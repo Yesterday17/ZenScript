@@ -8,6 +8,7 @@ ZenScript is a vscode plugin for [CraftTweaker](https://crafttweaker.readthedocs
 - Code Snippets
 - BracketHandler Completion
 - Priority Tree
+- Remote FileSystem Support
 - History Entries(WIP)
 
 ## Requirements
