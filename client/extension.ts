@@ -40,7 +40,7 @@ export function activate(context: ExtensionContext) {
   // options of language client
   const clientOptions: LanguageClientOptions = {
     // 为 Language Server 注册文件类型为 ZenScript
-    documentSelector: [{ scheme: 'file', language: 'zenscript' }],
+    documentSelector: [{ scheme: '*', language: 'zenscript' }],
     synchronize: {
       configurationSection: 'zenscript',
       // 当工作空间中的'.clientrc'文件改变时通知服务

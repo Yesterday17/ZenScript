@@ -98,7 +98,11 @@ connection.onInitialized(() => {
       for (const f of folders) {
         const furi = URI.parse(f.uri),
           fbase = path.basename(furi);
-        if (f.name === 'scripts' || fbase === 'scripts') {
+        if (
+          f.name === 'scripts' ||
+          fbase === 'scripts' ||
+          (await fs.existInDirectory(furi, '.zsrc', connection)) // Remote url fix
+        ) {
           folder = f;
         } else if (
           zGlobal.setting.supportMinecraftFolderMode &&

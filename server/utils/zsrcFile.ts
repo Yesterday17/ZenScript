@@ -2,6 +2,7 @@ import { Connection } from 'vscode-languageserver';
 import { URI } from 'vscode-uri';
 import { zGlobal } from '../api/global';
 import * as fs from '../utils/fs';
+import * as path from './path';
 
 /**
  * Reload /scripts/.zsrc
@@ -10,14 +11,18 @@ import * as fs from '../utils/fs';
 export async function reloadRCFile(connection: Connection) {
   try {
     if (
-      !(await fs.exists(URI.parse(zGlobal.baseFolder + '/.zsrc'), connection))
+      !(await fs.existInDirectory(
+        URI.parse(zGlobal.baseFolder),
+        '.zsrc',
+        connection
+      ))
     ) {
       zGlobal.isProject = false;
       return;
     }
 
     const json = await fs.readFileString(
-      URI.parse(zGlobal.baseFolder + '/.zsrc'),
+      path.join(URI.parse(zGlobal.baseFolder), '.zsrc'),
       connection
     );
     zGlobal.rcFile = JSON.parse(json);

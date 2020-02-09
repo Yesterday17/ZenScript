@@ -51,6 +51,17 @@ export async function exists(uri: URI, connection: Connection) {
   return !!(await stat(uri, connection));
 }
 
+export async function existInDirectory(
+  directory: URI,
+  fileName: String,
+  connection: Connection
+) {
+  const d = await readDirectory(directory, connection);
+  return (
+    d.filter(([name, type]) => name === fileName && isFile(type)).length !== 0
+  );
+}
+
 export function isFile(type: FileType): boolean {
   return type === FileType.File;
 }
