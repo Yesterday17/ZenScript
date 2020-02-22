@@ -263,7 +263,7 @@ async function validateTextDocument(textDocument: TextDocument): Promise<void> {
   });
 
   // bracket errors
-  if (!file.ignoreBracketError) {
+  if (!file.ignoreBracketErrors) {
     // TODO
   }
 

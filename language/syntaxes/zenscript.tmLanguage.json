@@ -26,7 +26,7 @@
       "patterns": [
         {
           "name": "meta.preprocessor.zenscript",
-          "begin": "#(?=debug|ignoreBracketError|loader|modloaded|norun|priority|ikwid|sideonly|disable_search_tree|profile)",
+          "begin": "#(?=debug|ignoreBracketErrors|loader|modloaded|norun|priority|ikwid|sideonly|disable_search_tree|profile)",
           "end": "$\\n?"
         }
       ]

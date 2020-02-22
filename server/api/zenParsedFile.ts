@@ -40,7 +40,7 @@ export class ZenParsedFile implements IPriority {
   ast: any;
 
   priority: number = 0;
-  ignoreBracketError: boolean = false;
+  ignoreBracketErrors: boolean = false;
   loader: string = 'crafttweaker';
   norun: boolean = false;
   nowarn: boolean = false;

@@ -1,7 +1,7 @@
 import { IToken } from 'chevrotain';
 import { IPreProcessor } from '../api/IPreProcessor';
 import { LINE_COMMENT_PREPROCESSOR } from '../parser/zsLexer';
-import { IgnoreBracketErrorHandler } from './ignoreBracketError';
+import { IgnoreBracketErrorsHandler } from './ignoreBracketErrors';
 import { LoaderHandler } from './loader';
 import { PriorityHandler } from './priority';
 import { NoRunHandler } from './norun';
@@ -21,7 +21,7 @@ const PreProcessors = IPreProcessorCompletions.map(p => p.name);
 const PreProcessorHandlers = [
   PriorityHandler,
   LoaderHandler,
-  IgnoreBracketErrorHandler,
+  IgnoreBracketErrorsHandler,
   NoRunHandler,
   NoWarnHandler,
 ];

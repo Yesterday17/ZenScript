@@ -1,7 +1,7 @@
 import { CompletionItem, CompletionItemKind } from 'vscode-languageserver';
 import { HashDebug } from './debug';
 import { HashDisableSearchTree } from './disable_search_tree';
-import { HashIgnoreBracketError } from './ignoreBracketError';
+import { HashIgnoreBracketErrors } from './ignoreBracketErrors';
 import { HashLoader } from './loader';
 import { HashModLoaded } from './modloaded';
 import { HashNoRun } from './norun';
@@ -12,7 +12,7 @@ import { HashSideOnly } from './sideonly';
 
 export const IPreProcessorCompletions = [
   HashDebug,
-  HashIgnoreBracketError,
+  HashIgnoreBracketErrors,
   HashLoader,
   HashModLoaded,
   HashNoRun,
