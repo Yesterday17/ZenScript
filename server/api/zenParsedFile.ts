@@ -40,7 +40,10 @@ export class ZenParsedFile implements IPriority {
   ast: any;
 
   priority: number = 0;
-  loader: string = '';
+  ignoreBracketError: boolean = false;
+  loader: string = 'crafttweaker';
+  norun: boolean = false;
+  nowarn: boolean = false;
 
   constructor(uri: URI, connection: Connection) {
     this.uri = uri;

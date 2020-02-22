@@ -1,9 +1,9 @@
 import { IPreProcessor } from '../api/IPreProcessor';
-import { PriorityPreProcessorCompletion } from '../completion/preprocessor/priotiry';
+import { HashPriority } from '../completion/preprocessor/priotiry';
 import { zGlobal } from '../api/global';
 
 class PriorityPreProcessor implements IPreProcessor {
-  completion = PriorityPreProcessorCompletion;
+  completion = HashPriority;
   handle(path: string, args: string[]) {
     if (args.length < 2 || !args[1].match(/-?(?:0|[1-9][0-9]*)/)) {
       return;

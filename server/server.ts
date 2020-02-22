@@ -106,8 +106,6 @@ connection.onInitialized(() => {
           folder = f;
         } else if (
           zGlobal.setting.supportMinecraftFolderMode &&
-          // TODO: Add configuration for the following judge:
-          // fbase.match(/^\.?minecraft/) &&
           (await fs.exists(path.join(furi, 'scripts'), connection))
         ) {
           // Rejudge minecraft folder mode
@@ -251,8 +249,8 @@ async function validateTextDocument(textDocument: TextDocument): Promise<void> {
     );
   }
 
-  // save errors
-  zGlobal.zsFiles.get(textDocument.uri).parseErrors.map(error => {
+  // parse errors
+  file.parseErrors.forEach(error => {
     const diagnotic: Diagnostic = {
       severity: DiagnosticSeverity.Error,
       range: {
@@ -263,6 +261,11 @@ async function validateTextDocument(textDocument: TextDocument): Promise<void> {
     };
     diagnostics.push(diagnotic);
   });
+
+  // bracket errors
+  if (!file.ignoreBracketError) {
+    // TODO
+  }
 
   // send error diagnostics to client
   connection.sendDiagnostics({ uri: textDocument.uri, diagnostics });
@@ -417,7 +420,7 @@ connection.onHover(hoverPosition => {
   }
 
   // Debug
-  connection.console.log(JSON.stringify(parsedFile.comments));
+  connection.console.log(JSON.stringify(parsedFile.cst));
 
   let token = findToken(parsedFile.tokens, offset);
   if (!token.exist) {

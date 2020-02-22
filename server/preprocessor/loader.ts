@@ -1,9 +1,9 @@
 import { zGlobal } from '../api/global';
 import { IPreProcessor } from '../api/IPreProcessor';
-import { LoaderPreProcessorCompletion } from '../completion/preprocessor/loader';
+import { HashLoader } from '../completion/preprocessor/loader';
 
-class PriorityPreProcessor implements IPreProcessor {
-  completion = LoaderPreProcessorCompletion;
+class LoaderPreProcessor implements IPreProcessor {
+  completion = HashLoader;
   handle(path: string, args: string[]) {
     if (args.length < 2) {
       return;
@@ -13,8 +13,4 @@ class PriorityPreProcessor implements IPreProcessor {
   }
 }
 
-export interface IPriority {
-  priority: number;
-}
-
-export const PriorityHandler = new PriorityPreProcessor();
+export const LoaderHandler = new LoaderPreProcessor();

@@ -1,7 +1,12 @@
-import { PriorityHandler } from './priority';
-import { IPreProcessor } from '../api/IPreProcessor';
 import { IToken } from 'chevrotain';
+import { IPreProcessor } from '../api/IPreProcessor';
 import { LINE_COMMENT_PREPROCESSOR } from '../parser/zsLexer';
+import { IgnoreBracketErrorHandler } from './ignoreBracketError';
+import { LoaderHandler } from './loader';
+import { PriorityHandler } from './priority';
+import { NoRunHandler } from './norun';
+import { NoWarnHandler } from './nowarn';
+import { IPreProcessorCompletions } from '../completion/preprocessor/preprocessors';
 
 export function preparePreprocessors(comments: IToken[], path: string) {
   comments
@@ -11,16 +16,15 @@ export function preparePreprocessors(comments: IToken[], path: string) {
     .forEach(t => PreProcessorHandlersMap.get(t[0]).handle(path, t));
 }
 
-const PreProcessors = [
-  'debug',
-  'ignoreBracketErrors',
-  'loader',
-  'modloaded',
-  'norun',
-  'priority',
-];
+const PreProcessors = IPreProcessorCompletions.map(p => p.name);
 
-const PreProcessorHandlers = [PriorityHandler];
+const PreProcessorHandlers = [
+  PriorityHandler,
+  LoaderHandler,
+  IgnoreBracketErrorHandler,
+  NoRunHandler,
+  NoWarnHandler,
+];
 
 const PreProcessorHandlersMap: Map<string, IPreProcessor> = new Map();
 PreProcessorHandlers.forEach(item => {
