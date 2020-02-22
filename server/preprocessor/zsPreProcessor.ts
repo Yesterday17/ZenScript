@@ -13,7 +13,7 @@ export function preparePreprocessors(comments: IToken[], path: string) {
     .filter(t => t.tokenType === LINE_COMMENT_PREPROCESSOR)
     .map(t => t.image.substr(1).split(' '))
     .filter(t => PreProcessors.includes(t[0]))
-    .forEach(t => PreProcessorHandlersMap.get(t[0]).handle(path, t));
+    .forEach(t => PreProcessorHandlersMap.get(t[0])?.handle(path, t));
 }
 
 const PreProcessors = IPreProcessorCompletions.map(p => p.name);

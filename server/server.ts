@@ -299,14 +299,16 @@ connection.onCompletion(async completion => {
 
   let triggerCharacter = completion.context.triggerCharacter;
   if (manuallyTriggerred) {
-    const token = findToken(
-      zGlobal.zsFiles.get(document.uri).tokens,
-      offset - 1
-    );
+    let token = findToken(zGlobal.zsFiles.get(document.uri).tokens, offset - 1);
     if (token.exist && token.found.token.image.length === 1) {
       triggerCharacter = token.found.token.image;
     } else {
-      return null;
+      token = findToken(zGlobal.zsFiles.get(document.uri).comments, offset - 1);
+      if (token.exist && token.found.token.image === '#') {
+        triggerCharacter = token.found.token.image;
+      } else {
+        return null;
+      }
     }
   }
 
