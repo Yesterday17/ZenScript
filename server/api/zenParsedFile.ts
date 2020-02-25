@@ -38,6 +38,7 @@ export class ZenParsedFile implements IPriority {
   parseErrors: any[] = [];
   cst: any;
   ast: any;
+  bracketHandlers: any;
 
   priority: number = 0;
   ignoreBracketErrors: boolean = false;
@@ -89,6 +90,7 @@ export class ZenParsedFile implements IPriority {
     if (this.parseErrors.length === 0) {
       // Interpreting
       this.ast = ZSInterpreter.visit(this.cst);
+      // TODO: BracketHandler Error
     }
 
     this.step = ParseStep.Parsed;
