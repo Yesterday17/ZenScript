@@ -24,6 +24,10 @@
     {
       "name": "Test Large Modpack",
       "path": "test/large-modpack/scripts"
+    },
+    {
+      "name": "Test(Vanilla)",
+      "path": "test/vanilla"
     }
   ],
   "settings": {
