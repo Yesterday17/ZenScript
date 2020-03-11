@@ -1,5 +1,5 @@
 import { commands, workspace } from 'vscode';
-import * as WebSocket from 'ws';
+import WebSocket from 'ws';
 
 export function streamChannel() {
   const config = workspace.getConfiguration('zenscript.trace.server');

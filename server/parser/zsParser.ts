@@ -100,11 +100,11 @@ export class ZenScriptParser extends Parser {
    * =================================================================================================
    */
   protected Program = this.RULE('Program', () => {
-    this.OPTION(() => {
-      this.SUBRULE(this.ImportList);
+    this.MANY(() => {
+      this.SUBRULE(this.ImportStatement);
     });
 
-    this.MANY(() =>
+    this.MANY2(() =>
       this.OR([
         { ALT: () => this.SUBRULE(this.GlobalStaticDeclaration) },
         { ALT: () => this.SUBRULE(this.FunctionDeclaration) },
@@ -119,16 +119,14 @@ export class ZenScriptParser extends Parser {
    * =================================================================================================
    */
 
-  protected ImportList = this.RULE('ImportList', () => {
-    this.AT_LEAST_ONE(() => {
-      this.CONSUME(IMPORT);
-      this.SUBRULE(this.Package);
-      this.OPTION(() => {
-        this.CONSUME(AS);
-        this.CONSUME(IDENTIFIER);
-      });
-      this.CONSUME(SEMICOLON, { ERR_MSG: '; expected' });
+  protected ImportStatement = this.RULE('ImportStatement', () => {
+    this.CONSUME(IMPORT);
+    this.SUBRULE(this.Package);
+    this.OPTION(() => {
+      this.CONSUME(AS);
+      this.CONSUME(IDENTIFIER, { LABEL: 'alias' });
     });
+    this.CONSUME(SEMICOLON, { ERR_MSG: '; expected' });
   });
 
   /**

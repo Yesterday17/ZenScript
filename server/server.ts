@@ -26,7 +26,9 @@ import {
 } from './completion/bracketHandler/bracketHandlers';
 import { ItemBracketHandler } from './completion/bracketHandler/item';
 import { Keywords } from './completion/completion';
+import { ImportCompletion } from './completion/import';
 import { PreProcessorCompletions } from './completion/preprocessor/preprocessors';
+import { DOT, IMPORT } from './parser/zsLexer';
 import { applyRequests } from './requests/requests';
 import { findToken } from './utils/findToken';
 import * as fs from './utils/fs';
@@ -82,76 +84,70 @@ connection.onInitialize((params: InitializeParams) => {
   };
 });
 
-connection.onInitialized(() => {
-  connection.workspace
-    .getConfiguration({
-      scopeUri: 'resource',
-      section: 'zenscript',
-    })
-    .then(async setting => {
-      // Override the global setting.
-      zGlobal.setting = { ...setting };
+connection.onInitialized(async () => {
+  const setting = await connection.workspace.getConfiguration({
+    scopeUri: 'resource',
+    section: 'zenscript',
+  });
 
-      // No Folder is opened / foldername !== scripts
-      // disable most of language server features
-      let folder: WorkspaceFolder;
-      for (const f of folders) {
-        const furi = URI.parse(f.uri),
-          fbase = path.basename(furi);
-        if (
-          f.name === 'scripts' ||
-          fbase === 'scripts' ||
-          (await fs.existInDirectory(furi, '.zsrc', connection)) // Remote url fix
-        ) {
-          folder = f;
-        } else if (
-          zGlobal.setting.supportMinecraftFolderMode &&
-          (await fs.exists(path.join(furi, 'scripts'), connection))
-        ) {
-          // Rejudge minecraft folder mode
-          folder = {
-            ...f,
-            uri: path.join(furi, 'scripts').toString(),
-          };
-        }
-      }
+  // Override the global setting.
+  zGlobal.setting = { ...setting };
 
-      // whether the target folder exists
-      if (folder) {
-        zGlobal.baseFolder = folder.uri;
-        await reloadRCFile(connection);
+  // No Folder is opened / foldername !== scripts
+  // disable most of language server features
+  let folder: WorkspaceFolder;
+  for (const f of folders) {
+    const furi = URI.parse(f.uri),
+      fbase = path.basename(furi);
+    if (
+      f.name === 'scripts' ||
+      fbase === 'scripts' ||
+      (await fs.existInDirectory(furi, '.zsrc', connection)) // Remote url fix
+    ) {
+      folder = f;
+    } else if (
+      zGlobal.setting.supportMinecraftFolderMode &&
+      (await fs.exists(path.join(furi, 'scripts'), connection))
+    ) {
+      // Rejudge minecraft folder mode
+      folder = {
+        ...f,
+        uri: path.join(furi, 'scripts').toString(),
+      };
+    }
+  }
 
-        // Load all files
-        const files = await AllZSFiles(
-          URI.parse(zGlobal.baseFolder),
-          connection
-        );
-        for (const file of files) {
-          // new parsed file
-          const zsFile = new ZenParsedFile(file, connection);
-          // save to map first
-          zGlobal.zsFiles.set(file.toString(), zsFile);
-          // then lex(not parse to save time)
-          await zsFile.load();
-          zsFile.lex();
-        }
-      } else {
-        zGlobal.isProject = false;
-      }
+  // whether the target folder exists
+  if (folder) {
+    zGlobal.baseFolder = folder.uri;
+    await reloadRCFile(connection);
 
-      // Isn't a folder warn.
-      if (
-        zGlobal.baseFolder === '' &&
-        !zGlobal.isProject &&
-        zGlobal.setting.showIsProjectWarn
-      ) {
-        // TODO: Localize the following string
-        connection.window.showWarningMessage(
-          `ZenScript didn't enable all its features!
-      Please check your folder name, it must be 'scripts', or a folder in your workspace must be named 'scripts'.`
-        );
-      }
-    });
+    // Load all files
+    const files = await AllZSFiles(URI.parse(zGlobal.baseFolder), connection);
+    for (const file of files) {
+      // new parsed file
+      const zsFile = new ZenParsedFile(file, connection);
+      // save to map first
+      zGlobal.zsFiles.set(file.toString(), zsFile);
+      // then lex(not parse to save time)
+      await zsFile.load();
+      zsFile.lex();
+    }
+  } else {
+    zGlobal.isProject = false;
+  }
+
+  // Isn't a folder warn.
+  if (
+    zGlobal.baseFolder === '' &&
+    !zGlobal.isProject &&
+    zGlobal.setting.showIsProjectWarn
+  ) {
+    // TODO: Localize the following string
+    connection.window
+      .showWarningMessage(`ZenScript didn't enable all its features!
+      Please check your folder name, it must be 'scripts', or a folder in your workspace must be named 'scripts'.`);
+  }
 
   if (hasConfigurationCapability) {
     // Register for all configuration changes.
@@ -186,7 +182,6 @@ connection.onDidChangeConfiguration(change => {
       (change.settings.zenscript || defaultSettings)
     );
   }
-
   // Revalidate all open text documents
   documents.all().forEach(validateTextDocument);
 });
@@ -212,63 +207,68 @@ documents.onDidClose(event => {
   zGlobal.documentSettings.delete(event.document.uri);
 });
 
-documents.onDidChangeContent(event => {
+documents.onDidChangeContent(async event => {
   validateTextDocument(event.document);
 });
 
 async function validateTextDocument(textDocument: TextDocument): Promise<void> {
-  let settings = await getdocumentSettings(textDocument.uri);
-  const diagnostics: Diagnostic[] = [];
+  // Wait for .zsrc file
+  zGlobal.bus.on('rc-loaded', async () => {
+    let settings = await getdocumentSettings(textDocument.uri);
+    const diagnostics: Diagnostic[] = [];
 
-  // save lexing result
-  if (!zGlobal.zsFiles.has(textDocument.uri)) {
-    zGlobal.zsFiles.set(
-      textDocument.uri,
-      new ZenParsedFile(URI.parse(textDocument.uri), connection)
-    );
-  }
+    // save lexing result
+    if (!zGlobal.zsFiles.has(textDocument.uri)) {
+      zGlobal.zsFiles.set(
+        textDocument.uri,
+        new ZenParsedFile(URI.parse(textDocument.uri), connection)
+      );
+    }
 
-  const file = zGlobal.zsFiles
-    .get(textDocument.uri)
-    .text(textDocument.getText())
-    .lex()
-    .parse();
+    const file = zGlobal.zsFiles
+      .get(textDocument.uri)
+      .text(textDocument.getText())
+      .lex()
+      .parse();
 
-  const ast = file.ast;
-  if (ast) {
-    connection.console.log(
-      JSON.stringify({
-        type: ast.type,
-        import: ast.import,
-        // global: Array.from(ast.global),
-        // static: Array.from(ast.static),
-        // function: Array.from(ast.function),
-        body: ast.body,
-        error: ast.errors,
-      })
-    );
-  }
+    const ast = file.ast;
+    if (ast) {
+      connection.console.log(
+        JSON.stringify({
+          type: ast.type,
+          import: ast.import,
+          // global: Array.from(ast.global),
+          // static: Array.from(ast.static),
+          // function: Array.from(ast.function),
+          body: ast.body,
+          error: ast.errors,
+        })
+      );
+    }
 
-  // parse errors
-  file.parseErrors.forEach(error => {
-    const diagnotic: Diagnostic = {
-      severity: DiagnosticSeverity.Error,
-      range: {
-        start: textDocument.positionAt(error.token.startOffset),
-        end: textDocument.positionAt(error.token.endOffset + 1),
-      },
-      message: error.message,
-    };
-    diagnostics.push(diagnotic);
+    // parse errors
+    [...file.parseErrors, ...file.interpreteErrors].forEach(error => {
+      const diagnotic: Diagnostic = {
+        severity: DiagnosticSeverity.Error,
+        range: {
+          start: textDocument.positionAt(
+            error.start ?? error.token.startOffset
+          ),
+          end: textDocument.positionAt(error.end ?? error.token.endOffset + 1),
+        },
+        message: error.message,
+      };
+      diagnostics.push(diagnotic);
+    });
+
+    // bracket errors
+    if (!file.ignoreBracketErrors) {
+      // TODO
+    }
+
+    // send error diagnostics to client
+    connection.sendDiagnostics({ uri: textDocument.uri, diagnostics });
   });
-
-  // bracket errors
-  if (!file.ignoreBracketErrors) {
-    // TODO
-  }
-
-  // send error diagnostics to client
-  connection.sendDiagnostics({ uri: textDocument.uri, diagnostics });
 }
 
 // 当 Watch 的文件确实发生变动
@@ -294,13 +294,18 @@ connection.onCompletion(async completion => {
   const offset = document.offsetAt(position);
   // 当前文档的文本
   const content = document.getText();
+  // Tokens
+  const tokens = zGlobal.zsFiles.get(document.uri).tokens;
   // triggerred automatically or manually
   const manuallyTriggerred = completion.context.triggerCharacter === undefined;
 
   let triggerCharacter = completion.context.triggerCharacter;
   if (manuallyTriggerred) {
-    let token = findToken(zGlobal.zsFiles.get(document.uri).tokens, offset - 1);
-    if (token.exist && token.found.token.image.length === 1) {
+    let token = findToken(tokens, offset - 1);
+    if (
+      token.exist ||
+      (token.found.token && token.found.token.image === 'import')
+    ) {
       triggerCharacter = token.found.token.image;
     } else {
       token = findToken(zGlobal.zsFiles.get(document.uri).comments, offset - 1);
@@ -316,7 +321,22 @@ connection.onCompletion(async completion => {
   switch (triggerCharacter) {
     case '#':
       return PreProcessorCompletions;
+    case 'import':
+      return ImportCompletion([]);
     case '.':
+      // Find 'a.b.' when typing the last dot
+      const now = findToken(tokens, offset - 1);
+      if (!now.exist) {
+        return;
+      }
+      let pos,
+        prev = [];
+      for (pos = now.found.position; tokens[pos].tokenType === DOT; pos -= 2) {
+        prev.unshift(tokens[pos - 1].image);
+      }
+      if (tokens[pos].tokenType === IMPORT) {
+        return ImportCompletion(prev);
+      }
       break;
     case ':':
       // 位于 <> 内的内容
@@ -423,6 +443,7 @@ connection.onHover(hoverPosition => {
 
   // Debug
   connection.console.log(JSON.stringify(parsedFile.cst));
+  connection.console.log(JSON.stringify(parsedFile.ast));
 
   let token = findToken(parsedFile.tokens, offset);
   if (!token.exist) {

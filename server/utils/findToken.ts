@@ -10,14 +10,6 @@ interface TokenFound {
   token: IToken;
 }
 
-const TOKEN_NOT_FOUND: TokenFindResult = {
-  exist: false,
-  found: {
-    position: -1,
-    token: null,
-  },
-};
-
 /**
  * Binary search for token at `offset`
  * @param arr an array of IToken
@@ -44,5 +36,12 @@ export function findToken(arr: IToken[], offset: number): TokenFindResult {
     }
   }
 
-  return TOKEN_NOT_FOUND;
+  const fallback = start > end ? end : start;
+  return {
+    exist: false,
+    found: {
+      position: fallback,
+      token: arr[fallback],
+    },
+  };
 }

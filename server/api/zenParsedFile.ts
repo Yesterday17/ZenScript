@@ -36,6 +36,7 @@ export class ZenParsedFile implements IPriority {
   tokens: IToken[];
 
   parseErrors: any[] = [];
+  interpreteErrors: any[] = [];
   cst: any;
   ast: any;
   bracketHandlers: any;
@@ -80,7 +81,6 @@ export class ZenParsedFile implements IPriority {
 
   /**
    * Parse file, generate cst & ast.
-   * @param text the text to parse, undefined if no update
    */
   parse() {
     // Parsing
@@ -90,6 +90,8 @@ export class ZenParsedFile implements IPriority {
     if (this.parseErrors.length === 0) {
       // Interpreting
       this.ast = ZSInterpreter.visit(this.cst);
+      this.interpreteErrors = this.ast.errors;
+
       // TODO: BracketHandler Error
     }
 

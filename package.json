@@ -202,7 +202,9 @@
     "watch": "tsc -b -w"
   },
   "devDependencies": {
+    "@types/get-value": "^3.0.1",
     "@types/node": "^10.17.0",
+    "@types/set-value": "^2.0.0",
     "@types/vscode": "^1.41.0",
     "@types/ws": "^7.2.1",
     "del": "^3.0.0",
@@ -213,6 +215,8 @@
   },
   "dependencies": {
     "chevrotain": "^6.5.0",
+    "get-value": "^3.0.1",
+    "set-value": "^3.0.1",
     "vscode-languageclient": "^6.1.0",
     "vscode-languageserver": "^6.1.0",
     "vscode-languageserver-textdocument": "^1.0.0",

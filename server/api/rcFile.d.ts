@@ -76,6 +76,28 @@ export interface FluidEntry {
   flowing: ResourceLocation;
 }
 
+export interface ZenPackageEntry {
+  members: { [key: string]: MemberMethod | MemberGetter | MemberSetter };
+  staticMembers: { [key: string]: MemberMethod | MemberGetter | MemberSetter };
+}
+
+export interface MemberMethod {
+  methods: MemberJavaMethod[];
+}
+
+export interface MemberJavaMethod {
+  params: string[];
+  return: string;
+}
+
+export interface MemberGetter {
+  getter: string;
+}
+
+export interface MemberSetter {
+  setter: string;
+}
+
 export interface ProbeConfig {
   mods: boolean;
   items: boolean;
@@ -97,4 +119,12 @@ export interface ZSRCFile {
   entities: EntityEntry[];
   fluids: FluidEntry[];
   oredictionary: string[];
+
+  zentype: string[];
+  zenpackage: {
+    [key: string]: ZenPackageEntry;
+  };
+  globals: {
+    [key: string]: string | MemberJavaMethod;
+  };
 }

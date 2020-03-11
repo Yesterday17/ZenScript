@@ -1,4 +1,5 @@
 import { RCStorage } from '../utils/rcStorage';
+import { StateEventBus } from '../utils/stateEventBus';
 import {
   EnchantmentEntry,
   EntityEntry,
@@ -25,6 +26,8 @@ export interface ZenScriptSettings {
  * Global
  */
 export interface ZSGlobal {
+  bus: StateEventBus;
+
   isProject: boolean;
   baseFolder: string;
   setting: ZenScriptSettings;
@@ -37,6 +40,7 @@ export interface ZSGlobal {
   enchantments: Map<string, EnchantmentEntry[]>;
   entities: Map<string, EntityEntry[]>;
   fluids: Map<string, FluidEntry>;
+  packages: Object;
 
   // zs file
   zsFiles: Map<string, ZenParsedFile>;

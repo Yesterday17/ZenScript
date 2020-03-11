@@ -1,15 +1,17 @@
 import { CstNode, IToken } from 'chevrotain';
+import get from 'get-value';
 import {
+  ASTBody,
   ASTNode,
   ASTNodeArray,
   ASTNodeDeclare,
+  ASTNodeFunction,
+  ASTNodeMap,
   ASTNodePackage,
   ASTNodeProgram,
   NodeContext,
-  ASTNodeMap,
-  ASTNodeFunction,
-  ASTBody,
 } from '.';
+import { zGlobal } from '../api/global';
 import { ZSParser } from './zsParser';
 
 /**
@@ -47,12 +49,22 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
   protected Program(ctx: NodeContext): ASTNodeProgram {
     const node: ASTNodeProgram = {
       type: 'Program',
-      import: !!ctx.ImportList ? this.visit(ctx.ImportList) : new Map(),
+      import: [],
       start: 0,
       body: [],
       subtables: [],
       table: new Map(),
+      errors: [],
     };
+
+    if (ctx.ImportStatement) {
+      ctx.ImportStatement.forEach((imp: any) => {
+        const r = this.visit(imp);
+        node.errors.push(...r.errors);
+        delete r.errors;
+        node.import.push(r);
+      });
+    }
 
     if (ctx.GlobalStaticDeclaration) {
       // ctx.GlobalStaticDeclaration.forEach((element: any) => {
@@ -98,8 +110,28 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
    * =================================================================================================
    */
 
-  protected ImportList(ctx: NodeContext) {
-    return ctx.Package.map((pkg: CstNode) => this.visit(pkg));
+  protected ImportStatement(ctx: NodeContext) {
+    const token: {
+      start: number;
+      package: any;
+      errors: Object[];
+      alias?: string;
+    } = {
+      start: ctx.IMPORT[0].startOffset,
+      package: ctx.Package.map((pkg: CstNode) => this.visit(pkg))[0].item,
+      errors: [],
+    };
+    if (ctx.alias && ctx.alias.length && ctx.alias.length === 1) {
+      token.alias = ctx.alias[0].image;
+    }
+    if (!get(zGlobal.packages, token.package)) {
+      token.errors.push({
+        start: token.start,
+        end: ctx.SEMICOLON[0].endOffset,
+        message: 'Unknown package: ' + token.package.join('.'),
+      });
+    }
+    return token;
   }
 
   protected GlobalStaticDeclaration(ctx: NodeContext): ASTNodeDeclare {
