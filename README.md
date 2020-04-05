@@ -44,6 +44,9 @@ This extension contributes the following settings:
 
 - The brackets in `if (expression)` are required. (#5)
 
+## Special Thanks
+- https://github.com/Jandakast/ZenScript-VSCodeLanguage
+
 ## Release Notes
 
 ### 0.0.1
