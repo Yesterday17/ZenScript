@@ -3,14 +3,87 @@
   "scopeName": "source.zenscript",
   "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
   "patterns": [
+    { "include": "#import" },
+    { "include": "#functions" },
+    { "include": "#function-call" },
+    { "include": "#dots" },
+    { "include": "#var" },
+    { "include": "#preprocessors" },
     { "include": "#brackethandlers" },
-    { "include": "#preprocessor" },
     { "include": "#comments" },
     { "include": "#string" },
     { "include": "#values" },
-    { "include": "#keywords" }
+    { "include": "#keywords" },
+    { "include": "#constants" },
+    { "include": "#operators" }
   ],
   "repository": {
+    "import": {
+			"comment": "package import",
+			"name": "meta.import.zenscript",
+			"begin": "\\b(import)\\b\\s*",
+			"beginCaptures": {
+				"1": {
+					"name": "keyword.other.import.zenscript"
+				}
+			},
+			"end": "\\s*(;)",
+			"endCaptures": {
+				"1": {
+					"name": "punctuation.terminator.zenscript"
+				}
+			}
+    },
+    "functions": {
+			"comment": "functions",
+			"name": "meta.function.zenscript",
+			"match": "(?<=function\\s)([A-Za-z_$][\\w$]*)\\s*(?=\\()",
+			"captures": {
+				"1": {
+					"name": "entity.name.function.zenscript"
+				}
+			}
+		},
+		"function-call": {
+			"comment": "function calls",
+			"name": "meta.function-call.zenscript",
+			"match": "(?<!function\\s)(?<=[^0-9a-zA-Z])([A-Za-z_$][\\w$]*)\\s*(?=\\()",
+			"captures": {
+				"1": {
+					"name": "entity.name.function.zenscript"
+				}
+			}
+    },
+    "dots": {
+			"comment": "dots",
+			"name": "plain.text.zenscript",
+			"match": "\\b([^0-9\\s]\\w*)(?=\\.)(?![0-9])",
+			"captures": {
+				"1": {
+					"name": "storage.class.zenscript"
+			  }
+      }
+    },
+    "var": {
+			"comment": "var",
+			"match": "\\b(var|val|static|global)\\b",
+			"name": "storage.type"
+		},
+    "preprocessors": {
+			"name": "constant.numeric.zenscript",
+			"match": "^(\\s*)(#)(debug|ignoreBracketErrors|norun|loader|priority|ikwid|profile|zslint|modloaded)",
+			"captures": {
+				"1": {
+					"name": "keyword.control.zenscript"
+				},
+				"2": {
+					"name": "keyword.control.zenscript"
+				},
+				"3": {
+					"name": "variable.language.zenscript"
+				}
+			}
+		},
     "brackethandlers": {
       "name": "variable.language.brackethandler.zenscript",
       "begin": "\\<(?=[^<> ]+:)",
@@ -19,15 +92,6 @@
         {
           "name": "variable.parameter.brackethandler.zenscript",
           "match": "[^<> ]+"
-        }
-      ]
-    },
-    "preprocessor": {
-      "patterns": [
-        {
-          "name": "meta.preprocessor.zenscript",
-          "begin": "#(?=debug|ignoreBracketErrors|loader|modloaded|norun|priority|ikwid|sideonly|disable_search_tree|profile)",
-          "end": "$\\n?"
         }
       ]
     },
@@ -83,32 +147,45 @@
       "patterns": [
         {
           "name": "constant.numeric.integer.zenscript",
-          "match": "(?:0x[A-Fa-f0-9]*)|(?:-?(0|[1-9][0-9]*))"
+          "match": "\\b(?<!\\.)(-?([0-9]+))(?!\\.)\\b"
+        },
+        {
+          "name": "constant.numeric.hexadecimal_integer.zenscript",
+          "match": "\\b(?<!\\.)(-?0[Xx][A-Fa-f0-9]+)(?!\\.)\\b"
         },
         {
           "name": "constant.numeric.float.zenscript",
-          "match": "-?(0|[1-9][0-9]*).[0-9]+([eE][+-]?[0-9]+)?[fFdD]?"
+          "match": "\\b-?([0-9]+)\\.[0-9]+([eE][+-]?[0-9]+)?[fFdD]?\\b"
         }
       ]
     },
     "keywords": {
       "patterns": [
         {
-          "name": "keyword.control.zenscript",
-          "match": "\\b(any|bool|byte|short|int|long|float|double|string|function|in|has|void|as|version|return|var|val|global|static|instanceof|break|null|true|false)\\b"
+					"comment": "control keywords",
+					"name": "keyword.control.zenscript",
+					"match": "\\b(in|has|void|as|version|for|return|while|break|instanceof)\\b"
         },
         {
-          "name": "keyword.control.import.zenscript",
-          "match": "\\bimport\\b"
+					"comment": "storage keywords",
+					"name": "storage.type.zenscript",
+					"match": "\\b(any|bool|byte|short|int|long|float|double|string)\\b"
         },
         {
-          "name": "keyword.control.conditional.zenscript",
-          "match": "\\b(if|else)\\b"
+					"comment": "as holder keywords",
+					"name": "storage.type.zenscript",
+					"match": "\\b(?<=(\\sas\\s)|(\\sinstanceof\\s))[a-zA-Z]+\\b"
         },
         {
-          "name": "keyword.control.loop.zenscript",
-          "match": "\\b(for|while)\\b"
+					"comment": "function keyword",
+					"name": "storage.type.function.zenscript",
+					"match": "\\b(function)\\b"
         },
+        {
+					"comment": "statement keywords",
+					"name": "keyword.control.conditional.zenscript",
+					"match": "\\b(if|else)\\b"
+				},
         {
           "name": "keyword.control.class.zenscript",
           "match": "\\b(zenClass|frigginClass)\\b"
@@ -116,12 +193,22 @@
         {
           "name": "keyword.control.class.constructor.zenscript",
           "match": "\\b(zenConstructor|frigginConstructor)\\b"
-        },
-        {
-          "name": "keyword.operator",
-          "match": "(\\.\\.|\\+=|\\+|-=|-|\\*=|\\*|/=|/|%=|%|\\|=|\\||\\|\\||&=|&&|&|\\^=|\\^|\\?|:|~=|~|;|<=|<|>=|>|==|=|!=|!|\\$)"
         }
       ]
-    }
+    },
+    "constants": {
+			"comment": "constants (true, false, null)",
+			"name": "constant.language.zenscript",
+			"match": "\\b(true|false|null)\\b"
+		},
+    "operators": {
+			"patterns": [
+				{
+					"comment": "math operators",
+					"name": "keyword.operator",
+					"match": "(\\.\\.|\\+=|\\+|-=|-|\\*=|\\*|\\/=|\\/|%=|%|\\|=|\\||\\|\\||&=|&&|&|\\^=|\\^|\\?|:|~=|~|;|<=|<|>=|>|==|=|!=|!|\\$)"
+				}
+			]
+		}
   }
 }

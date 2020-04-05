@@ -1,8 +1,17 @@
 {
-  "Print": {
+  "Print":{
     "prefix": "print",
-    "body": ["print(\"$1\");"],
+    "body":[
+        "print(${type:String});"
+    ],
     "description": "Prints the string to the crafttweaker log as information."
+  },
+  "Import":{
+    "prefix": "import",
+    "body":[
+        "import ${type:module};"
+    ],
+    "description": "Import a mod"
   },
   "Total_Actions": {
     "prefix": "tota",
