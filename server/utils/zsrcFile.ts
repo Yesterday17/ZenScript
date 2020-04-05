@@ -4,6 +4,7 @@ import { zGlobal } from '../api/global';
 import * as fs from '../utils/fs';
 import * as path from './path';
 import set from 'set-value';
+import get from 'get-value';
 import { MemberMethod, MemberGetter, MemberSetter } from '../api/rcFile';
 
 function isMemberMethod(p: any): p is MemberMethod {
@@ -44,16 +45,16 @@ export async function reloadRCFile(connection: Connection) {
 
     // Reload Mods
     zGlobal.mods.clear();
-    if (zGlobal.rcFile.mods) {
-      zGlobal.rcFile.mods.forEach(value => {
+    if (zGlobal.rcFile.config.mods && zGlobal.rcFile.mods) {
+      zGlobal.rcFile.mods.forEach((value) => {
         zGlobal.mods.set(value.modid, value);
       });
     }
 
     // Items
     zGlobal.items.clear();
-    if (zGlobal.rcFile.items) {
-      zGlobal.rcFile.items.forEach(value => {
+    if (zGlobal.rcFile.config.items && zGlobal.rcFile.items) {
+      zGlobal.rcFile.items.forEach((value) => {
         try {
           const key = [
             value.resourceLocation.domain,
@@ -71,8 +72,8 @@ export async function reloadRCFile(connection: Connection) {
 
     // Enchantments
     zGlobal.enchantments.clear();
-    if (zGlobal.rcFile.enchantments) {
-      zGlobal.rcFile.enchantments.forEach(value => {
+    if (zGlobal.rcFile.config.enchantments && zGlobal.rcFile.enchantments) {
+      zGlobal.rcFile.enchantments.forEach((value) => {
         if (!zGlobal.enchantments.has(value.resourceLocation.domain)) {
           zGlobal.enchantments.set(value.resourceLocation.domain, [value]);
         } else {
@@ -83,8 +84,8 @@ export async function reloadRCFile(connection: Connection) {
 
     // Entities
     zGlobal.entities.clear();
-    if (zGlobal.rcFile.entities) {
-      zGlobal.rcFile.entities.forEach(value => {
+    if (zGlobal.rcFile.config.entities && zGlobal.rcFile.entities) {
+      zGlobal.rcFile.entities.forEach((value) => {
         if (!zGlobal.entities.has(value.resourceLocation.domain)) {
           zGlobal.entities.set(value.resourceLocation.domain, [value]);
         } else {
@@ -95,15 +96,15 @@ export async function reloadRCFile(connection: Connection) {
 
     // Fluids
     zGlobal.fluids.clear();
-    if (zGlobal.rcFile.fluids) {
-      zGlobal.rcFile.fluids.forEach(value =>
+    if (zGlobal.rcFile.config.fluids && zGlobal.rcFile.fluids) {
+      zGlobal.rcFile.fluids.forEach((value) =>
         zGlobal.fluids.set(value.unlocalizedName, value)
       );
     }
 
     // ZenPackages
     zGlobal.packages = {};
-    if (zGlobal.rcFile.zenpackage) {
+    if (zGlobal.rcFile.config.zenpackage && zGlobal.rcFile.zenpackage) {
       for (const key in zGlobal.rcFile.zenpackage) {
         const _this = zGlobal.rcFile.zenpackage[key];
         const members: { [key: string]: any } = {};
@@ -141,6 +142,24 @@ export async function reloadRCFile(connection: Connection) {
         setMember(_this.members, false);
         setMember(_this.staticMembers, true);
         set(zGlobal.packages, key, members);
+      }
+    }
+
+    zGlobal.global.clear();
+    zGlobal.globalFunction.clear();
+    if (zGlobal.rcFile.config.globals && zGlobal.rcFile.globals) {
+      for (const key in zGlobal.rcFile.globals) {
+        const _this = zGlobal.rcFile.globals[key];
+        if (typeof _this === 'string') {
+          // variable
+          zGlobal.global.set(
+            key,
+            get(zGlobal.packages, _this.replace('.api', '')) // FIXME: .api hack
+          );
+        } else {
+          // function
+          zGlobal.globalFunction.set(key, [_this]);
+        }
       }
     }
 

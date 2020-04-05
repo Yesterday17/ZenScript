@@ -8,6 +8,7 @@ import {
   Hover,
   InitializeParams,
   ProposedFeatures,
+  SignatureHelpTriggerKind,
   TextDocuments,
   TextDocumentSyncKind,
   WorkspaceFolder,
@@ -25,10 +26,10 @@ import {
   SimpleBracketHandlers,
 } from './completion/bracketHandler/bracketHandlers';
 import { ItemBracketHandler } from './completion/bracketHandler/item';
-import { Keywords } from './completion/completion';
+import { GlobalCompletion } from './completion/global';
 import { ImportCompletion } from './completion/import';
 import { PreProcessorCompletions } from './completion/preprocessor/preprocessors';
-import { DOT, IMPORT } from './parser/zsLexer';
+import { DOT, IDENTIFIER, IMPORT } from './parser/zsLexer';
 import { applyRequests } from './requests/requests';
 import { findToken } from './utils/findToken';
 import * as fs from './utils/fs';
@@ -158,22 +159,64 @@ connection.onInitialized(async () => {
   }
 
   if (hasWorkspaceFolderCapability) {
-    connection.workspace.onDidChangeWorkspaceFolders(_event => {
+    connection.workspace.onDidChangeWorkspaceFolders((_event) => {
       connection.console.log('Workspace folder change event received.');
     });
   }
 });
 
-connection.onSignatureHelp(params => {
-  // return {
-  //   signatures: [{ label: 'test', documentation: 'document', parameters: [] }],
-  //   activeSignature: 0,
-  //   activeParameter: null,
-  // };
-  return null;
+connection.onSignatureHelp((params) => {
+  // 获得当前正在修改的 document
+  const document = documents.get(params.textDocument.uri);
+  // 当前 Signature 的位置
+  const position = params.position;
+  // 当前 Signature 的 offset
+  const offset = document.offsetAt(position);
+  // Tokens
+  const tokens = zGlobal.zsFiles.get(document.uri).tokens;
+
+  let token = findToken(tokens, offset - 1);
+  let call = '',
+    depth = 0;
+
+  if (params.context.triggerKind === SignatureHelpTriggerKind.ContentChange) {
+    if (token.found.token.image === ')') {
+      return { activeParameter: null, activeSignature: null, signatures: [] };
+    } else {
+      return params.context.activeSignatureHelp;
+    }
+  }
+
+  token = findToken(tokens, token.found.token.startOffset - 1);
+  while (token.exist && token.found.token.tokenType === IDENTIFIER) {
+    call = token.found.token.image + '.' + call;
+    depth++;
+
+    const prev = findToken(tokens, token.found.token.startOffset - 1);
+    if (!prev.exist || prev.found.token.image !== '.') {
+      break;
+    }
+  }
+  call = call.substring(0, call.length - 1);
+
+  if (depth === 1 && zGlobal.globalFunction.has(call)) {
+    const item = zGlobal.globalFunction.get(call);
+    return {
+      signatures: item.map((b) => {
+        return {
+          label: `${call}(${b.params.join(', ')}) -> ${b.return}`,
+          parameters: [],
+        };
+      }),
+      activeParameter: 0,
+      activeSignature: 0,
+    };
+  }
+
+  return { activeParameter: null, activeSignature: null, signatures: [] };
 });
 
-connection.onDidChangeConfiguration(change => {
+connection.onDidChangeConfiguration((change) => {
   if (hasConfigurationCapability) {
     // reset all the settings
     zGlobal.documentSettings.clear();
@@ -203,11 +246,11 @@ function getdocumentSettings(resource: string): Thenable<ZenScriptSettings> {
 }
 
 // Delete configuration of closed documents.
-documents.onDidClose(event => {
+documents.onDidClose((event) => {
   zGlobal.documentSettings.delete(event.document.uri);
 });
 
-documents.onDidChangeContent(async event => {
+documents.onDidChangeContent(async (event) => {
   validateTextDocument(event.document);
 });
 
@@ -247,7 +290,7 @@ async function validateTextDocument(textDocument: TextDocument): Promise<void> {
     }
 
     // parse errors
-    [...file.parseErrors, ...file.interpreteErrors].forEach(error => {
+    [...file.parseErrors, ...file.interpreteErrors].forEach((error) => {
       const diagnotic: Diagnostic = {
         severity: DiagnosticSeverity.Error,
         range: {
@@ -272,7 +315,7 @@ async function validateTextDocument(textDocument: TextDocument): Promise<void> {
 }
 
 // 当 Watch 的文件确实发生变动
-connection.onDidChangeWatchedFiles(async _change => {
+connection.onDidChangeWatchedFiles(async (_change) => {
   for (const change of _change.changes) {
     if (
       new URL(change.uri).hash === new URL(zGlobal.baseFolder + '/.zsrc').hash
@@ -285,7 +328,7 @@ connection.onDidChangeWatchedFiles(async _change => {
 
 // 负责处理自动补全的条目
 // 发送较为简单的消息
-connection.onCompletion(async completion => {
+connection.onCompletion(async (completion) => {
   // 获得当前正在修改的 document
   const document = documents.get(completion.textDocument.uri);
   // 当前补全的位置
@@ -312,7 +355,7 @@ connection.onCompletion(async completion => {
       if (token.exist && token.found.token.image === '#') {
         triggerCharacter = token.found.token.image;
       } else {
-        return null;
+        triggerCharacter = '';
       }
     }
   }
@@ -362,8 +405,9 @@ connection.onCompletion(async completion => {
       }
 
       if (
-        BracketHandlers.map(handler => handler.name).indexOf(predecessor[0]) ===
-        -1
+        BracketHandlers.map((handler) => handler.name).indexOf(
+          predecessor[0]
+        ) === -1
       ) {
         predecessor = ['item', ...predecessor];
       }
@@ -382,7 +426,7 @@ connection.onCompletion(async completion => {
         : [];
 
     default:
-      return [...Keywords];
+      return [...GlobalCompletion()];
   }
 });
 
@@ -406,7 +450,7 @@ connection.onCompletionResolve(
           }
         case '<':
           const handler = DetailBracketHandlers.find(
-            i => i.label === item.label
+            (i) => i.label === item.label
           );
           if (handler) {
             return handler;
@@ -422,7 +466,7 @@ connection.onCompletionResolve(
 );
 
 // Handle mouse onHover event
-connection.onHover(hoverPosition => {
+connection.onHover((hoverPosition) => {
   // 获得当前正在修改的 document
   const document = documents.get(hoverPosition.textDocument.uri);
 
@@ -468,7 +512,7 @@ connection.onHover(hoverPosition => {
   }
 });
 
-connection.onDocumentFormatting(params => {
+connection.onDocumentFormatting((params) => {
   const document = documents.get(params.textDocument.uri);
   return null;
 });

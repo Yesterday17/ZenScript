@@ -8,6 +8,7 @@ import {
   ZSRCFile,
 } from './rcFile';
 import { ZenParsedFile } from './zenParsedFile';
+import { CompletionItem } from 'vscode';
 
 /**
  * Settings
@@ -42,6 +43,14 @@ export interface ZSGlobal {
   fluids: Map<string, FluidEntry>;
   packages: Object;
 
+  global: Map<String, Object>;
+  globalFunction: Map<String, ZenFunction[]>;
+
   // zs file
   zsFiles: Map<string, ZenParsedFile>;
+}
+
+export interface ZenFunction {
+  params: string[];
+  return: string;
 }

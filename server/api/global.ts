@@ -19,37 +19,16 @@ export const zGlobal: ZSGlobal = {
   documentSettings: new Map(),
 
   // .zsrc file
-  rcFile: {
-    mcVersion: '',
-    forgeVersion: '',
-    probeVersion: '',
-    config: {
-      mods: true,
-      items: true,
-      enchantments: true,
-      entities: true,
-      fluids: true,
-      oredictionary: true,
-    },
+  rcFile: undefined,
 
-    mods: [],
-    items: [],
-    enchantments: [],
-    entities: [],
-    fluids: [],
-    oredictionary: [],
-
-    zentype: [],
-    zenpackage: {},
-    globals: {},
-  },
-
-  mods: new Map<string, ModEntry>(),
+  mods: new Map(),
   items: new RCStorage('item', 3),
-  enchantments: new Map<string, EnchantmentEntry[]>(),
-  entities: new Map<string, EntityEntry[]>(),
-  fluids: new Map<string, FluidEntry>(),
+  enchantments: new Map(),
+  entities: new Map(),
+  fluids: new Map(),
   packages: {},
+  global: new Map(),
+  globalFunction: new Map(),
 
   // zs file
   zsFiles: new Map(),

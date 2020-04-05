@@ -186,12 +186,7 @@
         "path": "./language/syntaxes/zenscript.tmLanguage.json"
       }
     ],
-    "snippets": [
-      {
-        "language": "zenscript",
-        "path": "./language/snippets/global.json"
-      }
-    ]
+    "snippets": []
   },
   "scripts": {
     "package": "vsce package",
