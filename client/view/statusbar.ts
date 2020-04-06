@@ -1,13 +1,14 @@
+import * as path from 'path';
 import {
-  window,
+  ExtensionContext,
   StatusBarAlignment,
   StatusBarItem,
-  ExtensionContext,
   TextEditor,
+  window,
 } from 'vscode';
-import { Registerable } from '../api/Registerable';
 import { LanguageClient } from 'vscode-languageclient';
-import * as path from 'path';
+import { ServerStatusRequestType } from '../../api/requests/ServerStatusRequest';
+import { Registerable } from '../api/Registerable';
 
 class ZSStatusBar implements Registerable {
   bar: StatusBarItem;
@@ -16,7 +17,7 @@ class ZSStatusBar implements Registerable {
     this.bar = window.createStatusBarItem(StatusBarAlignment.Left, 10);
     this.bar.command = '';
     this.bar.color = '#32CD32';
-    this.bar.text = 'ZenScript';
+    this.bar.text = 'ZenScript (Loading...)';
   }
 
   register(client: LanguageClient, context: ExtensionContext) {
@@ -30,15 +31,16 @@ class ZSStatusBar implements Registerable {
           const isZSFile =
             path.extname(e.document.uri.fsPath).toLowerCase() === '.zs';
           if (isZSFile) {
-            this.show();
+            client.sendRequest(ServerStatusRequestType).then((items) => {
+              this.bar.text = 'ZenScript';
+              this.show();
+            });
             return;
           }
         }
-        this.hide();
       })
     );
 
-    // Show status bar
     this.show();
   }
 

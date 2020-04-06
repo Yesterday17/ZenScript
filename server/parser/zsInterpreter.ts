@@ -534,9 +534,10 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
     }
 
     if (ctx.SQBR_OPEN) {
-      return {
+      type = {
         type: 'A_ARRAY',
-        start: type.start,
+        start: 0,
+        // start: type.start,
         // level: ctx.SQBR_OPEN.length,
         // body: [type],
       };
