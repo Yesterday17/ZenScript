@@ -1,5 +1,17 @@
-const prettier = require('prettier');
+import {
+  Connection,
+  DocumentFormattingParams,
+  TextEdit,
+} from 'vscode-languageserver';
 
-export const ZSFormatter = {
-  format: function(source: string) {},
-};
+export class ZenScriptFormat {
+  static register(connection: Connection) {
+    connection.onDocumentFormatting(ZenScriptFormat.doFormat);
+  }
+
+  static doFormat(
+    format: DocumentFormattingParams
+  ): Promise<TextEdit[] | undefined | null> {
+    return null;
+  }
+}
