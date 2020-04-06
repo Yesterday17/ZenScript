@@ -3,12 +3,12 @@
   "scopeName": "source.zenscript",
   "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
   "patterns": [
+    { "include": "#preprocessor" },
     { "include": "#import" },
     { "include": "#functions" },
     { "include": "#function-call" },
     { "include": "#dots" },
     { "include": "#var" },
-    { "include": "#preprocessors" },
     { "include": "#brackethandlers" },
     { "include": "#comments" },
     { "include": "#string" },
@@ -19,71 +19,60 @@
   ],
   "repository": {
     "import": {
-			"comment": "package import",
-			"name": "meta.import.zenscript",
-			"begin": "\\b(import)\\b\\s*",
-			"beginCaptures": {
-				"1": {
-					"name": "keyword.other.import.zenscript"
-				}
-			},
-			"end": "\\s*(;)",
-			"endCaptures": {
-				"1": {
-					"name": "punctuation.terminator.zenscript"
-				}
-			}
+      "comment": "package import",
+      "name": "meta.import.zenscript",
+      "begin": "\\b(import)\\b\\s*",
+      "beginCaptures": {
+        "1": {
+          "name": "keyword.other.import.zenscript"
+        }
+      },
+      "end": "\\s*(;)",
+      "endCaptures": {
+        "1": {
+          "name": "punctuation.terminator.zenscript"
+        }
+      }
     },
     "functions": {
-			"comment": "functions",
-			"name": "meta.function.zenscript",
-			"match": "(?<=function\\s)([A-Za-z_$][\\w$]*)\\s*(?=\\()",
-			"captures": {
-				"1": {
-					"name": "entity.name.function.zenscript"
-				}
-			}
-		},
-		"function-call": {
-			"comment": "function calls",
-			"name": "meta.function-call.zenscript",
-			"match": "(?<!function\\s)(?<=[^0-9a-zA-Z])([A-Za-z_$][\\w$]*)\\s*(?=\\()",
-			"captures": {
-				"1": {
-					"name": "entity.name.function.zenscript"
-				}
-			}
+      "comment": "functions",
+      "name": "meta.function.zenscript",
+      "match": "(?<=function\\s)([A-Za-z_$][\\w$]*)\\s*(?=\\()",
+      "captures": {
+        "1": {
+          "name": "entity.name.function.zenscript"
+        }
+      }
+    },
+    "function-call": {
+      "comment": "function calls",
+      "name": "meta.function-call.zenscript",
+      "match": "(?<!function\\s)(?<=[^0-9a-zA-Z])([A-Za-z_$][\\w$]*)\\s*(?=\\()",
+      "captures": {
+        "1": {
+          "name": "entity.name.function.zenscript"
+        }
+      }
     },
     "dots": {
-			"comment": "dots",
-			"name": "plain.text.zenscript",
-			"match": "\\b([^0-9\\s]\\w*)(?=\\.)(?![0-9])",
-			"captures": {
-				"1": {
-					"name": "storage.class.zenscript"
-			  }
+      "comment": "dots",
+      "name": "plain.text.zenscript",
+      "match": "\\b([a-zA-Z_]\\w*)(?=\\.)(?![0-9])",
+      "captures": {
+        "1": {
+          "name": "storage.class.zenscript"
+        }
       }
     },
     "var": {
-			"comment": "var",
-			"match": "\\b(var|val|static|global)\\b",
-			"name": "storage.type"
-		},
-    "preprocessors": {
-			"name": "constant.numeric.zenscript",
-			"match": "^(\\s*)(#)(debug|ignoreBracketErrors|norun|loader|priority|ikwid|profile|zslint|modloaded)",
-			"captures": {
-				"1": {
-					"name": "keyword.control.zenscript"
-				},
-				"2": {
-					"name": "keyword.control.zenscript"
-				},
-				"3": {
-					"name": "variable.language.zenscript"
-				}
-			}
-		},
+      "comment": "var",
+      "match": "\\b(var|val|static|global)\\b",
+      "name": "storage.type"
+    },
+    "preprocessor": {
+      "name": "meta.preprocessor.zenscript",
+      "match": "^(\\s*)(#)(debug|ignoreBracketErrors|norun|loader|priority|ikwid|profile|zslint|modloaded)"
+    },
     "brackethandlers": {
       "name": "variable.language.brackethandler.zenscript",
       "begin": "\\<(?=[^<> ]+:)",
@@ -162,30 +151,30 @@
     "keywords": {
       "patterns": [
         {
-					"comment": "control keywords",
-					"name": "keyword.control.zenscript",
-					"match": "\\b(in|has|void|as|version|for|return|while|break|instanceof)\\b"
+          "comment": "control keywords",
+          "name": "keyword.control.zenscript",
+          "match": "\\b(in|has|void|as|version|for|return|while|break|instanceof)\\b"
         },
         {
-					"comment": "storage keywords",
-					"name": "storage.type.zenscript",
-					"match": "\\b(any|bool|byte|short|int|long|float|double|string)\\b"
+          "comment": "storage keywords",
+          "name": "storage.type.zenscript",
+          "match": "\\b(any|bool|byte|short|int|long|float|double|string)\\b"
         },
         {
-					"comment": "as holder keywords",
-					"name": "storage.type.zenscript",
-					"match": "\\b(?<=(\\sas\\s)|(\\sinstanceof\\s))[a-zA-Z]+\\b"
+          "comment": "as holder keywords",
+          "name": "storage.type.zenscript",
+          "match": "\\b(?<=(\\sas\\s)|(\\sinstanceof\\s))[a-zA-Z]+\\b"
         },
         {
-					"comment": "function keyword",
-					"name": "storage.type.function.zenscript",
-					"match": "\\b(function)\\b"
+          "comment": "function keyword",
+          "name": "storage.type.function.zenscript",
+          "match": "\\b(function)\\b"
         },
         {
-					"comment": "statement keywords",
-					"name": "keyword.control.conditional.zenscript",
-					"match": "\\b(if|else)\\b"
-				},
+          "comment": "statement keywords",
+          "name": "keyword.control.conditional.zenscript",
+          "match": "\\b(if|else)\\b"
+        },
         {
           "name": "keyword.control.class.zenscript",
           "match": "\\b(zenClass|frigginClass)\\b"
@@ -197,18 +186,18 @@
       ]
     },
     "constants": {
-			"comment": "constants (true, false, null)",
-			"name": "constant.language.zenscript",
-			"match": "\\b(true|false|null)\\b"
-		},
+      "comment": "constants (true, false, null)",
+      "name": "constant.language.zenscript",
+      "match": "\\b(true|false|null)\\b"
+    },
     "operators": {
-			"patterns": [
-				{
-					"comment": "math operators",
-					"name": "keyword.operator",
-					"match": "(\\.\\.|\\+=|\\+|-=|-|\\*=|\\*|\\/=|\\/|%=|%|\\|=|\\||\\|\\||&=|&&|&|\\^=|\\^|\\?|:|~=|~|;|<=|<|>=|>|==|=|!=|!|\\$)"
-				}
-			]
-		}
+      "patterns": [
+        {
+          "comment": "math operators",
+          "name": "keyword.operator",
+          "match": "(\\.\\.|\\+=|\\+|-=|-|\\*=|\\*|\\/=|\\/|%=|%|\\|=|\\||\\|\\||&=|&&|&|\\^=|\\^|\\?|:|~=|~|;|<=|<|>=|>|==|=|!=|!|\\$)"
+        }
+      ]
+    }
   }
 }
