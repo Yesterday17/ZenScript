@@ -73,6 +73,7 @@ connection.onInitialize((params: InitializeParams) => {
           '.', // recipes.autocomplete
           ':', // ore:autocomplete
           '<', // <autocomplete>
+          ' ', // import<space>
         ],
       },
       signatureHelpProvider: {
@@ -348,7 +349,7 @@ connection.onCompletion(async (completion) => {
   // 当前补全的位置
   const position = completion.position;
   // 当前补全的 offset
-  const offset = document.offsetAt(position);
+  let offset = document.offsetAt(position);
   // 当前文档的文本
   const content = document.getText();
   // Tokens
@@ -359,11 +360,19 @@ connection.onCompletion(async (completion) => {
   let triggerCharacter = completion.context.triggerCharacter;
   if (manuallyTriggerred) {
     let token = findToken(tokens, offset - 1);
-    if (
-      token.exist ||
-      (token.found.token && token.found.token.image === 'import')
-    ) {
-      triggerCharacter = token.found.token.image;
+    if (token.exist) {
+      if (['#', '.', ':', '<'].includes(token.found.token.image)) {
+        triggerCharacter = token.found.token.image;
+      } else {
+        const prev = findToken(tokens, token.found.token.startOffset - 1);
+        if (
+          prev.exist &&
+          ['#', '.', ':', '<'].includes(prev.found.token.image)
+        ) {
+          triggerCharacter = prev.found.token.image;
+          offset = token.found.token.startOffset;
+        }
+      }
     } else {
       token = findToken(zGlobal.zsFiles.get(document.uri).comments, offset - 1);
       if (token.exist && token.found.token.image === '#') {
@@ -378,8 +387,21 @@ connection.onCompletion(async (completion) => {
   switch (triggerCharacter) {
     case '#':
       return PreProcessorCompletions;
-    case 'import':
-      return ImportCompletion([]);
+    case ' ':
+      // import<space>
+      let s;
+      do {
+        offset--;
+        s = document.getText({
+          start: document.positionAt(offset),
+          end: document.positionAt(offset + 1),
+        });
+      } while (s === ' ');
+      let token = findToken(tokens, offset - 1);
+      if (token.exist && token.found.token.image === 'import') {
+        return ImportCompletion([]);
+      }
+      return [];
     case '.':
       // Find 'a.b.' when typing the last dot
       const now = findToken(tokens, offset - 1);
