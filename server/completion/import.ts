@@ -27,7 +27,7 @@ function getKind(obj: any, k: string): CompletionItemKind {
 }
 
 export function ImportCompletion(prev: string[]): CompletionItem[] {
-  let packages: Object, local: Directory;
+  let packages: { [key: string]: any }, local: Directory;
   if (prev.length === 0) {
     packages = zGlobal.packages;
     local = zGlobal.directory;
@@ -39,9 +39,18 @@ export function ImportCompletion(prev: string[]): CompletionItem[] {
   const result = [];
   if (typeof packages === 'object') {
     result.push(
-      ...Object.keys(packages).map((k) => {
-        return { label: k, kind: getKind(packages, k) };
-      })
+      ...Object.keys(packages)
+        .filter(
+          (k) =>
+            !(
+              'type' in packages[k] &&
+              'body' in packages[k] &&
+              'static' in packages[k]
+            )
+        )
+        .map((k) => {
+          return { label: k, kind: getKind(packages, k) };
+        })
     );
   }
   if (typeof local === 'object') {

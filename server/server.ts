@@ -460,7 +460,7 @@ connection.onCompletionResolve(
           ) {
             return BracketHandlerMap.get(item.data.predecessor[0]).detail(item);
           } else {
-            return;
+            return { label: '' };
           }
         case '<':
           const handler = DetailBracketHandlers.find(
@@ -473,7 +473,7 @@ connection.onCompletionResolve(
         // and jumped to default
         // so `else return;` can be deleted
         default:
-          return;
+          return { label: '' };
       }
     }
   }

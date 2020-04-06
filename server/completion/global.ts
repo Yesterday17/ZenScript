@@ -15,5 +15,6 @@ export function GlobalCompletion(): CompletionItem[] {
         kind: CompletionItemKind.Function,
       } as CompletionItem;
     }),
+    { label: 'import', kind: CompletionItemKind.Keyword },
   ];
 }
