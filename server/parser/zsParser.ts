@@ -740,7 +740,43 @@ export class ZenScriptParser extends Parser {
     this.AT_LEAST_ONE_SEP({
       SEP: DOT,
       DEF: () => {
-        this.CONSUME(IDENTIFIER);
+        this.OR({
+          DEF: [
+            { ALT: () => this.CONSUME(IDENTIFIER) },
+
+            { ALT: () => this.CONSUME(ANY) },
+            { ALT: () => this.CONSUME(BOOL) },
+            { ALT: () => this.CONSUME(BYTE) },
+            { ALT: () => this.CONSUME(SHORT) },
+            { ALT: () => this.CONSUME(INT) },
+            { ALT: () => this.CONSUME(LONG) },
+            { ALT: () => this.CONSUME(FLOAT) },
+            { ALT: () => this.CONSUME(DOUBLE) },
+            { ALT: () => this.CONSUME(STRING) },
+            { ALT: () => this.CONSUME(FUNCTION) },
+            { ALT: () => this.CONSUME(IN) },
+            { ALT: () => this.CONSUME(VOID) },
+            { ALT: () => this.CONSUME(AS) },
+            { ALT: () => this.CONSUME(VERSION) },
+            { ALT: () => this.CONSUME(IF) },
+            { ALT: () => this.CONSUME(ELSE) },
+            { ALT: () => this.CONSUME(FOR) },
+            { ALT: () => this.CONSUME(RETURN) },
+            { ALT: () => this.CONSUME(VAR) },
+            { ALT: () => this.CONSUME(VAL) },
+            { ALT: () => this.CONSUME(GLOBAL_ZS) },
+            { ALT: () => this.CONSUME(STATIC) },
+            { ALT: () => this.CONSUME(INSTANCEOF) },
+            { ALT: () => this.CONSUME(WHILE) },
+            { ALT: () => this.CONSUME(BREAK) },
+            { ALT: () => this.CONSUME(NULL) },
+            { ALT: () => this.CONSUME(TRUE) },
+            { ALT: () => this.CONSUME(FALSE) },
+            { ALT: () => this.CONSUME(IMPORT) },
+            { ALT: () => this.CONSUME(ZEN_CLASS) },
+            { ALT: () => this.CONSUME(ZEN_CONSTRUCTOR) },
+          ],
+        });
       },
     });
   });

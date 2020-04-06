@@ -27,12 +27,14 @@ class Ore implements IBracketHandler {
 
   next(predecessor: string[]): CompletionItem[] {
     return predecessor.length === 1
-      ? zGlobal.rcFile.oredictionary.map(od => {
-          return {
-            label: od,
-            kind: CompletionItemKind.Value,
-          } as CompletionItem;
-        })
+      ? zGlobal.rcFile
+        ? zGlobal.rcFile.oredictionary.map((od) => {
+            return {
+              label: od,
+              kind: CompletionItemKind.Value,
+            } as CompletionItem;
+          })
+        : []
       : [];
   }
 

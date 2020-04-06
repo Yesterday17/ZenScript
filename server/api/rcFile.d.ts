@@ -105,6 +105,9 @@ export interface ProbeConfig {
   entities: boolean;
   fluids: boolean;
   oredictionary: boolean;
+  zentype: boolean;
+  zenpackage: boolean;
+  globals: boolean;
 }
 
 export interface ZSRCFile {

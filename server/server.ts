@@ -8,6 +8,7 @@ import {
   Hover,
   InitializeParams,
   ProposedFeatures,
+  SignatureHelpTriggerKind,
   TextDocuments,
   TextDocumentSyncKind,
   WorkspaceFolder,
@@ -25,10 +26,10 @@ import {
   SimpleBracketHandlers,
 } from './completion/bracketHandler/bracketHandlers';
 import { ItemBracketHandler } from './completion/bracketHandler/item';
-import { Keywords } from './completion/completion';
+import { GlobalCompletion } from './completion/global';
 import { ImportCompletion } from './completion/import';
 import { PreProcessorCompletions } from './completion/preprocessor/preprocessors';
-import { DOT, IMPORT } from './parser/zsLexer';
+import { DOT, IDENTIFIER, IMPORT } from './parser/zsLexer';
 import { applyRequests } from './requests/requests';
 import { findToken } from './utils/findToken';
 import * as fs from './utils/fs';
@@ -72,6 +73,7 @@ connection.onInitialize((params: InitializeParams) => {
           '.', // recipes.autocomplete
           ':', // ore:autocomplete
           '<', // <autocomplete>
+          ' ', // import<space>
         ],
       },
       signatureHelpProvider: {
@@ -123,19 +125,25 @@ connection.onInitialized(async () => {
     await reloadRCFile(connection);
 
     // Load all files
-    const files = await AllZSFiles(URI.parse(zGlobal.baseFolder), connection);
-    for (const file of files) {
+    zGlobal.bus.revoke('all-zs-parsed');
+    const files = await AllZSFiles(
+      URI.parse(zGlobal.baseFolder),
+      connection,
+      'scripts'
+    );
+    for (const { uri, pkg } of files) {
       // new parsed file
-      const zsFile = new ZenParsedFile(file, connection);
+      const zsFile = new ZenParsedFile(uri, pkg, connection);
       // save to map first
-      zGlobal.zsFiles.set(file.toString(), zsFile);
+      zGlobal.zsFiles.set(uri.toString(), zsFile);
       // then lex(not parse to save time)
       await zsFile.load();
-      zsFile.lex();
+      zsFile.parse();
     }
   } else {
     zGlobal.isProject = false;
   }
+  zGlobal.bus.finish('all-zs-parsed');
 
   // Isn't a folder warn.
   if (
@@ -158,22 +166,65 @@ connection.onInitialized(async () => {
   }
 
   if (hasWorkspaceFolderCapability) {
-    connection.workspace.onDidChangeWorkspaceFolders(_event => {
+    connection.workspace.onDidChangeWorkspaceFolders((_event) => {
       connection.console.log('Workspace folder change event received.');
     });
   }
 });
 
-connection.onSignatureHelp(params => {
-  // return {
-  //   signatures: [{ label: 'test', documentation: 'document', parameters: [] }],
-  //   activeSignature: 0,
-  //   activeParameter: null,
-  // };
-  return null;
+connection.onSignatureHelp((params) => {
+  // 获得当前正在修改的 document
+  const document = documents.get(params.textDocument.uri);
+  // 当前 Signature 的位置
+  const position = params.position;
+  // 当前 Signature 的 offset
+  const offset = document.offsetAt(position);
+  // Tokens
+  const tokens = zGlobal.zsFiles.get(document.uri).tokens;
+
+  let token = findToken(tokens, offset - 1);
+  let call = '',
+    depth = 0;
+
+  if (params.context.triggerKind === SignatureHelpTriggerKind.ContentChange) {
+    if (token.found.token.image === ')') {
+      return { activeParameter: null, activeSignature: null, signatures: [] };
+    } else {
+      return params.context.activeSignatureHelp;
+    }
+  }
+
+  token = findToken(tokens, token.found.token.startOffset - 1);
+  while (token.exist && token.found.token.tokenType === IDENTIFIER) {
+    call = token.found.token.image + '.' + call;
+    depth++;
+
+    const prev = findToken(tokens, token.found.token.startOffset - 1);
+    if (!prev.exist || prev.found.token.image !== '.') {
+      break;
+    }
+    token = prev;
+  }
+  call = call.substring(0, call.length - 1);
+
+  if (depth === 1 && zGlobal.globalFunction.has(call)) {
+    const item = zGlobal.globalFunction.get(call);
+    return {
+      signatures: item.map((b) => {
+        return {
+          label: `${call}(${b.params.join(', ')}) -> ${b.return}`,
+          parameters: [],
+        };
+      }),
+      activeParameter: 0,
+      activeSignature: 0,
+    };
+  }
+
+  return { activeParameter: null, activeSignature: null, signatures: [] };
 });
 
-connection.onDidChangeConfiguration(change => {
+connection.onDidChangeConfiguration((change) => {
   if (hasConfigurationCapability) {
     // reset all the settings
     zGlobal.documentSettings.clear();
@@ -203,76 +254,81 @@ function getdocumentSettings(resource: string): Thenable<ZenScriptSettings> {
 }
 
 // Delete configuration of closed documents.
-documents.onDidClose(event => {
+documents.onDidClose((event) => {
   zGlobal.documentSettings.delete(event.document.uri);
 });
 
-documents.onDidChangeContent(async event => {
+documents.onDidChangeContent(async (event) => {
   validateTextDocument(event.document);
 });
 
 async function validateTextDocument(textDocument: TextDocument): Promise<void> {
   // Wait for .zsrc file
-  zGlobal.bus.on('rc-loaded', async () => {
-    let settings = await getdocumentSettings(textDocument.uri);
-    const diagnostics: Diagnostic[] = [];
+  await zGlobal.bus.wait('rc-loaded');
+  await zGlobal.bus.wait('all-zs-parsed');
+  let settings = await getdocumentSettings(textDocument.uri);
+  const diagnostics: Diagnostic[] = [];
 
-    // save lexing result
-    if (!zGlobal.zsFiles.has(textDocument.uri)) {
-      zGlobal.zsFiles.set(
-        textDocument.uri,
-        new ZenParsedFile(URI.parse(textDocument.uri), connection)
-      );
-    }
+  // save lexing result
+  if (!zGlobal.zsFiles.has(textDocument.uri)) {
+    let pkg =
+      'scripts.' +
+      textDocument.uri
+        .substr(zGlobal.baseFolder.length)
+        .replace(/^\//g, '')
+        .replace(/[\/\\]/g, '.')
+        .replace(/\.zs$/, '');
+    zGlobal.zsFiles.set(
+      textDocument.uri,
+      new ZenParsedFile(URI.parse(textDocument.uri), pkg, connection)
+    );
+  }
 
-    const file = zGlobal.zsFiles
-      .get(textDocument.uri)
-      .text(textDocument.getText())
-      .lex()
-      .parse();
+  const file = zGlobal.zsFiles
+    .get(textDocument.uri)
+    .text(textDocument.getText())
+    .parse()
+    .interprete();
 
-    const ast = file.ast;
-    if (ast) {
-      connection.console.log(
-        JSON.stringify({
-          type: ast.type,
-          import: ast.import,
-          // global: Array.from(ast.global),
-          // static: Array.from(ast.static),
-          // function: Array.from(ast.function),
-          body: ast.body,
-          error: ast.errors,
-        })
-      );
-    }
+  const ast = file.ast;
+  if (ast) {
+    connection.console.log(
+      JSON.stringify({
+        type: ast.type,
+        import: ast.import,
+        // global: Array.from(ast.global),
+        // static: Array.from(ast.static),
+        // function: Array.from(ast.function),
+        body: ast.body,
+        error: ast.errors,
+      })
+    );
+  }
 
-    // parse errors
-    [...file.parseErrors, ...file.interpreteErrors].forEach(error => {
-      const diagnotic: Diagnostic = {
-        severity: DiagnosticSeverity.Error,
-        range: {
-          start: textDocument.positionAt(
-            error.start ?? error.token.startOffset
-          ),
-          end: textDocument.positionAt(error.end ?? error.token.endOffset + 1),
-        },
-        message: error.message,
-      };
-      diagnostics.push(diagnotic);
-    });
-
-    // bracket errors
-    if (!file.ignoreBracketErrors) {
-      // TODO
-    }
-
-    // send error diagnostics to client
-    connection.sendDiagnostics({ uri: textDocument.uri, diagnostics });
+  // parse errors
+  [...file.parseErrors, ...file.interpreteErrors].forEach((error) => {
+    const diagnotic: Diagnostic = {
+      severity: DiagnosticSeverity.Error,
+      range: {
+        start: textDocument.positionAt(error.start ?? error.token.startOffset),
+        end: textDocument.positionAt(error.end ?? error.token.endOffset + 1),
+      },
+      message: error.message,
+    };
+    diagnostics.push(diagnotic);
   });
+
+  // bracket errors
+  if (!file.ignoreBracketErrors) {
+    // TODO
+  }
+
+  // send error diagnostics to client
+  connection.sendDiagnostics({ uri: textDocument.uri, diagnostics });
 }
 
 // 当 Watch 的文件确实发生变动
-connection.onDidChangeWatchedFiles(async _change => {
+connection.onDidChangeWatchedFiles(async (_change) => {
   for (const change of _change.changes) {
     if (
       new URL(change.uri).hash === new URL(zGlobal.baseFolder + '/.zsrc').hash
@@ -285,13 +341,15 @@ connection.onDidChangeWatchedFiles(async _change => {
 
 // 负责处理自动补全的条目
 // 发送较为简单的消息
-connection.onCompletion(async completion => {
+connection.onCompletion(async (completion) => {
+  await zGlobal.bus.wait('all-zs-parsed');
+
   // 获得当前正在修改的 document
   const document = documents.get(completion.textDocument.uri);
   // 当前补全的位置
   const position = completion.position;
   // 当前补全的 offset
-  const offset = document.offsetAt(position);
+  let offset = document.offsetAt(position);
   // 当前文档的文本
   const content = document.getText();
   // Tokens
@@ -302,17 +360,25 @@ connection.onCompletion(async completion => {
   let triggerCharacter = completion.context.triggerCharacter;
   if (manuallyTriggerred) {
     let token = findToken(tokens, offset - 1);
-    if (
-      token.exist ||
-      (token.found.token && token.found.token.image === 'import')
-    ) {
-      triggerCharacter = token.found.token.image;
+    if (token.exist) {
+      if (['#', '.', ':', '<'].includes(token.found.token.image)) {
+        triggerCharacter = token.found.token.image;
+      } else {
+        const prev = findToken(tokens, token.found.token.startOffset - 1);
+        if (
+          prev.exist &&
+          ['#', '.', ':', '<'].includes(prev.found.token.image)
+        ) {
+          triggerCharacter = prev.found.token.image;
+          offset = token.found.token.startOffset;
+        }
+      }
     } else {
       token = findToken(zGlobal.zsFiles.get(document.uri).comments, offset - 1);
       if (token.exist && token.found.token.image === '#') {
         triggerCharacter = token.found.token.image;
       } else {
-        return null;
+        triggerCharacter = '';
       }
     }
   }
@@ -321,13 +387,26 @@ connection.onCompletion(async completion => {
   switch (triggerCharacter) {
     case '#':
       return PreProcessorCompletions;
-    case 'import':
-      return ImportCompletion([]);
+    case ' ':
+      // import<space>
+      let s;
+      do {
+        offset--;
+        s = document.getText({
+          start: document.positionAt(offset),
+          end: document.positionAt(offset + 1),
+        });
+      } while (s === ' ');
+      let token = findToken(tokens, offset - 1);
+      if (token.exist && token.found.token.image === 'import') {
+        return ImportCompletion([]);
+      }
+      return [];
     case '.':
       // Find 'a.b.' when typing the last dot
       const now = findToken(tokens, offset - 1);
       if (!now.exist) {
-        return;
+        return [];
       }
       let pos,
         prev = [];
@@ -362,15 +441,16 @@ connection.onCompletion(async completion => {
       }
 
       if (
-        BracketHandlers.map(handler => handler.name).indexOf(predecessor[0]) ===
-        -1
+        BracketHandlers.map((handler) => handler.name).indexOf(
+          predecessor[0]
+        ) === -1
       ) {
         predecessor = ['item', ...predecessor];
       }
 
       return BracketHandlerMap.get(predecessor[0])
         ? BracketHandlerMap.get(predecessor[0]).next(predecessor)
-        : null;
+        : [];
     case '<':
       const setting = await zGlobal.documentSettings.get(
         completion.textDocument.uri
@@ -382,7 +462,7 @@ connection.onCompletion(async completion => {
         : [];
 
     default:
-      return [...Keywords];
+      return [...GlobalCompletion()];
   }
 });
 
@@ -402,11 +482,11 @@ connection.onCompletionResolve(
           ) {
             return BracketHandlerMap.get(item.data.predecessor[0]).detail(item);
           } else {
-            return;
+            return { label: '' };
           }
         case '<':
           const handler = DetailBracketHandlers.find(
-            i => i.label === item.label
+            (i) => i.label === item.label
           );
           if (handler) {
             return handler;
@@ -415,14 +495,18 @@ connection.onCompletionResolve(
         // and jumped to default
         // so `else return;` can be deleted
         default:
-          return;
+          return { label: '' };
       }
     }
   }
 );
 
 // Handle mouse onHover event
-connection.onHover(hoverPosition => {
+connection.onHover((hoverPosition) => {
+  if (!zGlobal.bus.isFinished('all-zs-parsed')) {
+    return;
+  }
+
   // 获得当前正在修改的 document
   const document = documents.get(hoverPosition.textDocument.uri);
 
@@ -434,11 +518,11 @@ connection.onHover(hoverPosition => {
   // Get offset of current mouse
   const offset = document.offsetAt(hoverPosition.position);
 
-  const parsedFile = zGlobal.zsFiles.get(hoverPosition.textDocument.uri);
+  const parsedFile = zGlobal.zsFiles.get(document.uri);
 
   // FIXME: find out why parsedFile is not parsed
-  if (!parsedFile.isParsed) {
-    parsedFile.parse();
+  if (!parsedFile.isInterpreted) {
+    parsedFile.interprete();
   }
 
   // Debug
@@ -468,7 +552,7 @@ connection.onHover(hoverPosition => {
   }
 });
 
-connection.onDocumentFormatting(params => {
+connection.onDocumentFormatting((params) => {
   const document = documents.get(params.textDocument.uri);
   return null;
 });

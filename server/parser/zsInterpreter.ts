@@ -53,7 +53,7 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
       start: 0,
       body: [],
       subtables: [],
-      table: new Map(),
+      table: {}, // Scope table
       errors: [],
     };
 
@@ -67,32 +67,37 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
     }
 
     if (ctx.GlobalStaticDeclaration) {
-      // ctx.GlobalStaticDeclaration.forEach((element: any) => {
-      //   const child: ASTNodeDeclare = this.visit(element);
-      //   if (!node[child.type].has(child.vName)) {
-      //     node[child.type].set(child.vName, node);
-      //     pushBody(node, node);
-      //   } else {
-      //     // TODO: Error
-      //   }
-      // });
+      ctx.GlobalStaticDeclaration.forEach((element: any) => {
+        const child: ASTNodeDeclare = this.visit(element);
+        if (child.vName in node.table) {
+          // TODO: Error
+          return;
+        }
+        node.table[child.vName] = {
+          name: child.vName,
+          type: 'variable',
+          global: child.type === 'global',
+          static: child.type === 'static',
+        };
+        pushBody(node, child);
+      });
     }
 
     if (ctx.FunctionDeclaration) {
       ctx.FunctionDeclaration.forEach((element: any) => {
         const func: ASTNodeFunction = this.visit(element);
-        if (node.table.has(func.fName)) {
+        if (func.fName in node.table) {
           // TODO: Error
           return;
         }
         // TODO: Override
         // FIXME: global/static
-        node.table.set(func.fName, {
+        node.table[func.fName] = {
           name: func.fName,
           type: 'function',
           global: false,
           static: false,
-        });
+        };
         pushBody(node, func);
       });
     }
@@ -124,7 +129,10 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
     if (ctx.alias && ctx.alias.length && ctx.alias.length === 1) {
       token.alias = ctx.alias[0].image;
     }
-    if (!get(zGlobal.packages, token.package)) {
+    if (
+      !get(zGlobal.packages, token.package) &&
+      !get(zGlobal.directory, token.package)
+    ) {
       token.errors.push({
         start: token.start,
         end: ctx.SEMICOLON[0].endOffset,
@@ -449,9 +457,17 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
   }
 
   protected Package(ctx: NodeContext): ASTNodePackage {
+    const all: Array<IToken> = [];
+    for (const k in ctx) {
+      if (k === 'DOT') {
+        continue;
+      }
+      all.push(...ctx[k]);
+    }
+    all.sort((a, b) => a.startOffset - b.startOffset);
     return {
       type: 'package',
-      item: ctx.IDENTIFIER.map((identifier: IToken) => identifier.image),
+      item: all.map((t) => t.image),
       start: (ctx.IDENTIFIER[0] as IToken).startOffset,
     };
   }
@@ -518,9 +534,10 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
     }
 
     if (ctx.SQBR_OPEN) {
-      return {
+      type = {
         type: 'A_ARRAY',
-        start: type.start,
+        start: 0,
+        // start: type.start,
         // level: ctx.SQBR_OPEN.length,
         // body: [type],
       };

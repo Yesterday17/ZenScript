@@ -4,7 +4,7 @@
   "description": "For Modpack makers.",
   "repository": "https://github.com/Yesterday17/ZenScript",
   "license": "MIT",
-  "version": "0.1.41",
+  "version": "0.1.43",
   "publisher": "yesterday17",
   "engines": {
     "vscode": "^1.41.0"
@@ -186,12 +186,7 @@
         "path": "./language/syntaxes/zenscript.tmLanguage.json"
       }
     ],
-    "snippets": [
-      {
-        "language": "zenscript",
-        "path": "./language/snippets/global.json"
-      }
-    ]
+    "snippets": []
   },
   "scripts": {
     "package": "vsce package",

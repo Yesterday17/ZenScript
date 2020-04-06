@@ -1,6 +1,9 @@
 import { ILexingResult, IToken } from 'chevrotain';
+import set from 'set-value';
 import { Connection } from 'vscode-languageserver';
 import { URI } from 'vscode-uri';
+import { ASTBasicProgram, ASTNodeProgram } from '../parser';
+import { ZSBasicInterpreter } from '../parser/zsBasicInterpreter';
 import { ZSInterpreter } from '../parser/zsInterpreter';
 import { ZSLexer } from '../parser/zsLexer';
 import { ZSParser } from '../parser/zsParser';
@@ -8,6 +11,7 @@ import { IPriority } from '../preprocessor/priority';
 import { preparePreprocessors } from '../preprocessor/zsPreProcessor';
 import * as fs from '../utils/fs';
 import * as path from '../utils/path';
+import { zGlobal } from './global';
 
 enum ParseStep {
   NotLoaded = 0,
@@ -19,6 +23,7 @@ enum ParseStep {
 export class ZenParsedFile implements IPriority {
   name: string;
   uri: URI;
+  pkg: string; // package: scripts.xx.yy
   private connection: Connection;
 
   get path() {
@@ -27,7 +32,7 @@ export class ZenParsedFile implements IPriority {
   content: string;
 
   private step: ParseStep = ParseStep.NotLoaded;
-  get isParsed() {
+  get isInterpreted() {
     return this.step === ParseStep.Parsed;
   }
 
@@ -38,7 +43,8 @@ export class ZenParsedFile implements IPriority {
   parseErrors: any[] = [];
   interpreteErrors: any[] = [];
   cst: any;
-  ast: any;
+  basicAst: ASTBasicProgram;
+  ast: ASTNodeProgram;
   bracketHandlers: any;
 
   priority: number = 0;
@@ -47,8 +53,9 @@ export class ZenParsedFile implements IPriority {
   norun: boolean = false;
   nowarn: boolean = false;
 
-  constructor(uri: URI, connection: Connection) {
+  constructor(uri: URI, pkg: string, connection: Connection) {
     this.uri = uri;
+    this.pkg = pkg;
     this.connection = connection;
     this.name = path.basename(uri);
   }
@@ -67,26 +74,37 @@ export class ZenParsedFile implements IPriority {
     return this;
   }
 
-  lex() {
+  parse() {
     // Lexing
     this.lexResult = ZSLexer.tokenize(this.content);
     this.comments = this.lexResult.groups['COMMENT'];
-    this.tokens = this.lexResult.tokens.filter(t => !this.comments.includes(t));
+    this.tokens = this.lexResult.tokens.filter(
+      (t) => !this.comments.includes(t)
+    );
 
     // Preprocess
     preparePreprocessors(this.comments, this.path);
     this.step = ParseStep.Preprocessed;
-    return this;
-  }
 
-  /**
-   * Parse file, generate cst & ast.
-   */
-  parse() {
     // Parsing
     this.cst = { ...ZSParser.parse(this.tokens) };
     this.parseErrors = [...ZSParser.errors];
 
+    // Basic interprete
+    if (this.parseErrors.length === 0) {
+      this.basicAst = ZSBasicInterpreter.visit(this.cst);
+      for (const val in this.basicAst.scope) {
+        set(zGlobal.directory, this.pkg + '.' + val, this.basicAst.scope[val]);
+      }
+    }
+
+    return this;
+  }
+
+  /**
+   * Interprete file, generate ast.
+   */
+  interprete() {
     if (this.parseErrors.length === 0) {
       // Interpreting
       this.ast = ZSInterpreter.visit(this.cst);

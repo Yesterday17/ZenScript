@@ -19,16 +19,20 @@ export function basename(uri: URI): string {
 
 export async function AllZSFiles(
   dPath: URI,
-  connection: Connection
-): Promise<URI[]> {
-  const result: URI[] = [];
+  connection: Connection,
+  pkg: string
+): Promise<{ uri: URI; pkg: string }[]> {
+  const result: { uri: URI; pkg: string }[] = [];
   const data = await fs.readDirectory(dPath, connection);
   for (const [name, type] of data) {
     const content = join(dPath, name);
     if (fs.isFile(type) && posix.extname(name) === '.zs') {
-      result.push(content);
+      result.push({
+        uri: content,
+        pkg: pkg + '.' + name.substr(0, name.length - 3),
+      });
     } else if (fs.isDirectory(type)) {
-      result.push(...(await AllZSFiles(content, connection)));
+      result.push(...(await AllZSFiles(content, connection, pkg + '.' + name)));
     }
   }
   return result;
