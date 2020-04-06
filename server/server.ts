@@ -202,6 +202,7 @@ connection.onSignatureHelp((params) => {
     if (!prev.exist || prev.found.token.image !== '.') {
       break;
     }
+    token = prev;
   }
   call = call.substring(0, call.length - 1);
 
