@@ -36,6 +36,8 @@ export interface ZSGlobal {
 
   // .zsrc File
   rcFile: ZSRCFile;
+  directory: Directory;
+
   mods: Map<string, ModEntry>;
   items: RCStorage;
   enchantments: Map<string, EnchantmentEntry[]>;
@@ -48,6 +50,10 @@ export interface ZSGlobal {
 
   // zs file
   zsFiles: Map<string, ZenParsedFile>;
+}
+
+export interface Directory {
+  [key: string]: string | Directory;
 }
 
 export interface ZenFunction {

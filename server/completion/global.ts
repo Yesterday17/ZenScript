@@ -1,5 +1,4 @@
-import { CompletionItem } from 'vscode';
-import { CompletionItemKind } from 'vscode-languageserver';
+import { CompletionItem, CompletionItemKind } from 'vscode-languageserver';
 import { zGlobal } from '../api/global';
 
 export function GlobalCompletion(): CompletionItem[] {

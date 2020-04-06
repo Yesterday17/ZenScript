@@ -37,16 +37,26 @@ export interface ASTScope extends ASTNode {
   //
 }
 
+export interface ASTBasicProgram {
+  scope: { [key: string]: 'function' | 'global' | 'static' };
+}
+
 export interface ASTNodeProgram extends ASTNode, ASTBody, ASTSymbolTable {
   type: string = 'Program';
-  import: Map;
+  import: any[];
+  table: { [key: string]: ASTSymbol };
 }
 
 export interface ASTNodeDeclare extends ASTNode {
+  type: 'global' | 'static' | 'var' | 'val';
   vName: string;
   // TODO: Fix variable type
   vType: string;
   value: ASTNode;
+}
+
+export interface ASTNodeGlobalDeclare extends ASTNodeDeclare {
+  type: 'global' | 'static';
 }
 
 export interface ASTNodeFunction extends ASTNode, ASTBody {

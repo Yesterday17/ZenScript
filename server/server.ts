@@ -124,19 +124,25 @@ connection.onInitialized(async () => {
     await reloadRCFile(connection);
 
     // Load all files
-    const files = await AllZSFiles(URI.parse(zGlobal.baseFolder), connection);
-    for (const file of files) {
+    zGlobal.bus.revoke('all-zs-parsed');
+    const files = await AllZSFiles(
+      URI.parse(zGlobal.baseFolder),
+      connection,
+      'scripts'
+    );
+    for (const { uri, pkg } of files) {
       // new parsed file
-      const zsFile = new ZenParsedFile(file, connection);
+      const zsFile = new ZenParsedFile(uri, pkg, connection);
       // save to map first
-      zGlobal.zsFiles.set(file.toString(), zsFile);
+      zGlobal.zsFiles.set(uri.toString(), zsFile);
       // then lex(not parse to save time)
       await zsFile.load();
-      zsFile.lex();
+      zsFile.parse();
     }
   } else {
     zGlobal.isProject = false;
   }
+  zGlobal.bus.finish('all-zs-parsed');
 
   // Isn't a folder warn.
   if (
@@ -256,62 +262,67 @@ documents.onDidChangeContent(async (event) => {
 
 async function validateTextDocument(textDocument: TextDocument): Promise<void> {
   // Wait for .zsrc file
-  zGlobal.bus.on('rc-loaded', async () => {
-    let settings = await getdocumentSettings(textDocument.uri);
-    const diagnostics: Diagnostic[] = [];
+  await zGlobal.bus.wait('rc-loaded');
+  await zGlobal.bus.wait('all-zs-parsed');
+  let settings = await getdocumentSettings(textDocument.uri);
+  const diagnostics: Diagnostic[] = [];
 
-    // save lexing result
-    if (!zGlobal.zsFiles.has(textDocument.uri)) {
-      zGlobal.zsFiles.set(
-        textDocument.uri,
-        new ZenParsedFile(URI.parse(textDocument.uri), connection)
-      );
-    }
+  // save lexing result
+  if (!zGlobal.zsFiles.has(textDocument.uri)) {
+    let pkg =
+      'scripts.' +
+      textDocument.uri
+        .substr(zGlobal.baseFolder.length)
+        .replace(/^\//g, '')
+        .replace(/[\/\\]/g, '.')
+        .replace(/\.zs$/, '');
+    zGlobal.zsFiles.set(
+      textDocument.uri,
+      new ZenParsedFile(URI.parse(textDocument.uri), pkg, connection)
+    );
+  }
 
-    const file = zGlobal.zsFiles
-      .get(textDocument.uri)
-      .text(textDocument.getText())
-      .lex()
-      .parse();
+  const file = zGlobal.zsFiles
+    .get(textDocument.uri)
+    .text(textDocument.getText())
+    .parse()
+    .interprete();
 
-    const ast = file.ast;
-    if (ast) {
-      connection.console.log(
-        JSON.stringify({
-          type: ast.type,
-          import: ast.import,
-          // global: Array.from(ast.global),
-          // static: Array.from(ast.static),
-          // function: Array.from(ast.function),
-          body: ast.body,
-          error: ast.errors,
-        })
-      );
-    }
+  const ast = file.ast;
+  if (ast) {
+    connection.console.log(
+      JSON.stringify({
+        type: ast.type,
+        import: ast.import,
+        // global: Array.from(ast.global),
+        // static: Array.from(ast.static),
+        // function: Array.from(ast.function),
+        body: ast.body,
+        error: ast.errors,
+      })
+    );
+  }
 
-    // parse errors
-    [...file.parseErrors, ...file.interpreteErrors].forEach((error) => {
-      const diagnotic: Diagnostic = {
-        severity: DiagnosticSeverity.Error,
-        range: {
-          start: textDocument.positionAt(
-            error.start ?? error.token.startOffset
-          ),
-          end: textDocument.positionAt(error.end ?? error.token.endOffset + 1),
-        },
-        message: error.message,
-      };
-      diagnostics.push(diagnotic);
-    });
-
-    // bracket errors
-    if (!file.ignoreBracketErrors) {
-      // TODO
-    }
-
-    // send error diagnostics to client
-    connection.sendDiagnostics({ uri: textDocument.uri, diagnostics });
+  // parse errors
+  [...file.parseErrors, ...file.interpreteErrors].forEach((error) => {
+    const diagnotic: Diagnostic = {
+      severity: DiagnosticSeverity.Error,
+      range: {
+        start: textDocument.positionAt(error.start ?? error.token.startOffset),
+        end: textDocument.positionAt(error.end ?? error.token.endOffset + 1),
+      },
+      message: error.message,
+    };
+    diagnostics.push(diagnotic);
   });
+
+  // bracket errors
+  if (!file.ignoreBracketErrors) {
+    // TODO
+  }
+
+  // send error diagnostics to client
+  connection.sendDiagnostics({ uri: textDocument.uri, diagnostics });
 }
 
 // 当 Watch 的文件确实发生变动
@@ -329,6 +340,8 @@ connection.onDidChangeWatchedFiles(async (_change) => {
 // 负责处理自动补全的条目
 // 发送较为简单的消息
 connection.onCompletion(async (completion) => {
+  await zGlobal.bus.wait('all-zs-parsed');
+
   // 获得当前正在修改的 document
   const document = documents.get(completion.textDocument.uri);
   // 当前补全的位置
@@ -370,7 +383,7 @@ connection.onCompletion(async (completion) => {
       // Find 'a.b.' when typing the last dot
       const now = findToken(tokens, offset - 1);
       if (!now.exist) {
-        return;
+        return [];
       }
       let pos,
         prev = [];
@@ -414,7 +427,7 @@ connection.onCompletion(async (completion) => {
 
       return BracketHandlerMap.get(predecessor[0])
         ? BracketHandlerMap.get(predecessor[0]).next(predecessor)
-        : null;
+        : [];
     case '<':
       const setting = await zGlobal.documentSettings.get(
         completion.textDocument.uri
@@ -482,7 +495,7 @@ connection.onHover((hoverPosition) => {
 
   // FIXME: find out why parsedFile is not parsed
   if (!parsedFile.isParsed) {
-    parsedFile.parse();
+    parsedFile.interprete();
   }
 
   // Debug

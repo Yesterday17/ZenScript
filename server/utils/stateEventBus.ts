@@ -18,12 +18,18 @@ export class StateEventBus {
     }
   }
 
+  public wait(name: string) {
+    return new Promise((resolve) => {
+      this.on(name, resolve);
+    });
+  }
+
   public finish(name: string, ...args: any[]) {
     if (this.states.has(name)) {
       this.states.set(name, [true, args]);
       this.events.set(
         name,
-        this.events.get(name).filter(e => e(args), false)
+        this.events.get(name).filter((e) => e(args), false)
       );
     }
   }

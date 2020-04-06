@@ -1,7 +1,6 @@
 import { ZSGlobal } from '.';
 import { RCStorage } from '../utils/rcStorage';
 import { StateEventBus } from '../utils/stateEventBus';
-import { EnchantmentEntry, EntityEntry, FluidEntry, ModEntry } from './rcFile';
 import { defaultSettings } from './setting';
 
 export const zGlobal: ZSGlobal = {
@@ -20,6 +19,9 @@ export const zGlobal: ZSGlobal = {
 
   // .zsrc file
   rcFile: undefined,
+
+  // directory
+  directory: {},
 
   mods: new Map(),
   items: new RCStorage('item', 3),
