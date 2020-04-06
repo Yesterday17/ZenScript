@@ -1,37 +1,68 @@
-import { ZSGlobal } from '.';
+import { Directory, ZenFunction, ZenScriptSettings } from '.';
 import { RCStorage } from '../utils/rcStorage';
 import { StateEventBus } from '../utils/stateEventBus';
+import {
+  EnchantmentEntry,
+  EntityEntry,
+  FluidEntry,
+  ModEntry,
+  ZSRCFile,
+} from './rcFile';
 import { defaultSettings } from './setting';
+import { ZenParsedFile } from './zenParsedFile';
 
-export const zGlobal: ZSGlobal = {
-  // global state bus
-  bus: new StateEventBus(),
+class Global {
+  bus: StateEventBus;
 
-  // whether it's a project
-  isProject: true,
+  isProject: boolean;
+  baseFolder: string;
+  setting: ZenScriptSettings;
+  documentSettings: Map<string, Thenable<ZenScriptSettings>>;
 
-  // root folder of a project
-  baseFolder: '',
+  // .zsrc File
+  rcFile: ZSRCFile;
+  directory: Directory;
 
-  // global setting(default)
-  setting: defaultSettings,
-  documentSettings: new Map(),
+  mods: Map<string, ModEntry>;
+  items: RCStorage;
+  enchantments: Map<string, EnchantmentEntry[]>;
+  entities: Map<string, EntityEntry[]>;
+  fluids: Map<string, FluidEntry>;
+  packages: Object;
 
-  // .zsrc file
-  rcFile: undefined,
-
-  // directory
-  directory: {},
-
-  mods: new Map(),
-  items: new RCStorage('item', 3),
-  enchantments: new Map(),
-  entities: new Map(),
-  fluids: new Map(),
-  packages: {},
-  global: new Map(),
-  globalFunction: new Map(),
+  global: Map<String, Object>;
+  globalFunction: Map<String, ZenFunction[]>;
 
   // zs file
-  zsFiles: new Map(),
-};
+  zsFiles: Map<string, ZenParsedFile>;
+
+  constructor() {
+    this.reset();
+  }
+
+  reset() {
+    this.bus = new StateEventBus();
+
+    this.isProject = false;
+    this.baseFolder = '';
+
+    this.setting = defaultSettings;
+    this.documentSettings = new Map();
+
+    this.rcFile = undefined;
+    this.directory = {};
+
+    this.mods = new Map();
+    this.items = new RCStorage('item', 3);
+    this.enchantments = new Map();
+    this.entities = new Map();
+    this.fluids = new Map();
+    this.packages = {};
+    this.global = new Map();
+    this.globalFunction = new Map();
+
+    this.zsFiles = new Map();
+  }
+}
+
+export const zGlobal = new Global();
