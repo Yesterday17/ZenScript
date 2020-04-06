@@ -503,6 +503,10 @@ connection.onCompletionResolve(
 
 // Handle mouse onHover event
 connection.onHover((hoverPosition) => {
+  if (!zGlobal.bus.isFinished('all-zs-parsed')) {
+    return;
+  }
+
   // 获得当前正在修改的 document
   const document = documents.get(hoverPosition.textDocument.uri);
 
@@ -514,10 +518,10 @@ connection.onHover((hoverPosition) => {
   // Get offset of current mouse
   const offset = document.offsetAt(hoverPosition.position);
 
-  const parsedFile = zGlobal.zsFiles.get(hoverPosition.textDocument.uri);
+  const parsedFile = zGlobal.zsFiles.get(document.uri);
 
   // FIXME: find out why parsedFile is not parsed
-  if (!parsedFile.isParsed) {
+  if (!parsedFile.isInterpreted) {
     parsedFile.interprete();
   }
 

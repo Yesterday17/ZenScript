@@ -32,7 +32,7 @@ export class ZenParsedFile implements IPriority {
   content: string;
 
   private step: ParseStep = ParseStep.NotLoaded;
-  get isParsed() {
+  get isInterpreted() {
     return this.step === ParseStep.Parsed;
   }
 
