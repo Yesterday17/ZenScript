@@ -70,10 +70,20 @@ export class ZenScriptAdvancedCompletion implements ZenScriptService {
 
     let trigger = completion.context.triggerCharacter;
     if (manuallyTriggerred) {
+      let s;
+      do {
+        offset--;
+        s = document.getText({
+          start: document.positionAt(offset),
+          end: document.positionAt(offset + 1),
+        });
+      } while (s === ' ');
       let token = findToken(tokens, offset - 1);
       if (token.exist) {
         if (['#', '.', ':', '<'].includes(token.found.token.image)) {
           trigger = token.found.token.image;
+        } else if (token.found.token.image === 'import') {
+          trigger = ' ';
         } else {
           const prev = findToken(tokens, token.found.token.startOffset - 1);
           if (
