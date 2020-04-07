@@ -12,12 +12,39 @@ import { Registerable } from '../api/Registerable';
 
 class ZSStatusBar implements Registerable {
   bar: StatusBarItem;
+  active: boolean;
+  interval: NodeJS.Timeout;
 
   constructor() {
     this.bar = window.createStatusBarItem(StatusBarAlignment.Left, 10);
     this.bar.command = '';
     this.bar.color = '#32CD32';
     this.bar.text = '$(sync~spin) ZenScript';
+    this.active = false;
+    this.interval = undefined;
+  }
+
+  activate() {
+    this.bar.text = '$(check) ZenScript';
+  }
+
+  reset() {
+    this.bar.text = '$(sync~spin) ZenScript';
+  }
+
+  check(client: LanguageClient) {
+    client.sendRequest(ServerStatusRequestType).then((v) => {
+      if (v) {
+        this.activate();
+      } else {
+        this.reset();
+      }
+      this.show();
+    });
+  }
+
+  startInterval(client: LanguageClient) {
+    this.interval = setInterval(() => this.check(client), 1000);
   }
 
   register(client: LanguageClient, context: ExtensionContext) {
@@ -26,23 +53,21 @@ class ZSStatusBar implements Registerable {
 
     // Register texteditor change event
     context.subscriptions.push(
-      window.onDidChangeActiveTextEditor((e: TextEditor) => {
-        // FIXME: do not send multiple times
+      window.onDidChangeActiveTextEditor(async (e: TextEditor) => {
         if (e && e.document) {
-          const isZSFile =
-            path.extname(e.document.uri.fsPath).toLowerCase() === '.zs';
-          if (isZSFile) {
-            client.sendRequest(ServerStatusRequestType).then(() => {
-              this.bar.text = '$(check) ZenScript';
-              this.show();
-            });
-            return;
+          if (
+            path.extname(e.document.uri.fsPath).toLowerCase() === '.zs' &&
+            !this.interval
+          ) {
+            this.check(client);
+            this.startInterval(client);
           }
+        } else {
+          clearInterval(this.interval);
+          this.hide();
         }
       })
     );
-
-    this.show();
   }
 
   show() {

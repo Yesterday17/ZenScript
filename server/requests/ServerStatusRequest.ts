@@ -5,10 +5,10 @@ import { zGlobal } from '../api/global';
 export class ServerStatusGetRequest {
   static onRequest(connection: Connection) {
     connection.onRequest(ServerStatusRequestType, async () => {
-      if (zGlobal.isProject) {
-        await zGlobal.bus.wait('rc-loaded');
+      if (zGlobal.isProject && !zGlobal.bus.isFinished('rc-loaded')) {
+        return false;
       }
-      await zGlobal.bus.wait('all-zs-parsed');
+      return zGlobal.bus.isFinished('all-zs-parsed');
     });
   }
 }
