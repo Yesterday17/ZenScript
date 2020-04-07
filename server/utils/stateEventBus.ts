@@ -4,17 +4,19 @@ export class StateEventBus {
   private states: Map<String, [boolean, any[]]> = new Map();
   private events: Map<String, StateEventBusCallback[]> = new Map();
 
-  public on(name: string, callback: any) {
+  public on(name: string, callback?: any) {
     if (!this.states.has(name)) {
       this.states.set(name, [false, undefined]);
       this.events.set(name, []);
     }
 
     let [fin, args] = this.states.get(name);
-    if (fin) {
-      callback(args);
-    } else {
-      this.events.get(name).push(callback);
+    if (callback) {
+      if (fin) {
+        callback(args);
+      } else {
+        this.events.get(name).push(callback);
+      }
     }
   }
 
@@ -41,7 +43,7 @@ export class StateEventBus {
 
   public revoke(name: string) {
     if (!this.states.has(name) || this.states.get(name)) {
-      this.states.set(name, [false, undefined]);
+      this.on(name);
     }
   }
 
