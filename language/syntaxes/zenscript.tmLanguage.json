@@ -5,7 +5,6 @@
   "patterns": [
     { "include": "#preprocessor" },
     { "include": "#import" },
-    { "include": "#keywords" },
     { "include": "#functions" },
     { "include": "#function-call" },
     { "include": "#dots" },
@@ -14,6 +13,7 @@
     { "include": "#comments" },
     { "include": "#string" },
     { "include": "#values" },
+    { "include": "#keywords" },
     { "include": "#constants" },
     { "include": "#operators" }
   ],
@@ -33,43 +33,6 @@
           "name": "punctuation.terminator.zenscript"
         }
       }
-    },
-    "keywords": {
-      "patterns": [
-        {
-          "comment": "control keywords",
-          "name": "keyword.control.zenscript",
-          "match": "\\b(in|has|void|as|version|for|return|while|break|instanceof)\\b"
-        },
-        {
-          "comment": "storage keywords",
-          "name": "storage.type.zenscript",
-          "match": "\\b(any|bool|byte|short|int|long|float|double|string)\\b"
-        },
-        {
-          "comment": "as holder keywords",
-          "name": "storage.type.zenscript",
-          "match": "\\b(?<=(\\sas\\s)|(\\sinstanceof\\s))[a-zA-Z]+\\b"
-        },
-        {
-          "comment": "function keyword",
-          "name": "storage.type.function.zenscript",
-          "match": "\\b(function)\\b"
-        },
-        {
-          "comment": "statement keywords",
-          "name": "keyword.control.conditional.zenscript",
-          "match": "\\b(if|else)\\b"
-        },
-        {
-          "name": "keyword.control.class.zenscript",
-          "match": "\\b(zenClass|frigginClass)\\b"
-        },
-        {
-          "name": "keyword.control.class.constructor.zenscript",
-          "match": "\\b(zenConstructor|frigginConstructor)\\b"
-        }
-      ]
     },
     "functions": {
       "comment": "functions",
@@ -182,6 +145,43 @@
         {
           "name": "constant.numeric.float.zenscript",
           "match": "\\b-?([0-9]+)\\.[0-9]+([eE][+-]?[0-9]+)?[fFdD]?\\b"
+        }
+      ]
+    },
+    "keywords": {
+      "patterns": [
+        {
+          "comment": "control keywords",
+          "name": "keyword.control.zenscript",
+          "match": "\\b(in|has|void|as|version|for|return|while|break|instanceof)\\b"
+        },
+        {
+          "comment": "storage keywords",
+          "name": "storage.type.zenscript",
+          "match": "\\b(any|bool|byte|short|int|long|float|double|string)\\b"
+        },
+        {
+          "comment": "as holder keywords",
+          "name": "storage.type.zenscript",
+          "match": "\\b(?<=(\\sas\\s)|(\\sinstanceof\\s))[a-zA-Z]+\\b"
+        },
+        {
+          "comment": "function keyword",
+          "name": "storage.type.function.zenscript",
+          "match": "\\b(function)\\b"
+        },
+        {
+          "comment": "statement keywords",
+          "name": "keyword.control.conditional.zenscript",
+          "match": "\\b(if|else)\\b"
+        },
+        {
+          "name": "keyword.control.class.zenscript",
+          "match": "\\b(zenClass|frigginClass)\\b"
+        },
+        {
+          "name": "keyword.control.class.constructor.zenscript",
+          "match": "\\b(zenConstructor|frigginConstructor)\\b"
         }
       ]
     },

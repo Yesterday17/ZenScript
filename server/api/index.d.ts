@@ -31,12 +31,3 @@ export interface ZenFunction {
   params: string[];
   return: string;
 }
-
-export interface Directory {
-  [key: string]: string | Directory;
-}
-
-export interface ZenFunction {
-  params: string[];
-  return: string;
-}
