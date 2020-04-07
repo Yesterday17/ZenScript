@@ -60,41 +60,21 @@ export class ZenScriptAdvancedCompletion implements ZenScriptService {
     const position = completion.position;
     // 当前补全的 offset
     let offset = document.offsetAt(position);
-    // 当前文档的文本
-    const content = document.getText();
     // Tokens
     const tokens = zGlobal.zsFiles.get(document.uri).tokens;
-    // triggerred automatically or manually
-    const manuallyTriggerred =
-      completion.context.triggerCharacter === undefined;
+
+    const now = document.positionAt(offset - 1);
+    const first = { line: now.line, character: 0 };
+    const line = document.getText({
+      start: first,
+      end: position,
+    });
 
     let trigger = completion.context.triggerCharacter;
+    const manuallyTriggerred = trigger === undefined;
     if (manuallyTriggerred) {
-      let s;
-      do {
-        offset--;
-        s = document.getText({
-          start: document.positionAt(offset),
-          end: document.positionAt(offset + 1),
-        });
-      } while (s === ' ');
       let token = findToken(tokens, offset - 1);
-      if (token.exist) {
-        if (['#', '.', ':', '<'].includes(token.found.token.image)) {
-          trigger = token.found.token.image;
-        } else if (token.found.token.image === 'import') {
-          trigger = ' ';
-        } else {
-          const prev = findToken(tokens, token.found.token.startOffset - 1);
-          if (
-            prev.exist &&
-            ['#', '.', ':', '<'].includes(prev.found.token.image)
-          ) {
-            trigger = prev.found.token.image;
-            offset = token.found.token.startOffset;
-          }
-        }
-      } else {
+      if (!token.exist) {
         const token = findToken(
           zGlobal.zsFiles.get(document.uri).comments,
           offset - 1
@@ -103,12 +83,34 @@ export class ZenScriptAdvancedCompletion implements ZenScriptService {
           trigger = token.found.token.image;
         }
       }
+      if (!trigger) {
+        if (line.match(/import [^\.]*$/)) {
+          trigger = 'import';
+        } else if (line.match(/<([^:<]+:)+[^:<]*(>?)/)) {
+          trigger = ':';
+        } else if (token.exist) {
+          if (['#', '.', ':', '<'].includes(token.found.token.image)) {
+            trigger = token.found.token.image;
+          } else {
+            const prev = findToken(tokens, token.found.token.startOffset - 1);
+            if (
+              prev.exist &&
+              ['#', '.', ':', '<'].includes(prev.found.token.image)
+            ) {
+              trigger = prev.found.token.image;
+              offset = token.found.token.startOffset;
+            }
+          }
+        }
+      }
     }
 
     // TODO: Finish AutoCompletion of `.`
     switch (trigger) {
       case '#':
         return PreProcessorCompletions;
+      case 'import':
+        return ImportCompletion([]);
       case ' ':
         // import<space>
         let s;
@@ -145,26 +147,9 @@ export class ZenScriptAdvancedCompletion implements ZenScriptService {
         break;
       case ':':
         // 位于 <> 内的内容
-        let predecessor: string[] = [];
-
-        // Find inBracket
-        // TODO: Use Token instead.
-        for (let i = offset - 1; i >= 0; i--) {
-          // 当 : 与 < 不再同一行时直接返回 null
-          if (content[i] === '\n') {
-            return;
-          }
-
-          if (content[i] === '<') {
-            predecessor = document
-              .getText({
-                start: document.positionAt(i + 1),
-                end: document.positionAt(offset - 1),
-              })
-              .split(':');
-            break;
-          }
-        }
+        let predecessor = line
+          .substring(line.lastIndexOf('<') + 1, line.lastIndexOf(':'))
+          .split(':');
 
         if (
           BracketHandlers.map((handler) => handler.name).indexOf(
