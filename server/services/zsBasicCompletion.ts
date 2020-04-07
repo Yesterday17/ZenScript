@@ -14,7 +14,7 @@ export class ZenScriptBasicCompletion implements ZenScriptService {
    */
   test(client: ClientInfo): boolean {
     return (
-      // !client.isFolder &&
+      !client.isFolder &&
       !!client.capability.textDocument &&
       !!client.capability.textDocument.completion &&
       !!client.capability.textDocument.completion.completionItem

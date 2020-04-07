@@ -13,6 +13,7 @@ import {
 import { ItemBracketHandler } from '../completion/bracketHandler/item';
 import { GlobalCompletion } from '../completion/global';
 import { ImportCompletion } from '../completion/import';
+import { PreProcessorCompletions } from '../completion/preprocessor/preprocessors';
 import { DOT, IMPORT } from '../parser/zsLexer';
 import { findToken } from '../utils/findToken';
 import { getdocumentSettings } from '../utils/setting';
@@ -36,6 +37,7 @@ export class ZenScriptAdvancedCompletion implements ZenScriptService {
     }
     // #preprocessor
     service.capabilities.completionProvider.triggerCharacters.push(
+      '#',
       '.',
       ':',
       '<',
@@ -66,24 +68,37 @@ export class ZenScriptAdvancedCompletion implements ZenScriptService {
     const manuallyTriggerred =
       completion.context.triggerCharacter === undefined;
 
-    let triggerCharacter = completion.context.triggerCharacter;
+    let trigger = completion.context.triggerCharacter;
     if (manuallyTriggerred) {
       let token = findToken(tokens, offset - 1);
       if (token.exist) {
-        if (['.', ':', '<'].includes(token.found.token.image)) {
-          triggerCharacter = token.found.token.image;
+        if (['#', '.', ':', '<'].includes(token.found.token.image)) {
+          trigger = token.found.token.image;
         } else {
           const prev = findToken(tokens, token.found.token.startOffset - 1);
-          if (prev.exist && ['.', ':', '<'].includes(prev.found.token.image)) {
-            triggerCharacter = prev.found.token.image;
+          if (
+            prev.exist &&
+            ['#', '.', ':', '<'].includes(prev.found.token.image)
+          ) {
+            trigger = prev.found.token.image;
             offset = token.found.token.startOffset;
           }
+        }
+      } else {
+        const token = findToken(
+          zGlobal.zsFiles.get(document.uri).comments,
+          offset - 1
+        );
+        if (token.exist && token.found.token.image === '#') {
+          trigger = token.found.token.image;
         }
       }
     }
 
     // TODO: Finish AutoCompletion of `.`
-    switch (triggerCharacter) {
+    switch (trigger) {
+      case '#':
+        return PreProcessorCompletions;
       case ' ':
         // import<space>
         let s;
