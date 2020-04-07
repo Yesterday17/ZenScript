@@ -36,11 +36,11 @@ export class StateEventBus {
 
   public isFinished(name: string): boolean {
     const g = this.states.get(name);
-    return g && g[0];
+    return !!g && !!g[0];
   }
 
   public revoke(name: string) {
-    if (this.states.has(name) && this.states.get(name)) {
+    if (!this.states.has(name) || this.states.get(name)) {
       this.states.set(name, [false, undefined]);
     }
   }

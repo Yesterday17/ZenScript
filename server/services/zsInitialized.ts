@@ -1,5 +1,6 @@
 import { InitializeResult, WorkspaceFolder } from 'vscode-languageserver';
 import { URI } from 'vscode-uri';
+import { ServerStatusRequestType } from '../../api/requests/ServerStatusRequest';
 import { zGlobal } from '../api/global';
 import { ZenParsedFile } from '../api/zenParsedFile';
 import * as fs from '../utils/fs';
@@ -12,6 +13,24 @@ import { ZenScriptActiveService } from './zsService';
 export class ZenScriptInitialized extends ZenScriptActiveService {
   apply(service: InitializeResult): void {
     zGlobal.conn.onInitialized(async () => {
+      const i = setInterval(() => {
+        zGlobal.conn.sendRequest(
+          ServerStatusRequestType,
+          (() => {
+            if (zGlobal.isProject && !zGlobal.bus.isFinished('rc-loaded')) {
+              return false;
+            }
+            const result = zGlobal.bus.isFinished('all-zs-parsed');
+
+            if (result) {
+              // TODO
+              // clearInterval(i);
+            }
+            return result;
+          })()
+        );
+      }, 500);
+
       // Override the global setting.
       zGlobal.setting = await zGlobal.conn.workspace.getConfiguration({
         scopeUri: 'resource',
@@ -44,6 +63,7 @@ export class ZenScriptInitialized extends ZenScriptActiveService {
 
       // whether the target folder exists
       if (folder) {
+        zGlobal.isProject = true;
         zGlobal.baseFolder = folder.uri;
         await reloadRCFile(zGlobal.conn);
 
@@ -63,8 +83,6 @@ export class ZenScriptInitialized extends ZenScriptActiveService {
           await zsFile.load();
           zsFile.parse();
         }
-      } else {
-        zGlobal.isProject = false;
       }
       zGlobal.bus.finish('all-zs-parsed');
 
