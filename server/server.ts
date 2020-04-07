@@ -5,7 +5,6 @@ import {
   Diagnostic,
   DiagnosticSeverity,
   DidChangeConfigurationNotification,
-  Hover,
   InitializeParams,
   ProposedFeatures,
   SignatureHelpTriggerKind,
@@ -31,6 +30,9 @@ import { ImportCompletion } from './completion/import';
 import { PreProcessorCompletions } from './completion/preprocessor/preprocessors';
 import { DOT, IDENTIFIER, IMPORT } from './parser/zsLexer';
 import { applyRequests } from './requests/requests';
+import { ZenScriptFormat } from './services/zsFormat';
+import { ZenScriptHover } from './services/zsHover';
+import { ZenScriptShutdown } from './services/zsShutdown';
 import { findToken } from './utils/findToken';
 import * as fs from './utils/fs';
 import * as path from './utils/path';
@@ -42,7 +44,7 @@ import { reloadRCFile } from './utils/zsrcFile';
 let connection = createConnection(ProposedFeatures.all);
 
 // 创建一个简单的文本文档管理器，这个管理器仅仅支持同步所有文档
-let documents = new TextDocuments(TextDocument);
+export const documents = new TextDocuments(TextDocument);
 
 // capabilities
 let hasConfigurationCapability: boolean = false;
@@ -502,60 +504,11 @@ connection.onCompletionResolve(
 );
 
 // Handle mouse onHover event
-connection.onHover((hoverPosition) => {
-  if (!zGlobal.bus.isFinished('all-zs-parsed')) {
-    return;
-  }
+ZenScriptHover.register(connection);
 
-  // 获得当前正在修改的 document
-  const document = documents.get(hoverPosition.textDocument.uri);
+ZenScriptFormat.register(connection);
 
-  // when document doesn't exist, return void
-  if (!document) {
-    return Promise.resolve(undefined);
-  }
-
-  // Get offset of current mouse
-  const offset = document.offsetAt(hoverPosition.position);
-
-  const parsedFile = zGlobal.zsFiles.get(document.uri);
-
-  // FIXME: find out why parsedFile is not parsed
-  if (!parsedFile.isInterpreted) {
-    parsedFile.interprete();
-  }
-
-  // Debug
-  connection.console.log(JSON.stringify(parsedFile.cst));
-  connection.console.log(JSON.stringify(parsedFile.ast));
-
-  let token = findToken(parsedFile.tokens, offset);
-  if (!token.exist) {
-    token = findToken(parsedFile.comments, offset);
-  }
-
-  if (token.exist) {
-    const hover: Hover = {
-      contents: {
-        kind: 'plaintext',
-        value: token.found.token.tokenType.name,
-      },
-      range: {
-        start: document.positionAt(token.found.token.startOffset),
-        end: document.positionAt(token.found.token.endOffset + 1),
-      },
-    };
-    return Promise.resolve(hover);
-  } else {
-    // Token not found, which means that hover is not needed
-    return Promise.resolve(undefined);
-  }
-});
-
-connection.onDocumentFormatting((params) => {
-  const document = documents.get(params.textDocument.uri);
-  return null;
-});
+ZenScriptShutdown.register(connection);
 
 // apply all requests
 applyRequests(connection);

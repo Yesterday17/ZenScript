@@ -23,33 +23,13 @@ export interface ZenScriptSettings {
   modIdItemCompletion: boolean;
 }
 
-/**
- * Global
- */
-export interface ZSGlobal {
-  bus: StateEventBus;
+export interface Directory {
+  [key: string]: string | Directory;
+}
 
-  isProject: boolean;
-  baseFolder: string;
-  setting: ZenScriptSettings;
-  documentSettings: Map<string, Thenable<ZenScriptSettings>>;
-
-  // .zsrc File
-  rcFile: ZSRCFile;
-  directory: Directory;
-
-  mods: Map<string, ModEntry>;
-  items: RCStorage;
-  enchantments: Map<string, EnchantmentEntry[]>;
-  entities: Map<string, EntityEntry[]>;
-  fluids: Map<string, FluidEntry>;
-  packages: Object;
-
-  global: Map<String, Object>;
-  globalFunction: Map<String, ZenFunction[]>;
-
-  // zs file
-  zsFiles: Map<string, ZenParsedFile>;
+export interface ZenFunction {
+  params: string[];
+  return: string;
 }
 
 export interface Directory {
