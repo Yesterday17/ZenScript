@@ -17,7 +17,7 @@ class ZSStatusBar implements Registerable {
     this.bar = window.createStatusBarItem(StatusBarAlignment.Left, 10);
     this.bar.command = '';
     this.bar.color = '#32CD32';
-    this.bar.text = 'ZenScript (Loading...)';
+    this.bar.text = '$(sync~spin) ZenScript';
   }
 
   register(client: LanguageClient, context: ExtensionContext) {
@@ -27,12 +27,13 @@ class ZSStatusBar implements Registerable {
     // Register texteditor change event
     context.subscriptions.push(
       window.onDidChangeActiveTextEditor((e: TextEditor) => {
+        // FIXME: do not send multiple times
         if (e && e.document) {
           const isZSFile =
             path.extname(e.document.uri.fsPath).toLowerCase() === '.zs';
           if (isZSFile) {
-            client.sendRequest(ServerStatusRequestType).then((items) => {
-              this.bar.text = 'ZenScript';
+            client.sendRequest(ServerStatusRequestType).then(() => {
+              this.bar.text = '$(check) ZenScript';
               this.show();
             });
             return;

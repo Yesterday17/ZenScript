@@ -1,11 +1,18 @@
-import { Connection, Hover, HoverParams } from 'vscode-languageserver';
+import { Hover, HoverParams, InitializeResult } from 'vscode-languageserver';
 import { zGlobal } from '../api/global';
-import { documents } from '../server';
 import { findToken } from '../utils/findToken';
+import { ClientInfo, ZenScriptService } from './zsService';
 
-export class ZenScriptHover {
-  static register(connection: Connection) {
-    connection.onHover(ZenScriptHover.doHover);
+export class ZenScriptHover implements ZenScriptService {
+  test(client: ClientInfo): boolean {
+    return (
+      !!client.capability.textDocument && !!client.capability.textDocument.hover
+    );
+  }
+
+  apply(service: InitializeResult): void {
+    service.capabilities.hoverProvider = true;
+    zGlobal.conn.onHover(ZenScriptHover.doHover);
   }
 
   static async doHover(hoverPosition: HoverParams): Promise<Hover> {
@@ -14,7 +21,7 @@ export class ZenScriptHover {
     }
 
     // 获得当前正在修改的 document
-    const document = documents.get(hoverPosition.textDocument.uri);
+    const document = zGlobal.documents.get(hoverPosition.textDocument.uri);
 
     // when document doesn't exist, return void
     if (!document) {

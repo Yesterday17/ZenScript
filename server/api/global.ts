@@ -1,4 +1,13 @@
+import {
+  Connection,
+  createConnection,
+  ProposedFeatures,
+  RemoteConsole,
+  TextDocuments,
+} from 'vscode-languageserver';
+import { TextDocument } from 'vscode-languageserver-textdocument';
 import { Directory, ZenFunction, ZenScriptSettings } from '.';
+import { ClientInfo } from '../services/zsService';
 import { RCStorage } from '../utils/rcStorage';
 import { StateEventBus } from '../utils/stateEventBus';
 import {
@@ -8,16 +17,34 @@ import {
   ModEntry,
   ZSRCFile,
 } from './rcFile';
-import { defaultSettings } from './setting';
 import { ZenParsedFile } from './zenParsedFile';
 
 class Global {
+  ///////// Connection /////////
+  /**
+   * Current language server connection
+   */
+  conn: Connection;
+  /**
+   * Document manager
+   */
+  documents: TextDocuments<TextDocument>;
+  /**
+   * Subscribe-based event bus
+   */
   bus: StateEventBus;
+  client: ClientInfo;
+
+  ///////// Utils /////////
+  /**
+   * Connection console
+   */
+  console: RemoteConsole;
 
   isProject: boolean;
   baseFolder: string;
   setting: ZenScriptSettings;
-  documentSettings: Map<string, Thenable<ZenScriptSettings>>;
+  documentSettings: Map<string, Promise<ZenScriptSettings>>;
 
   // .zsrc File
   rcFile: ZSRCFile;
@@ -40,13 +67,34 @@ class Global {
     this.reset();
   }
 
+  preInit() {
+    // 创建一个服务的连接，连接使用 Node 的 IPC 作为传输
+    // 并且引入所有 LSP 特性, 包括 preview / proposed
+    this.conn = createConnection(ProposedFeatures.all);
+    this.console = this.conn.console;
+
+    // 创建一个简单的文本文档管理器，这个管理器仅仅支持同步所有文档
+    this.documents = new TextDocuments(TextDocument);
+  }
+
+  postInit() {
+    // listen zGlobal.connection to trigger events
+    this.documents.listen(this.conn);
+  }
+
+  listen() {
+    this.conn.listen();
+  }
+
   reset() {
+    this.conn = undefined;
+    this.documents = undefined;
     this.bus = new StateEventBus();
 
     this.isProject = false;
     this.baseFolder = '';
 
-    this.setting = defaultSettings;
+    this.setting = undefined;
     this.documentSettings = new Map();
 
     this.rcFile = undefined;
@@ -62,6 +110,17 @@ class Global {
     this.globalFunction = new Map();
 
     this.zsFiles = new Map();
+
+    ///////// Utils /////////
+    this.console = undefined;
+  }
+
+  ready(): boolean {
+    return (
+      this.conn !== undefined &&
+      this.rcFile !== undefined &&
+      this.console !== undefined
+    );
   }
 }
 

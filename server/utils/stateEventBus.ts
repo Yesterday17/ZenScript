@@ -44,4 +44,9 @@ export class StateEventBus {
       this.states.set(name, [false, undefined]);
     }
   }
+
+  public reset() {
+    this.states.clear();
+    this.events.clear();
+  }
 }
