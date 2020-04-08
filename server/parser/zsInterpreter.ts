@@ -130,6 +130,7 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
       token.alias = ctx.alias[0].image;
     }
     if (
+      zGlobal.isProject &&
       !get(zGlobal.packages, token.package) &&
       !get(zGlobal.directory, token.package)
     ) {

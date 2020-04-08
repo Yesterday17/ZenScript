@@ -5,14 +5,16 @@ import {
   FileSystemReadFileStringRequest,
   FileSystemStatRequest,
 } from './fileSystem';
+import { StatusBarRequest } from './statusBar';
 
 const Requests = [
   FileSystemReadFileRequest,
   FileSystemReadFileStringRequest,
   FileSystemReadDirectoryRequest,
   FileSystemStatRequest,
+  StatusBarRequest,
 ];
 
 export function applyRequests(client: LanguageClient) {
-  Requests.forEach(req => req.onRequest(client));
+  Requests.forEach((req) => req.onRequest(client));
 }

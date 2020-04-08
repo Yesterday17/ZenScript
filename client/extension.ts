@@ -62,13 +62,14 @@ export function activate(context: ExtensionContext) {
   CommandHistoryEntryAdd.register(client, context);
   CommandOpenFile.register(client, context);
 
-  // Register status bar
-  StatusBar.register(client, context);
-
   // Register when language server is reqdy
   client.onReady().then(() => {
     // Register requests
     applyRequests(client);
+
+    // Register status bar
+    StatusBar.register(client, context);
+
     // Priority TreeDataView
     PriorityTreeDataView.register(client, context);
   });

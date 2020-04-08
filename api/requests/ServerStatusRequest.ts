@@ -1,7 +1,8 @@
-import { RequestType0 } from 'vscode-jsonrpc';
+import { RequestType } from 'vscode-jsonrpc';
 
-export const ServerStatusRequestType: RequestType0<
-  any,
-  any,
-  any
-> = new RequestType0('zenscript/serverStatus');
+export const ServerStatusRequestType: RequestType<
+  boolean,
+  null,
+  null,
+  null
+> = new RequestType('zenscript/serverStatus');
