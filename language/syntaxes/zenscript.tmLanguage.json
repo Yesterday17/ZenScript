@@ -7,6 +7,7 @@
     { "include": "#import" },
     { "include": "#brackethandlers" },
     { "include": "#keywords" },
+    { "include": "#comments" },
     { "include": "#operators" },
     { "include": "#functions" },
     { "include": "#function-call" },
@@ -14,7 +15,6 @@
     { "include": "#var" },
     { "include": "#static" },
     { "include": "#global" },
-    { "include": "#comments" },
     { "include": "#string" },
     { "include": "#values" },
     { "include": "#constants" }
@@ -107,6 +107,20 @@
         }
       ]
     },
+    "comments": {
+      "patterns": [
+        {
+          "name": "comment.block.zenscript",
+          "begin": "/\\*",
+          "end": "\\*/"
+        },
+        {
+          "name": "comment.line.zenscript",
+          "begin": "//|#",
+          "end": "$\\n?"
+        }
+      ]
+    },
     "operators": {
       "patterns": [
         {
@@ -165,20 +179,6 @@
       "comment": "global",
       "match": "\\b(global)\\b",
       "name": "storage.modifier.global"
-    },
-    "comments": {
-      "patterns": [
-        {
-          "name": "comment.block.zenscript",
-          "begin": "/\\*",
-          "end": "\\*/"
-        },
-        {
-          "name": "comment.line.zenscript",
-          "begin": "//|#",
-          "end": "$\\n?"
-        }
-      ]
     },
     "string": {
       "patterns": [
