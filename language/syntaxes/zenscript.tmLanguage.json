@@ -5,6 +5,7 @@
   "patterns": [
     { "include": "#preprocessor" },
     { "include": "#import" },
+    { "include": "#brackethandlers" },
     { "include": "#keywords" },
     { "include": "#operators" },
     { "include": "#functions" },
@@ -13,7 +14,6 @@
     { "include": "#var" },
     { "include": "#static" },
     { "include": "#global" },
-    { "include": "#brackethandlers" },
     { "include": "#comments" },
     { "include": "#string" },
     { "include": "#values" },
@@ -43,6 +43,17 @@
         {
           "name": "support.class",
           "match": "\\b\\w+\\b"
+        }
+      ]
+    },
+    "brackethandlers": {
+      "name": "variable.language.brackethandler.zenscript",
+      "begin": "\\<(?=[^<>]+:)",
+      "end": "\\>",
+      "patterns": [
+        {
+          "name": "variable.parameter.brackethandler.zenscript",
+          "match": "[^<>]+"
         }
       ]
     },
@@ -154,17 +165,6 @@
       "comment": "global",
       "match": "\\b(global)\\b",
       "name": "storage.modifier.global"
-    },
-    "brackethandlers": {
-      "name": "variable.language.brackethandler.zenscript",
-      "begin": "\\<(?=[^<> ]+:)",
-      "end": "\\>",
-      "patterns": [
-        {
-          "name": "variable.parameter.brackethandler.zenscript",
-          "match": "[^<> ]+"
-        }
-      ]
     },
     "comments": {
       "patterns": [
