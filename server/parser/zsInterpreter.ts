@@ -3,12 +3,20 @@ import get from 'get-value';
 import {
   ASTBody,
   ASTNode,
+  ASTNodeAddExpression,
+  ASTNodeAndAndExpression,
+  ASTNodeAndExpression,
   ASTNodeArray,
+  ASTNodeCompareExpression,
+  ASTNodeConditionalExpression,
   ASTNodeDeclare,
   ASTNodeFunction,
   ASTNodeMap,
+  ASTNodeOrExpression,
+  ASTNodeOrOrExpression,
   ASTNodePackage,
   ASTNodeProgram,
+  ASTNodeXorExpression,
   NodeContext,
 } from '.';
 import { zGlobal } from '../api/global';
@@ -303,11 +311,30 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
     };
   }
 
-  protected AddExpression(ctx: NodeContext): ASTNode {
-    return {
-      type: 'exp-add',
-      start: 0,
+  protected AddExpression(ctx: NodeContext): ASTNodeAddExpression {
+    let node: ASTNodeAddExpression = {
+      type: 'AddExpression',
+      start: 0, // TODO
+      end: 0,
+      operator: '',
+      left: this.visit(ctx.MultiplyExpression[0]),
     };
+
+    // TODO: operator
+    if (ctx.MultiplyExpression.length > 1) {
+      for (let offset = 1; offset < ctx.MultiplyExpression.length; offset++) {
+        node = {
+          type: 'AddExpression',
+          start: 0, // TODO
+          end: 0,
+
+          left: node,
+          right: this.visit(ctx.MultiplyExpression[offset]),
+        };
+      }
+    }
+
+    return node;
   }
 
   protected MultiplyExpression(ctx: NodeContext): ASTNode {
@@ -317,53 +344,181 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
     };
   }
 
-  protected CompareExpression(ctx: NodeContext): ASTNode {
+  protected CompareExpression(ctx: NodeContext): ASTNodeCompareExpression {
     return {
-      type: 'exp-comp',
-      start: 0,
+      type: 'CompareExpression',
+      start: 0, // TODO
+      end: 0,
+
+      operator: (() => {
+        if (ctx.EQ) {
+          return '==';
+        } else if (ctx.NOT_EQ) {
+          return '!=';
+        } else if (ctx.LT) {
+          return '<';
+        } else if (ctx.LTEQ) {
+          return '<=';
+        } else if (ctx.GT) {
+          return '>';
+        } else if (ctx.GTEQ) {
+          return '>=';
+        } else {
+          // IN
+          return 'in';
+        }
+      })(),
+      left: this.visit(ctx.AddExpression[0]),
+      right:
+        ctx.AddExpression.length > 1
+          ? this.visit(ctx.AddExpression[1])
+          : undefined,
     };
   }
 
-  protected AndExpression(ctx: NodeContext): ASTNode {
-    return {
-      type: 'exp-and',
-      start: 0,
+  protected AndExpression(ctx: NodeContext): ASTNodeAndExpression {
+    let node: ASTNodeAndExpression = {
+      type: 'AndExpression',
+      start: 0, // TODO
+      end: 0,
+
+      left: this.visit(ctx.CompareExpression[0]),
     };
+
+    if (ctx.CompareExpression.length > 1) {
+      for (let offset = 1; offset < ctx.CompareExpression.length; offset++) {
+        node = {
+          type: 'AndExpression',
+          start: 0, // TODO
+          end: 0,
+
+          left: node,
+          right: this.visit(ctx.CompareExpression[offset]),
+        };
+      }
+    }
+
+    return node;
   }
 
-  protected AndAndExpression(ctx: NodeContext): ASTNode {
-    return {
-      type: 'exp-andand',
-      start: 0,
+  protected AndAndExpression(ctx: NodeContext): ASTNodeAndAndExpression {
+    let node: ASTNodeAndAndExpression = {
+      type: 'AndAndExpression',
+      start: 0, // TODO
+      end: 0,
+
+      left: this.visit(ctx.OrExpression[0]),
     };
+
+    if (ctx.OrExpression.length > 1) {
+      for (let offset = 1; offset < ctx.OrExpression.length; offset++) {
+        node = {
+          type: 'AndAndExpression',
+          start: 0, // TODO
+          end: 0,
+
+          left: node,
+          right: this.visit(ctx.OrExpression[offset]),
+        };
+      }
+    }
+
+    return node;
   }
 
-  protected OrExpression(ctx: NodeContext): ASTNode {
-    return {
-      type: 'exp-or',
-      start: 0,
+  protected OrExpression(ctx: NodeContext): ASTNodeOrExpression {
+    let node: ASTNodeOrExpression = {
+      type: 'OrExpression',
+      start: 0, // TODO
+      end: 0,
+
+      left: this.visit(ctx.XorExpression[0]),
     };
+
+    if (ctx.XorExpression.length > 1) {
+      for (let offset = 1; offset < ctx.XorExpression.length; offset++) {
+        node = {
+          type: 'OrExpression',
+          start: 0, // TODO
+          end: 0,
+
+          left: node,
+          right: this.visit(ctx.XorExpression[offset]),
+        };
+      }
+    }
+
+    return node;
   }
 
-  protected OrOrExpression(ctx: NodeContext): ASTNode {
-    return {
-      type: 'exp-oror',
-      start: 0,
+  protected OrOrExpression(ctx: NodeContext): ASTNodeOrOrExpression {
+    let node: ASTNodeOrOrExpression = {
+      type: 'OrOrExpression',
+      start: 0, // TODO
+      end: 0,
+
+      left: this.visit(ctx.AndAndExpression[0]),
     };
+
+    if (ctx.AndAndExpression.length > 1) {
+      for (let offset = 1; offset < ctx.AndAndExpression.length; offset++) {
+        node = {
+          type: 'OrOrExpression',
+          start: 0, // TODO
+          end: 0,
+
+          left: node,
+          right: this.visit(ctx.AndAndExpression[offset]),
+        };
+      }
+    }
+
+    return node;
   }
 
-  protected XorExpression(ctx: NodeContext): ASTNode {
-    return {
-      type: 'exp-xor',
+  protected XorExpression(ctx: NodeContext): ASTNodeXorExpression {
+    let node: ASTNodeXorExpression = {
+      type: 'XorExpression',
       start: 0,
+      end: 0,
+
+      left: this.visit(ctx.AndExpression[0]),
     };
+
+    if (ctx.AndExpression.length > 1) {
+      for (let offset = 1; offset < ctx.AndExpression.length; offset++) {
+        node = {
+          type: 'XorExpression',
+          start: 0, // TODO
+          end: 0,
+
+          left: node,
+          right: this.visit(ctx.AndExpression[offset]),
+        };
+      }
+    }
+
+    return node;
   }
 
-  protected ConditionalExpression(ctx: NodeContext): ASTNode {
-    return {
-      type: 'exp-cond',
-      start: 0,
+  protected ConditionalExpression(
+    ctx: NodeContext
+  ): ASTNodeConditionalExpression {
+    const result: ASTNodeConditionalExpression = {
+      type: 'ConditionalExpression',
+      start: 0, // TODO: calculate start and end
+      end: 0,
+
+      condition: this.visit(ctx.OrOrExpression[0]),
     };
+
+    // condition ? valid : invalid
+    if (ctx.ConditionalExpression) {
+      result.valid = this.visit(ctx.OrOrExpression[1]);
+      result.invalid = this.visit(ctx.ConditionalExpression);
+    }
+
+    return result;
   }
 
   protected PostfixExpression(ctx: NodeContext): ASTNode {

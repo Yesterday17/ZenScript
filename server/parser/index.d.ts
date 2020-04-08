@@ -66,6 +66,65 @@ export interface ASTNodeFunction extends ASTNode, ASTBody {
   fType: any;
 }
 
+export interface ASTNodeConditionalExpression extends ASTNode {
+  type: 'ConditionalExpression';
+  condition: ASTNode;
+
+  valid?: ASTNodeOrOrExpression;
+  invalid?: ASTNodeOrOrExpression;
+}
+
+export interface ASTNodeOrOrExpression extends ASTNode {
+  type: 'OrOrExpression';
+
+  left: ASTNodeOrOrExpression | ASTNodeAndAndExpression;
+  right?: ASTNodeAndAndExpression;
+}
+
+export interface ASTNodeAndAndExpression extends ASTNode {
+  type: 'AndAndExpression';
+
+  left: ASTNodeAndAndExpression | ASTNodeOrExpression;
+  right?: ASTNodeOrExpression;
+}
+
+export interface ASTNodeOrExpression extends ASTNode {
+  type: 'OrExpression';
+
+  left: ASTNodeOrExpression | ASTNodeXorExpression;
+  right?: ASTNodeXorExpression;
+}
+
+export interface ASTNodeXorExpression extends ASTNode {
+  type: 'XorExpression';
+
+  left: ASTNodeXorExpression | ASTNodeAndExpression;
+  right?: ASTNodeAndExpression;
+}
+
+export interface ASTNodeAndExpression extends ASTNode {
+  type: 'AndExpression';
+
+  left: ASTNodeAndExpression | ASTNode;
+  right?: ASTNode;
+}
+
+export interface ASTNodeCompareExpression extends ASTNode {
+  type: 'CompareExpression';
+
+  operator: string;
+  left: ASTNodeAddExpression;
+  right?: ASTNodeAddExpression;
+}
+
+export interface ASTNodeAddExpression extends ASTNode {
+  type: 'AddExpression';
+
+  operator: string;
+  left: ASTNodeAddExpression | ASTNodeMultiplyExpression;
+  right?: ASTNodeMultiplyExpression; // TODO
+}
+
 export interface ASTNodePackage extends ASTNode {
   type: string = 'package';
   item: string[];
