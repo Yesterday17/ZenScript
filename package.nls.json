@@ -7,17 +7,10 @@
   "zenscript.autoshowLTCompletion.desc": "Whether to show autocompletion after typing <.",
   "zenscript.modIdItemCompletion.desc": "Whether to show modid autocompletion with bracketHandlers.",
   "zenscript.trace.server.desc": "Traces the communication between VS Code and the language server.",
-  "zenscript.trace.server.verbosity.desc": "Controls the verbosity of the trace.",
-  "zenscript.trace.server.format.desc": "Controls the output format of the trace.",
-  "zenscript.trace.server.channel.desc": "Controls the output channel of the trace.",
-  "zenscript.trace.server.streamPort.desc": "Controls the stream port of the trace.",
 
   "zenscript.command.gethistoryentry.title": "Show History Entries",
   "zenscript.command.gethistoryentry.desc": "Show history entries you've typed before.",
 
   "zenscript.command.addhistoryentry.title": "Add History Entry",
-  "zenscript.command.addhistoryentry.desc": "Add a new history entry.",
-
-  "zenscript.command.startStreaming.title": "Start ZenScript Streaming",
-  "zenscript.command.startStreaming.desc": "Start ZenScript Streaming."
+  "zenscript.command.addhistoryentry.desc": "Add a new history entry."
 }

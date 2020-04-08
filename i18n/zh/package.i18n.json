@@ -8,6 +8,9 @@
   "zenscript.modIdItemCompletion.desc": "是否启用<modid:item_name>的自动补全（缺省item:）。",
   "zenscript.trace.server.desc": " 跟踪 VSCode 与 Language server之间的交互。",
 
-  "zenscript.command.historyentry.title": "显示历史条目",
-  "zenscript.command.historyentry.desc": "显示你输入的历史条目。"
+  "zenscript.command.gethistoryentry.title": "显示历史条目",
+  "zenscript.command.gethistoryentry.desc": "显示你输入的历史条目。",
+
+  "zenscript.command.addhistoryentry.title": "新增历史条目",
+  "zenscript.command.addhistoryentry.desc": "新增一条历史条目。"
 }
