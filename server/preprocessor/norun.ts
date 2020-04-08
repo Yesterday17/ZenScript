@@ -1,6 +1,6 @@
-import { IPreProcessor } from '../api/IPreProcessor';
-import { HashNoRun } from '../completion/preprocessor/norun';
 import { zGlobal } from '../api/global';
+import { HashNoRun } from '../completion/preprocessor/norun';
+import { IPreProcessor } from './IPreProcessor';
 
 class NoRunPreProcessor implements IPreProcessor {
   completion = HashNoRun;

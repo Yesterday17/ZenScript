@@ -1,6 +1,6 @@
 import { CompletionItem, CompletionItemKind } from 'vscode-languageserver';
-import { IBracketHandler } from '../../api/IBracketHandler';
 import { zGlobal } from '../../api/global';
+import { IBracketHandler } from './IBracketHandler';
 
 class Ore implements IBracketHandler {
   name = 'ore';

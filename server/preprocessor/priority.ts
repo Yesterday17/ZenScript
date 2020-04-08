@@ -1,6 +1,6 @@
-import { IPreProcessor } from '../api/IPreProcessor';
-import { HashPriority } from '../completion/preprocessor/priotiry';
 import { zGlobal } from '../api/global';
+import { HashPriority } from '../completion/preprocessor/priotiry';
+import { IPreProcessor } from './IPreProcessor';
 
 class PriorityPreProcessor implements IPreProcessor {
   completion = HashPriority;

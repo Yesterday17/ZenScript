@@ -1,8 +1,8 @@
 import { CompletionItem, CompletionItemKind } from 'vscode-languageserver';
 import { zGlobal } from '../../api/global';
-import { IBracketHandler } from '../../api/IBracketHandler';
 import { ItemEntry } from '../../api/rcFile';
 import { BracketHandlerKind } from './bracketHandlers';
+import { IBracketHandler } from './IBracketHandler';
 
 class Item implements IBracketHandler {
   name = 'item';
@@ -40,7 +40,7 @@ class Item implements IBracketHandler {
     switch (predecessor.length) {
       case 1:
         // item:[modid]
-        const result = zGlobal.items.keys.map(key => {
+        const result = zGlobal.items.keys.map((key) => {
           return {
             label: key,
             kind: BracketHandlerKind,

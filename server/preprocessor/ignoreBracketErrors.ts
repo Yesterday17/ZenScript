@@ -1,6 +1,6 @@
-import { IPreProcessor } from '../api/IPreProcessor';
-import { HashIgnoreBracketErrors } from '../completion/preprocessor/ignoreBracketErrors';
 import { zGlobal } from '../api/global';
+import { HashIgnoreBracketErrors } from '../completion/preprocessor/ignoreBracketErrors';
+import { IPreProcessor } from './IPreProcessor';
 
 class IgnoreBracketErrorsPreProcessor implements IPreProcessor {
   completion = HashIgnoreBracketErrors;

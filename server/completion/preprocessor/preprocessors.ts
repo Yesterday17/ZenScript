@@ -24,7 +24,7 @@ export const IPreProcessorCompletions = [
 ];
 
 export const PreProcessorCompletions: CompletionItem[] = IPreProcessorCompletions.map(
-  item => {
+  (item) => {
     return {
       label: item.name,
       detail: (!item.supported ? '[NOT SUPPORTED]\n' : '') + item.description,

@@ -1,13 +1,13 @@
-import { CompletionItemKind, CompletionItem } from 'vscode-languageserver';
+import { CompletionItem, CompletionItemKind } from 'vscode-languageserver';
 import { CreativeTabBracketHandler } from './creativetab';
 import { DamageSourceBracketHandler } from './damageSource';
 import { EnchantmentBracketHandler } from './enchantment';
 import { EntityBracketHandler } from './entity';
-import { LiquidBracketHandler, FluidBracketHandler } from './liquid';
+import { IBracketHandler } from './IBracketHandler';
+import { ItemBracketHandler } from './item';
+import { FluidBracketHandler, LiquidBracketHandler } from './liquid';
 import { OreBracketHandler } from './ore';
 import { PotionBracketHandler } from './potion';
-import { ItemBracketHandler } from './item';
-import { IBracketHandler } from '../../api/IBracketHandler';
 
 export const BracketHandlerKind: CompletionItemKind = CompletionItemKind.Unit;
 
@@ -26,7 +26,7 @@ export const BracketHandlers: IBracketHandler[] = [
 
 export const BracketHandlerMap: Map<string, IBracketHandler> = new Map();
 
-BracketHandlers.forEach(handler => {
+BracketHandlers.forEach((handler) => {
   BracketHandlerMap.set(handler.handler.label, handler);
 });
 

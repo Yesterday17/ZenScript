@@ -1,5 +1,5 @@
 import { CompletionItem } from 'vscode-languageserver';
-import { IBracketHandler } from '../../api/IBracketHandler';
+import { IBracketHandler } from './IBracketHandler';
 
 class Potion implements IBracketHandler {
   name = 'potion';

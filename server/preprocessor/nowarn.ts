@@ -1,6 +1,6 @@
-import { IPreProcessor } from '../api/IPreProcessor';
-import { HashNoWarn } from '../completion/preprocessor/nowarn';
 import { zGlobal } from '../api/global';
+import { HashNoWarn } from '../completion/preprocessor/nowarn';
+import { IPreProcessor } from './IPreProcessor';
 
 class NoWarnPreProcessor implements IPreProcessor {
   completion = HashNoWarn;

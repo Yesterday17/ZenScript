@@ -1,4 +1,4 @@
-import { IPreProcessorCompletion } from '../../api/IPreProcessor';
+import { IPreProcessorCompletion } from './IPreProcessor';
 
 export const HashDisableSearchTree: IPreProcessorCompletion = {
   name: 'disable_search_tree',

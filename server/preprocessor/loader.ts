@@ -1,6 +1,6 @@
 import { zGlobal } from '../api/global';
-import { IPreProcessor } from '../api/IPreProcessor';
 import { HashLoader } from '../completion/preprocessor/loader';
+import { IPreProcessor } from './IPreProcessor';
 
 class LoaderPreProcessor implements IPreProcessor {
   completion = HashLoader;

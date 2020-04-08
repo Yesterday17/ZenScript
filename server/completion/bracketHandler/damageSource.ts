@@ -1,5 +1,5 @@
 import { CompletionItem, CompletionItemKind } from 'vscode-languageserver';
-import { IBracketHandler } from '../../api/IBracketHandler';
+import { IBracketHandler } from './IBracketHandler';
 
 class DamageSource implements IBracketHandler {
   name = 'damageSource';
@@ -42,7 +42,7 @@ class DamageSource implements IBracketHandler {
         'FALLING_BLOCK',
         'DRAGON_BREATH',
         'FIREWORKS',
-      ].map(key => {
+      ].map((key) => {
         return {
           label: key,
           detail: 'Vanilla',

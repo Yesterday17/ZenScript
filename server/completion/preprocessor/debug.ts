@@ -1,4 +1,4 @@
-import { IPreProcessorCompletion } from '../../api/IPreProcessor';
+import { IPreProcessorCompletion } from './IPreProcessor';
 
 export const HashDebug: IPreProcessorCompletion = {
   name: 'debug',

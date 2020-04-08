@@ -1,9 +1,4 @@
-export interface IPreProcessorCompletion {
-  name: string;
-  description: string;
-
-  supported: boolean;
-}
+import { IPreProcessorCompletion } from '../completion/preprocessor/IPreProcessor';
 
 export interface IPreProcessor {
   completion: IPreProcessorCompletion;

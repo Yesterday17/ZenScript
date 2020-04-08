@@ -1,7 +1,6 @@
 import { CompletionItem, CompletionItemKind } from 'vscode-languageserver';
-import { IBracketHandler } from '../../api/IBracketHandler';
 import { zGlobal } from '../../api/global';
-import { BracketHandlerKind } from './bracketHandlers';
+import { IBracketHandler } from './IBracketHandler';
 
 class Liquid implements IBracketHandler {
   name: string;
@@ -32,7 +31,7 @@ class Liquid implements IBracketHandler {
     switch (predecessor.length) {
       case 1:
         // liquid:[liquid]
-        const result = Array.from(zGlobal.fluids.keys()).map(key => {
+        const result = Array.from(zGlobal.fluids.keys()).map((key) => {
           const fluid = zGlobal.fluids.get(key);
           return {
             label: fluid.name,
