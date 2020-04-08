@@ -157,13 +157,8 @@
     },
     "dots": {
       "comment": "dots",
-      "name": "plain.text.zenscript",
-      "match": "(\\.)(?![0-9])",
-      "captures": {
-        "1": {
-          "name": "variable.other.object.property.zenscript"
-        }
-      }
+      "name": "keyword.operator.dot",
+      "match": "(\\.)(?!\\w*[0-9(])"
     },
     "var": {
       "comment": "var",
