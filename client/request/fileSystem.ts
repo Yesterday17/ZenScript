@@ -9,7 +9,7 @@ import {
 
 export class FileSystemReadFileRequest {
   static onRequest(client: LanguageClient) {
-    client.onRequest(FSReadFileRequestType, uri => {
+    client.onRequest(FSReadFileRequestType, (uri) => {
       return workspace.fs.readFile(uri);
     });
   }
@@ -17,7 +17,7 @@ export class FileSystemReadFileRequest {
 
 export class FileSystemReadFileStringRequest {
   static onRequest(client: LanguageClient) {
-    client.onRequest(FSReadFileStringRequestType, async uri => {
+    client.onRequest(FSReadFileStringRequestType, async (uri) => {
       const data = await workspace.fs.readFile(uri);
       return Buffer.from(data).toString('utf-8');
     });
@@ -26,7 +26,7 @@ export class FileSystemReadFileStringRequest {
 
 export class FileSystemReadDirectoryRequest {
   static onRequest(client: LanguageClient) {
-    client.onRequest(FSReadDirectoryRequestType, uri => {
+    client.onRequest(FSReadDirectoryRequestType, (uri) => {
       return workspace.fs.readDirectory(uri);
     });
   }
@@ -34,7 +34,7 @@ export class FileSystemReadDirectoryRequest {
 
 export class FileSystemStatRequest {
   static onRequest(client: LanguageClient) {
-    client.onRequest(FSStatRequestType, uri => {
+    client.onRequest(FSStatRequestType, (uri) => {
       return workspace.fs.stat(uri);
     });
   }
