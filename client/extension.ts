@@ -11,7 +11,6 @@ import {
   CommandHistoryEntryGet,
 } from './command/historyEntry';
 import { CommandOpenFile } from './command/openFile';
-import { streamChannel } from './debug/stream';
 import { applyRequests } from './request/requests';
 import { PriorityTreeDataView } from './view/priority';
 import { StatusBar } from './view/statusbar';
@@ -46,7 +45,6 @@ export function activate(context: ExtensionContext) {
       // 当工作空间中的'.clientrc'文件改变时通知服务
       fileEvents: workspace.createFileSystemWatcher('**/.zsrc'),
     },
-    outputChannel: streamChannel(),
   };
 
   // Create language client
