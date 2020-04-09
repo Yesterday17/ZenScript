@@ -7,15 +7,22 @@ import {
   ASTNodeAndAndExpression,
   ASTNodeAndExpression,
   ASTNodeArray,
+  ASTNodeAssignExpression,
+  ASTNodeBracketHandler,
   ASTNodeCompareExpression,
   ASTNodeConditionalExpression,
   ASTNodeDeclare,
+  ASTNodeExpressionStatement,
   ASTNodeFunction,
   ASTNodeMap,
+  ASTNodeMultiplyExpression,
   ASTNodeOrExpression,
   ASTNodeOrOrExpression,
   ASTNodePackage,
+  ASTNodePostfixExpression,
+  ASTNodePrimaryExpression,
   ASTNodeProgram,
+  ASTNodeUnaryExpression,
   ASTNodeXorExpression,
   NodeContext,
 } from '.';
@@ -109,6 +116,11 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
         pushBody(node, func);
       });
     }
+
+    if (ctx.Statement) {
+      ctx.Statement.forEach((s: CstNode) => this.visit(s));
+    }
+
     sortBody(node);
 
     // Update if body exists
@@ -220,10 +232,7 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
    * Single statement
    */
   protected Statement(ctx: NodeContext): ASTNode {
-    return {
-      type: 'statement',
-      start: 0,
-    };
+    return this.visit(ctx.component[0]);
   }
 
   /**
@@ -279,10 +288,13 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
     };
   }
 
-  protected ExpressionStatement(ctx: NodeContext): ASTNode {
+  protected ExpressionStatement(ctx: NodeContext): ASTNodeExpressionStatement {
+    const node = this.visit(ctx.Expression[0]);
     return {
-      type: 'expression-statement',
-      start: 0,
+      type: 'ExpressionStatement',
+      start: node.start,
+      end: node.end,
+      expression: node,
     };
   }
 
@@ -291,57 +303,116 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
    * =================================================================================================
    */
   protected Expression(ctx: NodeContext): ASTNode {
-    return {
-      type: 'expression',
-      start: 0,
-    };
+    const node = this.visit(ctx.expression[0]);
+    if (!node.rhs) {
+      node.type = 'Expression';
+    }
+    return node;
   }
 
-  protected AssignExpression(ctx: NodeContext): ASTNode {
-    return {
-      type: 'exp-assign',
+  protected AssignExpression(ctx: NodeContext): ASTNodeAssignExpression {
+    const node: ASTNodeAssignExpression = {
+      type: 'AssignExpression',
       start: 0,
-    };
-  }
-
-  protected UnaryExpression(ctx: NodeContext): ASTNode {
-    return {
-      type: 'exp-unary',
-      start: 0,
-    };
-  }
-
-  protected AddExpression(ctx: NodeContext): ASTNodeAddExpression {
-    let node: ASTNodeAddExpression = {
-      type: 'AddExpression',
-      start: 0, // TODO
-      end: 0,
-      operator: '',
-      left: this.visit(ctx.MultiplyExpression[0]),
+      lhs: this.visit(ctx.lhs[0]),
     };
 
-    // TODO: operator
-    if (ctx.MultiplyExpression.length > 1) {
-      for (let offset = 1; offset < ctx.MultiplyExpression.length; offset++) {
-        node = {
-          type: 'AddExpression',
-          start: 0, // TODO
-          end: 0,
-
-          left: node,
-          right: this.visit(ctx.MultiplyExpression[offset]),
-        };
-      }
+    if (ctx.rhs) {
+      node.operator = ''; // TODO
+      node.rhs = this.visit(ctx.rhs[0]);
     }
 
     return node;
   }
 
-  protected MultiplyExpression(ctx: NodeContext): ASTNode {
-    return {
-      type: 'exp-mul',
+  protected UnaryExpression(ctx: NodeContext): ASTNodeUnaryExpression {
+    const node: ASTNodeUnaryExpression = {
+      type: 'UnaryExpression',
       start: 0,
+      expression: this.visit(ctx.expression[0]),
     };
+
+    if (ctx.operator) {
+      node.operator = ctx.operator[0].image;
+    }
+
+    return node;
+  }
+
+  protected AddExpression(ctx: NodeContext): ASTNodeAddExpression {
+    const node: ASTNodeAddExpression = {
+      type: 'AddExpression',
+      start: 0, // TODO
+      end: 0,
+      lhs: undefined,
+      rhs: this.visit(
+        ctx.MultiplyExpression[ctx.MultiplyExpression.length - 1]
+      ),
+    };
+
+    let now = node;
+
+    if (ctx.MultiplyExpression.length > 1) {
+      for (let offset = 1; offset < ctx.MultiplyExpression.length; offset++) {
+        now.operator = ctx.operator[ctx.operator.length - offset].image;
+        now.lhs = {
+          type: 'AddExpression',
+          start: 0, // TODO
+          end: 0,
+
+          lhs: undefined,
+          rhs: this.visit(
+            ctx.MultiplyExpression[ctx.MultiplyExpression.length - offset - 1]
+          ),
+        };
+        if (offset === ctx.MultiplyExpression.length - 1) {
+          now.lhs = now.lhs.rhs;
+        } else {
+          now = now.lhs;
+        }
+      }
+    } else {
+      node.lhs = node.rhs;
+      delete node.rhs;
+    }
+    return node;
+  }
+
+  protected MultiplyExpression(ctx: NodeContext): ASTNodeMultiplyExpression {
+    const node: ASTNodeMultiplyExpression = {
+      type: 'MultiplyExpression',
+      start: 0, // TODO
+      end: 0,
+      lhs: undefined,
+      rhs: this.visit(ctx.UnaryExpression[ctx.UnaryExpression.length - 1]),
+    };
+
+    let now = node;
+
+    if (ctx.UnaryExpression.length > 1) {
+      for (let offset = 1; offset < ctx.UnaryExpression.length; offset++) {
+        now.operator = ctx.operator[ctx.operator.length - offset].image;
+        now.lhs = {
+          type: 'MultiplyExpression',
+          start: 0, // TODO
+          end: 0,
+
+          lhs: undefined,
+          rhs: this.visit(
+            ctx.UnaryExpression[ctx.UnaryExpression.length - offset - 1]
+          ),
+        };
+        if (offset === ctx.UnaryExpression.length - 1) {
+          now.lhs = now.lhs.rhs;
+        } else {
+          now = now.lhs;
+        }
+      }
+    } else {
+      node.lhs = node.rhs;
+      delete node.rhs;
+    }
+    return node;
   }
 
   protected CompareExpression(ctx: NodeContext): ASTNodeCompareExpression {
@@ -350,25 +421,8 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
       start: 0, // TODO
       end: 0,
 
-      operator: (() => {
-        if (ctx.EQ) {
-          return '==';
-        } else if (ctx.NOT_EQ) {
-          return '!=';
-        } else if (ctx.LT) {
-          return '<';
-        } else if (ctx.LTEQ) {
-          return '<=';
-        } else if (ctx.GT) {
-          return '>';
-        } else if (ctx.GTEQ) {
-          return '>=';
-        } else {
-          // IN
-          return 'in';
-        }
-      })(),
       left: this.visit(ctx.AddExpression[0]),
+      operator: ctx.operator ? ctx.operator[0] : '',
       right:
         ctx.AddExpression.length > 1
           ? this.visit(ctx.AddExpression[1])
@@ -521,18 +575,28 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
     return result;
   }
 
-  protected PostfixExpression(ctx: NodeContext): ASTNode {
+  protected PostfixExpression(ctx: NodeContext): ASTNodePostfixExpression {
+    // TODO
     return {
-      type: 'exp-post',
+      type: 'PostfixExpression',
       start: 0,
+      primary: this.visit(ctx.PrimaryExpression[0]),
     };
   }
 
-  protected PrimaryExpression(ctx: NodeContext): ASTNode {
-    return {
-      type: 'exp-primary',
-      start: 0,
-    };
+  protected PrimaryExpression(ctx: NodeContext): ASTNodePrimaryExpression {
+    if (ctx.literal) {
+      return {
+        type: 'Literal',
+        start: 0, // TODO
+        end: 0,
+
+        raw: ctx.literal[0].image,
+        value: '',
+      };
+    } else if (ctx.BracketHandler) {
+      return this.visit(ctx.BracketHandler[0]);
+    } // TODO
   }
 
   /**
@@ -546,30 +610,24 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
     };
   }
 
-  // TODO: Debug
   protected InBracket(ctx: NodeContext): ASTNode {
     return this.visit(ctx.AssignExpression);
   }
 
-  // TODO: Debug
-  protected BracketHandler(ctx: NodeContext): ASTNode {
-    return {
-      type: 'bracket-handler',
-      // item: ctx.$BracketHandlerItem.map((item: any) => this.visit(item)),
+  protected BracketHandler(ctx: NodeContext): ASTNodeBracketHandler {
+    const node: ASTNodeBracketHandler = {
+      type: 'BracketHandler',
+      items: ctx.$BracketHandlerItemGroup.map((item: any) => this.visit(item)),
       start: (ctx.LT[0] as IToken).startOffset,
     };
-  }
-
-  // TODO: Debug
-  protected BracketHandler$BracketHandlerItem(ctx: NodeContext) {
-    return ctx[Object.keys(ctx)[0]].image;
+    // console.log('<' + node.items.join(':') + '>');
+    return node;
   }
 
   protected BracketHandler$BracketHandlerItemGroup(ctx: NodeContext) {
-    return '';
+    return ctx.part[0].image;
   }
 
-  // TODO: Debug
   protected ZSArray(ctx: NodeContext): ASTNodeArray {
     const arr: any[] = [];
     if (ctx.AssignExpression) {
@@ -585,7 +643,6 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
     };
   }
 
-  // TODO: Debug
   protected ZSMap(ctx: NodeContext): ASTNodeMap {
     const map = new Map();
 
@@ -607,7 +664,6 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
     };
   }
 
-  // TODO: Debug
   protected ZSMapEntry(ctx: NodeContext) {
     return [this.visit(ctx.KEY), this.visit(ctx.VALUE)];
   }

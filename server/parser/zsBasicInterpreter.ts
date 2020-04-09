@@ -110,9 +110,6 @@ class ZenScriptBasicInterpreter extends ZSParser.getBaseCstVisitorConstructor() 
 
   protected StatementBody(ctx: NodeContext) {}
 
-  /**
-   * Single statement
-   */
   protected Statement(ctx: NodeContext) {}
 
   /**
@@ -176,8 +173,6 @@ class ZenScriptBasicInterpreter extends ZSParser.getBaseCstVisitorConstructor() 
   protected InBracket(ctx: NodeContext) {}
 
   protected BracketHandler(ctx: NodeContext) {}
-
-  protected BracketHandler$BracketHandlerItem(ctx: NodeContext) {}
 
   protected BracketHandler$BracketHandlerItemGroup(ctx: NodeContext) {}
 

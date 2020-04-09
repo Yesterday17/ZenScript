@@ -259,23 +259,28 @@ export class ZenScriptParser extends Parser {
     this.OR([
       {
         GATE: () => this.LA(1).tokenType === A_OPEN,
-        ALT: () => this.SUBRULE(this.StatementBody),
+        ALT: () => this.SUBRULE(this.StatementBody, { LABEL: 'component' }),
       },
       {
         // GATE: this.LA(1).tokenType === RETURN,
-        ALT: () => this.SUBRULE(this.ReturnStatement),
+        ALT: () => this.SUBRULE(this.ReturnStatement, { LABEL: 'component' }),
       },
       {
         GATE: () =>
           this.LA(1).tokenType === VAL || this.LA(1).tokenType === VAR,
-        ALT: () => this.SUBRULE(this.DeclareStatement),
+        ALT: () => this.SUBRULE(this.DeclareStatement, { LABEL: 'component' }),
       },
-      { ALT: () => this.SUBRULE(this.IfStatement) },
-      { ALT: () => this.SUBRULE(this.ForStatement) },
-      { ALT: () => this.SUBRULE(this.WhileStatement) },
-      { ALT: () => this.SUBRULE(this.VersionStatement) },
-      { ALT: () => this.SUBRULE(this.BreakStatement) },
-      { ALT: () => this.SUBRULE(this.ExpressionStatement) },
+      { ALT: () => this.SUBRULE(this.IfStatement, { LABEL: 'component' }) },
+      { ALT: () => this.SUBRULE(this.ForStatement, { LABEL: 'component' }) },
+      { ALT: () => this.SUBRULE(this.WhileStatement, { LABEL: 'component' }) },
+      {
+        ALT: () => this.SUBRULE(this.VersionStatement, { LABEL: 'component' }),
+      },
+      { ALT: () => this.SUBRULE(this.BreakStatement, { LABEL: 'component' }) },
+      {
+        ALT: () =>
+          this.SUBRULE(this.ExpressionStatement, { LABEL: 'component' }),
+      },
     ]);
   });
 
@@ -364,11 +369,11 @@ export class ZenScriptParser extends Parser {
    * =================================================================================================
    */
   protected Expression = this.RULE('Expression', () => {
-    this.SUBRULE(this.AssignExpression);
+    this.SUBRULE(this.AssignExpression, { LABEL: 'expression' });
   });
 
   protected AssignExpression = this.RULE('AssignExpression', () => {
-    this.SUBRULE(this.ConditionalExpression);
+    this.SUBRULE(this.ConditionalExpression, { LABEL: 'lhs' });
     this.OPTION(() => {
       this.OR([
         { ALT: () => this.CONSUME(ASSIGN) },
@@ -382,7 +387,7 @@ export class ZenScriptParser extends Parser {
         { ALT: () => this.CONSUME(AND_ASSIGN) },
         { ALT: () => this.CONSUME(XOR_ASSIGN) },
       ]);
-      this.SUBRULE(this.AssignExpression);
+      this.SUBRULE(this.AssignExpression, { LABEL: 'rhs' });
     });
   });
 
@@ -391,15 +396,15 @@ export class ZenScriptParser extends Parser {
       {
         ALT: () => {
           this.OR2([
-            { ALT: () => this.CONSUME(NOT) },
-            { ALT: () => this.CONSUME(MINUS) },
+            { ALT: () => this.CONSUME(NOT, { LABEL: 'operator' }) },
+            { ALT: () => this.CONSUME(MINUS, { LABEL: 'operator' }) },
           ]);
-          this.SUBRULE(this.UnaryExpression);
+          this.SUBRULE(this.UnaryExpression, { LABEL: 'expression' });
         },
       },
       {
         ALT: () => {
-          this.SUBRULE(this.PostfixExpression);
+          this.SUBRULE(this.PostfixExpression, { LABEL: 'expression' });
         },
       },
     ]);
@@ -409,9 +414,9 @@ export class ZenScriptParser extends Parser {
     this.SUBRULE(this.MultiplyExpression);
     this.MANY(() => {
       this.OR([
-        { ALT: () => this.CONSUME(PLUS) },
-        { ALT: () => this.CONSUME(MINUS) },
-        { ALT: () => this.CONSUME(TILDE) },
+        { ALT: () => this.CONSUME(PLUS, { LABEL: 'operator' }) },
+        { ALT: () => this.CONSUME(MINUS, { LABEL: 'operator' }) },
+        { ALT: () => this.CONSUME(TILDE, { LABEL: 'operator' }) }, // TILDE can be used to concat strings
       ]);
       this.SUBRULE2(this.MultiplyExpression);
     });
@@ -421,9 +426,9 @@ export class ZenScriptParser extends Parser {
     this.SUBRULE(this.UnaryExpression);
     this.MANY(() => {
       this.OR([
-        { ALT: () => this.CONSUME(MUL) },
-        { ALT: () => this.CONSUME(DIV) },
-        { ALT: () => this.CONSUME(MOD) },
+        { ALT: () => this.CONSUME(MUL, { LABEL: 'operator' }) },
+        { ALT: () => this.CONSUME(DIV, { LABEL: 'operator' }) },
+        { ALT: () => this.CONSUME(MOD, { LABEL: 'operator' }) },
       ]);
       this.SUBRULE2(this.UnaryExpression);
     });
@@ -433,13 +438,13 @@ export class ZenScriptParser extends Parser {
     this.SUBRULE(this.AddExpression);
     this.OPTION(() => {
       this.OR([
-        { ALT: () => this.CONSUME(EQ) },
-        { ALT: () => this.CONSUME(NOT_EQ) },
-        { ALT: () => this.CONSUME(LT) },
-        { ALT: () => this.CONSUME(LTEQ) },
-        { ALT: () => this.CONSUME(GT) },
-        { ALT: () => this.CONSUME(GTEQ) },
-        { ALT: () => this.CONSUME(IN) },
+        { ALT: () => this.CONSUME(EQ, { LABEL: 'operator' }) },
+        { ALT: () => this.CONSUME(NOT_EQ, { LABEL: 'operator' }) },
+        { ALT: () => this.CONSUME(LT, { LABEL: 'operator' }) },
+        { ALT: () => this.CONSUME(LTEQ, { LABEL: 'operator' }) },
+        { ALT: () => this.CONSUME(GT, { LABEL: 'operator' }) },
+        { ALT: () => this.CONSUME(GTEQ, { LABEL: 'operator' }) },
+        { ALT: () => this.CONSUME(IN, { LABEL: 'operator' }) },
       ]);
       this.SUBRULE2(this.AddExpression);
     });
@@ -563,19 +568,19 @@ export class ZenScriptParser extends Parser {
 
   protected PrimaryExpression = this.RULE('PrimaryExpression', () => {
     this.OR([
-      { ALT: () => this.CONSUME(INT_VALUE) },
-      { ALT: () => this.CONSUME(FLOAT_VALUE) },
-      { ALT: () => this.CONSUME(STRING_VALUE) },
-      { ALT: () => this.CONSUME(IDENTIFIER) },
+      { ALT: () => this.CONSUME(INT_VALUE, { LABEL: 'literal' }) },
+      { ALT: () => this.CONSUME(FLOAT_VALUE, { LABEL: 'literal' }) },
+      { ALT: () => this.CONSUME(STRING_VALUE, { LABEL: 'literal' }) },
+      { ALT: () => this.CONSUME(IDENTIFIER, { LABEL: 'identifier' }) },
       {
         ALT: () => this.SUBRULE(this.LambdaFunctionDeclaration),
       },
       { ALT: () => this.SUBRULE(this.BracketHandler) },
       { ALT: () => this.SUBRULE(this.ZSArray) },
       { ALT: () => this.SUBRULE(this.ZSMap) },
-      { ALT: () => this.CONSUME(TRUE) },
-      { ALT: () => this.CONSUME(FALSE) },
-      { ALT: () => this.CONSUME(NULL) },
+      { ALT: () => this.CONSUME(TRUE, { LABEL: 'literal' }) },
+      { ALT: () => this.CONSUME(FALSE, { LABEL: 'literal' }) },
+      { ALT: () => this.CONSUME(NULL, { LABEL: 'literal' }) },
       {
         ALT: () => {
           this.CONSUME(BR_OPEN);
@@ -614,85 +619,81 @@ export class ZenScriptParser extends Parser {
         this.AT_LEAST_ONE({
           NAME: '$BracketHandlerItemGroup',
           DEF: () => {
-            this.OR({
-              NAME: '$BracketHandlerItem',
-              DEF: [
-                { ALT: () => this.CONSUME(IDENTIFIER) },
-                { ALT: () => this.CONSUME(FLOAT_VALUE) },
-                { ALT: () => this.CONSUME(INT_VALUE) },
-                { ALT: () => this.CONSUME(STRING_VALUE) },
+            this.OR([
+              { ALT: () => this.CONSUME(IDENTIFIER, { LABEL: 'part' }) },
+              { ALT: () => this.CONSUME(FLOAT_VALUE, { LABEL: 'part' }) },
+              { ALT: () => this.CONSUME(INT_VALUE, { LABEL: 'part' }) },
+              { ALT: () => this.CONSUME(STRING_VALUE, { LABEL: 'part' }) },
 
-                { ALT: () => this.CONSUME(ANY) },
-                { ALT: () => this.CONSUME(BOOL) },
-                { ALT: () => this.CONSUME(BYTE) },
-                { ALT: () => this.CONSUME(SHORT) },
-                { ALT: () => this.CONSUME(INT) },
-                { ALT: () => this.CONSUME(LONG) },
-                { ALT: () => this.CONSUME(FLOAT) },
-                { ALT: () => this.CONSUME(DOUBLE) },
-                { ALT: () => this.CONSUME(STRING) },
-                { ALT: () => this.CONSUME(FUNCTION) },
-                { ALT: () => this.CONSUME(IN) },
-                { ALT: () => this.CONSUME(VOID) },
-                { ALT: () => this.CONSUME(AS) },
-                { ALT: () => this.CONSUME(VERSION) },
-                { ALT: () => this.CONSUME(IF) },
-                { ALT: () => this.CONSUME(ELSE) },
-                { ALT: () => this.CONSUME(FOR) },
-                { ALT: () => this.CONSUME(RETURN) },
-                { ALT: () => this.CONSUME(VAR) },
-                { ALT: () => this.CONSUME(VAL) },
-                { ALT: () => this.CONSUME(GLOBAL_ZS) },
-                { ALT: () => this.CONSUME(STATIC) },
-                { ALT: () => this.CONSUME(INSTANCEOF) },
-                { ALT: () => this.CONSUME(WHILE) },
-                { ALT: () => this.CONSUME(BREAK) },
-                { ALT: () => this.CONSUME(NULL) },
-                { ALT: () => this.CONSUME(TRUE) },
-                { ALT: () => this.CONSUME(FALSE) },
-                { ALT: () => this.CONSUME(IMPORT) },
-                { ALT: () => this.CONSUME(ZEN_CLASS) },
-                { ALT: () => this.CONSUME(ZEN_CONSTRUCTOR) },
+              { ALT: () => this.CONSUME(ANY, { LABEL: 'part' }) },
+              { ALT: () => this.CONSUME(BOOL, { LABEL: 'part' }) },
+              { ALT: () => this.CONSUME(BYTE, { LABEL: 'part' }) },
+              { ALT: () => this.CONSUME(SHORT, { LABEL: 'part' }) },
+              { ALT: () => this.CONSUME(INT, { LABEL: 'part' }) },
+              { ALT: () => this.CONSUME(LONG, { LABEL: 'part' }) },
+              { ALT: () => this.CONSUME(FLOAT, { LABEL: 'part' }) },
+              { ALT: () => this.CONSUME(DOUBLE, { LABEL: 'part' }) },
+              { ALT: () => this.CONSUME(STRING, { LABEL: 'part' }) },
+              { ALT: () => this.CONSUME(FUNCTION, { LABEL: 'part' }) },
+              { ALT: () => this.CONSUME(IN, { LABEL: 'part' }) },
+              { ALT: () => this.CONSUME(VOID, { LABEL: 'part' }) },
+              { ALT: () => this.CONSUME(AS, { LABEL: 'part' }) },
+              { ALT: () => this.CONSUME(VERSION, { LABEL: 'part' }) },
+              { ALT: () => this.CONSUME(IF, { LABEL: 'part' }) },
+              { ALT: () => this.CONSUME(ELSE, { LABEL: 'part' }) },
+              { ALT: () => this.CONSUME(FOR, { LABEL: 'part' }) },
+              { ALT: () => this.CONSUME(RETURN, { LABEL: 'part' }) },
+              { ALT: () => this.CONSUME(VAR, { LABEL: 'part' }) },
+              { ALT: () => this.CONSUME(VAL, { LABEL: 'part' }) },
+              { ALT: () => this.CONSUME(GLOBAL_ZS, { LABEL: 'part' }) },
+              { ALT: () => this.CONSUME(STATIC, { LABEL: 'part' }) },
+              { ALT: () => this.CONSUME(INSTANCEOF, { LABEL: 'part' }) },
+              { ALT: () => this.CONSUME(WHILE, { LABEL: 'part' }) },
+              { ALT: () => this.CONSUME(BREAK, { LABEL: 'part' }) },
+              { ALT: () => this.CONSUME(NULL, { LABEL: 'part' }) },
+              { ALT: () => this.CONSUME(TRUE, { LABEL: 'part' }) },
+              { ALT: () => this.CONSUME(FALSE, { LABEL: 'part' }) },
+              { ALT: () => this.CONSUME(IMPORT, { LABEL: 'part' }) },
+              { ALT: () => this.CONSUME(ZEN_CLASS, { LABEL: 'part' }) },
+              { ALT: () => this.CONSUME(ZEN_CONSTRUCTOR, { LABEL: 'part' }) },
 
-                { ALT: () => this.CONSUME(A_OPEN) },
-                { ALT: () => this.CONSUME(A_CLOSE) },
-                { ALT: () => this.CONSUME(SQBR_OPEN) },
-                { ALT: () => this.CONSUME(SQBR_CLOSE) },
-                { ALT: () => this.CONSUME(DOT2) },
-                { ALT: () => this.CONSUME(DOT) },
-                { ALT: () => this.CONSUME(COMMA) },
-                { ALT: () => this.CONSUME(PLUS_ASSIGN) },
-                { ALT: () => this.CONSUME(PLUS) },
-                { ALT: () => this.CONSUME(MINUS_ASSIGN) },
-                { ALT: () => this.CONSUME(MINUS) },
-                { ALT: () => this.CONSUME(MUL_ASSIGN) },
-                { ALT: () => this.CONSUME(MUL) },
-                { ALT: () => this.CONSUME(DIV_ASSIGN) },
-                { ALT: () => this.CONSUME(DIV) }, // #7
-                { ALT: () => this.CONSUME(MOD_ASSIGN) },
-                { ALT: () => this.CONSUME(MOD) },
-                { ALT: () => this.CONSUME(OR_ASSIGN) },
-                { ALT: () => this.CONSUME(OR2) },
-                { ALT: () => this.CONSUME(OR) },
-                { ALT: () => this.CONSUME(AND_ASSIGN) },
-                { ALT: () => this.CONSUME(AND2) },
-                { ALT: () => this.CONSUME(AND) },
-                { ALT: () => this.CONSUME(XOR_ASSIGN) },
-                { ALT: () => this.CONSUME(XOR) },
-                { ALT: () => this.CONSUME(QUEST) },
-                { ALT: () => this.CONSUME(COLON) },
-                { ALT: () => this.CONSUME(BR_OPEN) },
-                { ALT: () => this.CONSUME(BR_CLOSE) },
-                { ALT: () => this.CONSUME(TILDE_ASSIGN) },
-                { ALT: () => this.CONSUME(TILDE) },
-                { ALT: () => this.CONSUME(SEMICOLON) },
-                { ALT: () => this.CONSUME(EQ) },
-                { ALT: () => this.CONSUME(ASSIGN) },
-                { ALT: () => this.CONSUME(NOT_EQ) },
-                { ALT: () => this.CONSUME(NOT) },
-                { ALT: () => this.CONSUME(DOLLAR) },
-              ],
-            });
+              { ALT: () => this.CONSUME(A_OPEN, { LABEL: 'part' }) },
+              { ALT: () => this.CONSUME(A_CLOSE, { LABEL: 'part' }) },
+              { ALT: () => this.CONSUME(SQBR_OPEN, { LABEL: 'part' }) },
+              { ALT: () => this.CONSUME(SQBR_CLOSE, { LABEL: 'part' }) },
+              { ALT: () => this.CONSUME(DOT2, { LABEL: 'part' }) },
+              { ALT: () => this.CONSUME(DOT, { LABEL: 'part' }) },
+              { ALT: () => this.CONSUME(COMMA, { LABEL: 'part' }) },
+              { ALT: () => this.CONSUME(PLUS_ASSIGN, { LABEL: 'part' }) },
+              { ALT: () => this.CONSUME(PLUS, { LABEL: 'part' }) },
+              { ALT: () => this.CONSUME(MINUS_ASSIGN, { LABEL: 'part' }) },
+              { ALT: () => this.CONSUME(MINUS, { LABEL: 'part' }) },
+              { ALT: () => this.CONSUME(MUL_ASSIGN, { LABEL: 'part' }) },
+              { ALT: () => this.CONSUME(MUL, { LABEL: 'part' }) },
+              { ALT: () => this.CONSUME(DIV_ASSIGN, { LABEL: 'part' }) },
+              { ALT: () => this.CONSUME(DIV, { LABEL: 'part' }) }, // #7
+              { ALT: () => this.CONSUME(MOD_ASSIGN, { LABEL: 'part' }) },
+              { ALT: () => this.CONSUME(MOD, { LABEL: 'part' }) },
+              { ALT: () => this.CONSUME(OR_ASSIGN, { LABEL: 'part' }) },
+              { ALT: () => this.CONSUME(OR2, { LABEL: 'part' }) },
+              { ALT: () => this.CONSUME(OR, { LABEL: 'part' }) },
+              { ALT: () => this.CONSUME(AND_ASSIGN, { LABEL: 'part' }) },
+              { ALT: () => this.CONSUME(AND2, { LABEL: 'part' }) },
+              { ALT: () => this.CONSUME(AND, { LABEL: 'part' }) },
+              { ALT: () => this.CONSUME(XOR_ASSIGN, { LABEL: 'part' }) },
+              { ALT: () => this.CONSUME(XOR, { LABEL: 'part' }) },
+              { ALT: () => this.CONSUME(QUEST, { LABEL: 'part' }) },
+              { ALT: () => this.CONSUME(BR_OPEN, { LABEL: 'part' }) },
+              { ALT: () => this.CONSUME(BR_CLOSE, { LABEL: 'part' }) },
+              { ALT: () => this.CONSUME(TILDE_ASSIGN, { LABEL: 'part' }) },
+              { ALT: () => this.CONSUME(TILDE, { LABEL: 'part' }) },
+              { ALT: () => this.CONSUME(SEMICOLON, { LABEL: 'part' }) },
+              { ALT: () => this.CONSUME(EQ, { LABEL: 'part' }) },
+              { ALT: () => this.CONSUME(ASSIGN, { LABEL: 'part' }) },
+              { ALT: () => this.CONSUME(NOT_EQ, { LABEL: 'part' }) },
+              { ALT: () => this.CONSUME(NOT, { LABEL: 'part' }) },
+              { ALT: () => this.CONSUME(DOLLAR, { LABEL: 'part' }) },
+            ]);
           },
         });
       },

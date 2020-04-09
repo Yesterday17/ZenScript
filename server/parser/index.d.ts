@@ -66,6 +66,19 @@ export interface ASTNodeFunction extends ASTNode, ASTBody {
   fType: any;
 }
 
+export interface ASTNodeExpressionStatement extends ASTNode {
+  type: 'ExpressionStatement';
+  expression: ASTNodeAssignExpression;
+}
+
+export interface ASTNodeAssignExpression extends ASTNode {
+  type: 'AssignExpression';
+  lhs: ASTNodeConditionalExpression;
+
+  operator?: string;
+  rhs?: AssignExpression;
+}
+
 export interface ASTNodeConditionalExpression extends ASTNode {
   type: 'ConditionalExpression';
   condition: ASTNode;
@@ -112,17 +125,50 @@ export interface ASTNodeAndExpression extends ASTNode {
 export interface ASTNodeCompareExpression extends ASTNode {
   type: 'CompareExpression';
 
-  operator: string;
   left: ASTNodeAddExpression;
+  operator?: string;
   right?: ASTNodeAddExpression;
 }
 
 export interface ASTNodeAddExpression extends ASTNode {
   type: 'AddExpression';
 
-  operator: string;
-  left: ASTNodeAddExpression | ASTNodeMultiplyExpression;
-  right?: ASTNodeMultiplyExpression; // TODO
+  lhs: ASTNodeAddExpression | ASTNodeMultiplyExpression;
+  operator?: string;
+  rhs?: ASTNodeMultiplyExpression;
+}
+
+export interface ASTNodeMultiplyExpression extends ASTNode {
+  type: 'MultiplyExpression';
+
+  lhs: ASTNodeMultiplyExpression | ASTNodeUnaryExpression; // TODO
+  operator?: string;
+  rhs?: ASTNodeUnaryExpression;
+}
+
+export interface ASTNodeUnaryExpression extends ASTNode {
+  type: 'UnaryExpression';
+
+  operator?: string;
+  expression: ASTNodeUnaryExpression;
+}
+
+export interface ASTNodePostfixExpression extends ASTNode {
+  type: 'PostfixExpression';
+  primary: ASTNode;
+}
+
+type ASTNodePrimaryExpression = ASTNodeLiteral | ASTNodeBracketHandler; // TODO
+
+export interface ASTNodeBracketHandler extends ASTNode {
+  type: 'BracketHandler';
+  items: string[];
+}
+
+export interface ASTNodeLiteral extends ASTNode {
+  type: 'Literal';
+  value: number | boolean | null | string;
+  raw: string;
 }
 
 export interface ASTNodePackage extends ASTNode {
