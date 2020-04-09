@@ -168,7 +168,7 @@
     "@types/set-value": "^2.0.0",
     "@types/vscode": "^1.43.0",
     "del": "^3.0.0",
-    "tslint": "^5.20.1",
+    "tslint": "^6.1.1",
     "typescript": "^3.8.3",
     "vsce": "^1.75.0",
     "vscode-nls-dev": "^3.3.1"
