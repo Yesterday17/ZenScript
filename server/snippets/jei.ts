@@ -13,13 +13,13 @@ export const JEI: Snippet = {
     {
       label: 'jrh',
       filterText: 'mods.jei.JEI.removeAndHide',
-      insertText: 'mods.jei.JEI.removeAndHide($0);',
+      insertText: 'mods.jei.JEI.removeAndHide($1);$0',
       commitCharacters: ['<'],
     },
     {
       label: 'jai',
       filterText: 'mods.jei.JEI.addItem',
-      insertText: 'mods.jei.JEI.addItem($0);',
+      insertText: 'mods.jei.JEI.addItem($1);$0',
       commitCharacters: ['<'],
     },
     {
@@ -31,7 +31,7 @@ export const JEI: Snippet = {
     {
       label: 'jhc',
       filterText: 'mods.jei.JEI.hideCategory',
-      insertText: 'mods.jei.JEI.hideCategory("$0")',
+      insertText: 'mods.jei.JEI.hideCategory("$1");$0',
     },
   ],
 };
