@@ -33,6 +33,10 @@ class Global {
    * Subscribe-based event bus
    */
   bus: StateEventBus;
+
+  /**
+   * Client info, genereated by onInitialize
+   */
   client: ClientInfo;
 
   ///////// Utils /////////
@@ -67,22 +71,18 @@ class Global {
     this.reset();
   }
 
-  preInit() {
-    // 创建一个服务的连接，连接使用 Node 的 IPC 作为传输
-    // 并且引入所有 LSP 特性, 包括 preview / proposed
+  init() {
+    // Create connection and use all LSP features
     this.conn = createConnection(ProposedFeatures.all);
     this.console = this.conn.console;
 
-    // 创建一个简单的文本文档管理器，这个管理器仅仅支持同步所有文档
+    // TextDocument Manager
     this.documents = new TextDocuments(TextDocument);
   }
 
-  postInit() {
+  listen() {
     // listen zGlobal.connection to trigger events
     this.documents.listen(this.conn);
-  }
-
-  listen() {
     this.conn.listen();
   }
 

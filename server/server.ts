@@ -2,12 +2,14 @@ import { zGlobal } from './api/global';
 import { applyRequests } from './requests/requests';
 import { ZenScriptInitialize } from './services/zsInit';
 
-zGlobal.preInit();
+// Initialize connection and documents
+zGlobal.init();
 
+// Register onInitialize
 ZenScriptInitialize.register();
 
-// apply all requests
+// Register all requests
 applyRequests(zGlobal.conn);
 
-zGlobal.postInit();
+// Listen documents and connection
 zGlobal.listen();

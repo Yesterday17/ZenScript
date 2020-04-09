@@ -55,6 +55,20 @@ function pushBody(node: ASTBody, value: ASTNode): ASTNode {
 
 /**
  * Interpreter
+ *
+ * AST for ZenScript
+ * The interpreter generates a common Abstract Syntax Tree.
+ * The tree follows this pattern:
+ * [Program]
+ *  |-import    All import statements are stored here.
+ *  |-declare   All global-scoped declarations are stored here.
+ *    |-global    Variables declared by `global` keyword. Only available when `declare` is direct child of `Program`.
+ *    |-static    Variables declared by `static` keyword. Only available when `declare` is direct child of `Program`.
+ *    |-var       Variables declared by `var` keyword.
+ *    |-val       Variables declared by `val` keyword.
+ *    |-function  Functions.
+ *    |-class     ZenClasses.
+ *  |-body      ALl statements stores here. It's an array of ASTNode, sorted by nodes' position.
  */
 class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
   constructor() {

@@ -123,7 +123,7 @@ export class ZenScriptAdvancedCompletion implements ZenScriptService {
           });
         } while (s === ' ');
         let token = findToken(tokens, offset - 1);
-        if (token.exist && token.found.token.image === 'import') {
+        if (token.exist && token.found.token.tokenType === IMPORT) {
           return ImportCompletion([]);
         }
         return [];
