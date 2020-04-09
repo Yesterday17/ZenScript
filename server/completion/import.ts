@@ -51,14 +51,22 @@ export function ImportCompletion(prev: string[]): CompletionItem[] {
             )
         )
         .map((k) => {
-          return { label: k, kind: getKind(packages, k) };
+          return {
+            label: k,
+            kind: getKind(packages, k),
+            commitCharacters: ['.', ';'],
+          };
         })
     );
   }
   if (typeof local === 'object') {
     result.push(
       ...Object.keys(local).map((k) => {
-        return { label: k, kind: getKind(local, k) };
+        return {
+          label: k,
+          kind: getKind(local, k),
+          commitCharacters: ['.', ';'],
+        };
       })
     );
   }

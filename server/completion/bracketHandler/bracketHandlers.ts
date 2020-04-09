@@ -36,6 +36,7 @@ export const SimpleBracketHandlers: CompletionItem[] = BracketHandlers.map(
       label: item.handler.label,
       kind: CompletionItemKind.Class,
       data: { triggerCharacter: '<' },
+      commitCharacters: [':'],
     };
   }
 );

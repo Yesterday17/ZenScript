@@ -161,13 +161,24 @@ export class ZenScriptAdvancedCompletion implements ZenScriptService {
         }
 
         return BracketHandlerMap.get(predecessor[0])
-          ? BracketHandlerMap.get(predecessor[0]).next(predecessor)
+          ? BracketHandlerMap.get(predecessor[0])
+              .next(predecessor)
+              .map((b) => {
+                b.commitCharacters = [':'];
+                return b;
+              })
           : [];
       case '<':
         const setting = await getdocumentSettings(completion.textDocument.uri);
         return manuallyTriggerred || setting.autoshowLTCompletion
           ? setting.modIdItemCompletion
-            ? [...SimpleBracketHandlers, ...ItemBracketHandler.next(['item'])]
+            ? [
+                ...SimpleBracketHandlers,
+                ...ItemBracketHandler.next(['item']).map((i) => {
+                  i.commitCharacters = [':'];
+                  return i;
+                }),
+              ]
             : [...SimpleBracketHandlers]
           : [];
 
