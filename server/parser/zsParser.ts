@@ -176,7 +176,10 @@ export class ZenScriptParser extends Parser {
 
   protected ZenClassDeclaration = this.RULE('ZenClassDeclaration', () => {
     this.CONSUME(ZEN_CLASS);
-    this.CONSUME(IDENTIFIER, { ERR_MSG: 'ClassName required' });
+    this.CONSUME(IDENTIFIER, {
+      LABEL: 'name',
+      ERR_MSG: 'ClassName required',
+    });
     this.CONSUME(A_OPEN, { ERR_MSG: '{ expected' });
     // TODO: reuse code
     this.MANY(() => {

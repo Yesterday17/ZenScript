@@ -33,12 +33,12 @@ export interface ASTSymbol {
   global: boolean;
 }
 
-export interface ASTScope extends ASTNode {
-  //
+export interface ASTScope {
+  declare: Map<string, any>;
 }
 
 export interface ASTBasicProgram {
-  scope: { [key: string]: 'function' | 'global' | 'static' };
+  scope: { [key: string]: 'function' | 'class' | 'global' | 'static' };
 }
 
 export interface ASTNodeProgram extends ASTNode, ASTBody, ASTSymbolTable {
@@ -64,6 +64,11 @@ export interface ASTNodeFunction extends ASTNode, ASTBody {
   fName: string;
   fPara: any[];
   fType: any;
+}
+
+export interface ASTNodeZenClass extends ASTNode {
+  type: 'class';
+  cName: string;
 }
 
 export interface ASTNodeExpressionStatement extends ASTNode {

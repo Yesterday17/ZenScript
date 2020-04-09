@@ -7,6 +7,8 @@ function getKind(obj: any, k: string): CompletionItemKind {
   if (typeof obj[k] === 'string') {
     if (obj[k] === 'function') {
       return CompletionItemKind.Function;
+    } else if (obj[k] === 'class') {
+      return CompletionItemKind.Class;
     } else if (obj[k] === 'static') {
       return CompletionItemKind.Constant;
     } else {

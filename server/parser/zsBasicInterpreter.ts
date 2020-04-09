@@ -1,16 +1,20 @@
 import { IToken } from 'chevrotain';
 import {
-  ASTNode,
+  ASTBasicProgram,
   ASTNodeDeclare,
   ASTNodeFunction,
-  NodeContext,
-  ASTBasicProgram,
   ASTNodeGlobalDeclare,
+  ASTNodeZenClass,
+  NodeContext,
 } from '.';
 import { ZSParser } from './zsParser';
 
 /**
- * Interpreter
+ * Basic Interpreter
+ *
+ * This interpreter translates CST to a simple AST.
+ * This procedure costs little, so all scripts can be interpreted at startup.
+ * At this step, global/static variables, function declarations and ZenClass declarations are dumped for `import` autocompletion.
  */
 class ZenScriptBasicInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
   constructor() {
@@ -42,6 +46,17 @@ class ZenScriptBasicInterpreter extends ZSParser.getBaseCstVisitorConstructor() 
           return;
         }
         node.scope[func.fName] = 'function';
+      });
+    }
+
+    if (ctx.ZenClassDeclaration) {
+      ctx.ZenClassDeclaration.forEach((element: any) => {
+        const clz: ASTNodeZenClass = this.visit(element);
+        if (clz.cName in node.scope) {
+          // TODO: Error
+          return;
+        }
+        node.scope[clz.cName] = 'class';
       });
     }
 
@@ -95,10 +110,11 @@ class ZenScriptBasicInterpreter extends ZSParser.getBaseCstVisitorConstructor() 
     };
   }
 
-  protected ZenClassDeclaration(ctx: NodeContext): ASTNode {
+  protected ZenClassDeclaration(ctx: NodeContext): ASTNodeZenClass {
     return {
-      type: 'zenclass',
-      start: 0,
+      type: 'class',
+      start: (ctx.ZEN_CLASS[0] as IToken).startOffset,
+      cName: ctx.name[0].image,
       errors: [],
     };
   }
