@@ -15,6 +15,7 @@ import { GlobalCompletion } from '../completion/global';
 import { ImportCompletion } from '../completion/import';
 import { PreProcessorCompletions } from '../completion/preprocessor/preprocessors';
 import { DOT, IMPORT } from '../parser/zsLexer';
+import { SnippetCompletions } from '../snippets/snippets';
 import { findToken } from '../utils/findToken';
 import { getdocumentSettings } from '../utils/setting';
 import { ClientInfo, ZenScriptService } from './zsService';
@@ -171,7 +172,7 @@ export class ZenScriptAdvancedCompletion implements ZenScriptService {
           : [];
 
       default:
-        return [...GlobalCompletion()];
+        return [...GlobalCompletion(), ...SnippetCompletions()];
     }
   }
 
