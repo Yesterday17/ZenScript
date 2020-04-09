@@ -16,5 +16,11 @@ export function GlobalCompletion(): CompletionItem[] {
       } as CompletionItem;
     }),
     { label: 'import', kind: CompletionItemKind.Keyword },
+    { label: 'zenClass', kind: CompletionItemKind.Keyword },
+    { label: 'var', kind: CompletionItemKind.Keyword },
+    { label: 'val', kind: CompletionItemKind.Keyword },
+    { label: 'global', kind: CompletionItemKind.Keyword },
+    { label: 'static', kind: CompletionItemKind.Keyword },
+    { label: 'function', kind: CompletionItemKind.Keyword },
   ];
 }
