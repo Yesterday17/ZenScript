@@ -511,9 +511,9 @@ export class ZenScriptParser extends Parser {
           ALT: () => {
             this.CONSUME(DOT);
             this.OR2([
-              { ALT: () => this.CONSUME(IDENTIFIER) },
-              { ALT: () => this.CONSUME(VERSION) },
-              { ALT: () => this.CONSUME(STRING) },
+              { ALT: () => this.CONSUME(IDENTIFIER, { LABEL: 'property' }) },
+              { ALT: () => this.CONSUME(VERSION, { LABEL: 'property' }) },
+              { ALT: () => this.CONSUME(STRING, { LABEL: 'property' }) },
             ]);
           },
         },
@@ -522,23 +522,23 @@ export class ZenScriptParser extends Parser {
             this.LA(1).tokenType === IDENTIFIER && this.LA(1).image === 'to',
           ALT: () => {
             this.CONSUME2(IDENTIFIER);
-            this.SUBRULE(this.AssignExpression);
+            this.SUBRULE(this.AssignExpression, { LABEL: 'to' });
           },
         },
         {
           ALT: () => {
             this.CONSUME(DOT2);
-            this.SUBRULE2(this.AssignExpression);
+            this.SUBRULE2(this.AssignExpression, { LABEL: 'dotdot' });
           },
         },
         {
           ALT: () => {
             this.CONSUME(SQBR_OPEN);
-            this.SUBRULE3(this.AssignExpression, { LABEL: 'INDEX' });
+            this.SUBRULE3(this.AssignExpression, { LABEL: 'index' });
             this.CONSUME(SQBR_CLOSE);
             this.OPTION(() => {
               this.CONSUME(ASSIGN);
-              this.SUBRULE4(this.AssignExpression);
+              this.SUBRULE4(this.AssignExpression, { LABEL: 'indexAssign' });
             });
           },
         },
@@ -548,7 +548,9 @@ export class ZenScriptParser extends Parser {
             this.MANY_SEP({
               SEP: COMMA,
               DEF: () => {
-                this.SUBRULE5(this.AssignExpression);
+                this.SUBRULE5(this.AssignExpression, {
+                  LABEL: 'brExpressions',
+                });
               },
             });
             this.CONSUME(BR_CLOSE);
@@ -556,13 +558,13 @@ export class ZenScriptParser extends Parser {
         },
         {
           ALT: () => {
-            this.SUBRULE(this.TypeDeclare);
+            this.SUBRULE(this.TypeDeclare, { LABEL: 'type' });
           },
         },
         {
           ALT: () => {
             this.CONSUME(INSTANCEOF);
-            this.SUBRULE(this.TypeAnnotation);
+            this.SUBRULE(this.TypeAnnotation, { LABEL: 'instanceof' });
           },
         },
       ]);

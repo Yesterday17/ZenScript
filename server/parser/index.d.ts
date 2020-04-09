@@ -59,11 +59,12 @@ export interface ASTNodeGlobalDeclare extends ASTNodeDeclare {
   type: 'global' | 'static';
 }
 
-export interface ASTNodeFunction extends ASTNode, ASTBody {
+export interface ASTNodeFunction extends ASTNode {
   type: 'function';
   fName: string;
   fPara: any[];
   fType: any;
+  fBody: ASTNode;
 }
 
 export interface ASTNodeZenClass extends ASTNode {
@@ -163,7 +164,10 @@ export interface ASTNodePostfixExpression extends ASTNode {
   primary: ASTNode;
 }
 
-type ASTNodePrimaryExpression = ASTNodeLiteral | ASTNodeBracketHandler; // TODO
+type ASTNodePrimaryExpression =
+  | ASTNodeLiteral
+  | ASTNodeBracketHandler
+  | ASTNodeAssignExpression; // TODO
 
 export interface ASTNodeBracketHandler extends ASTNode {
   type: 'BracketHandler';

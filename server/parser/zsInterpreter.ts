@@ -51,6 +51,9 @@ function sortBody(node: ASTBody): ASTNode {
  */
 function pushBody(node: ASTBody, value: ASTNode): ASTNode {
   node.body.push(value);
+  if (value.errors) {
+    node.errors.push(...value.errors);
+  }
   return node;
 }
 
@@ -215,15 +218,21 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
   }
 
   protected FunctionDeclaration(ctx: NodeContext): ASTNodeFunction {
-    return {
+    const node: ASTNodeFunction = {
       type: 'function',
       start: (ctx.FunctionName[0] as IToken).startOffset,
       fName: ctx.FunctionName[0].image,
-      fPara: ctx.ParameterList ? this.visit(ctx.ParameterList) : [],
-      fType: ctx.TypeDeclare ? this.visit(ctx.TypeDeclare) : 'any',
-      body: this.visit(ctx.StatementBody),
+      fPara: ctx.ParameterList ? this.visit(ctx.ParameterList[0]) : [],
+      fType: ctx.TypeDeclare ? this.visit(ctx.TypeDeclare[0]) : 'any',
+      fBody: this.visit(ctx.StatementBody[0]),
       errors: [],
     };
+
+    if (node.fBody.errors) {
+      node.errors.push(...node.fBody.errors);
+    }
+
+    return node;
   }
 
   protected ZenClassDeclaration(ctx: NodeContext): ASTNode {
@@ -235,11 +244,20 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
   }
 
   protected BlockStatement(ctx: NodeContext): ASTNode {
-    return {
-      type: 'block-statement',
+    const node: ASTNode = {
+      type: 'BlockStatement',
       start: 0,
       errors: [],
     };
+    ctx.Statement.forEach((s: any) => {
+      // TODO
+      const n: ASTNode = this.visit(s);
+      if (n.errors) {
+        node.errors.push(...n.errors);
+      }
+    });
+
+    return node;
   }
 
   /**
@@ -248,11 +266,21 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
    */
 
   protected StatementBody(ctx: NodeContext): ASTNode {
-    return {
-      type: 'statement-body',
+    const node: ASTNode = {
+      type: 'StatementBody',
       start: 0,
       errors: [],
     };
+
+    // TODO
+    if (ctx.BlockStatement) {
+      const n: ASTNode = this.visit(ctx.BlockStatement[0]);
+      if (n.errors) {
+        node.errors.push(...n.errors);
+      }
+    }
+
+    return node;
   }
 
   /**
@@ -772,7 +800,42 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
       node.errors.push(...node.primary.errors);
     }
 
-    // TODO: Postfix
+    if (ctx.property) {
+      //
+    } else if (ctx.to) {
+      // TODO
+      const to: ASTNodeAssignExpression = this.visit(ctx.to[0]);
+      if (to.errors) {
+        node.errors.push(...to.errors);
+      }
+    } else if (ctx.dotdot) {
+      // TODO
+      const dotdot: ASTNodeAssignExpression = this.visit(ctx.dotdot[0]);
+      if (dotdot.errors) {
+        node.errors.push(...dotdot.errors);
+      }
+    } else if (ctx.index) {
+      //
+      if (ctx.indexAssign) {
+        // TODO
+        const assign: ASTNodeAssignExpression = this.visit(ctx.indexAssign[0]);
+        if (assign.errors) {
+          node.errors.push(...assign.errors);
+        }
+      }
+    } else if (ctx.brExpressions) {
+      // TODO
+      ctx.brExpressions.forEach((e: any) => {
+        const exp: ASTNodeAssignExpression = this.visit(e);
+        if (exp.errors) {
+          node.errors.push(...exp.errors);
+        }
+      });
+    } else if (ctx.type) {
+      //
+    } else if (ctx.instanceof) {
+      //
+    }
 
     return node;
   }
@@ -789,7 +852,9 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
         value: '',
       };
     } else if (ctx.BracketHandler) {
-      return this.visit(ctx.BracketHandler[0]);
+      return this.visit(ctx.BracketHandler[0]) as ASTNodeBracketHandler;
+    } else if (ctx.AssignExpression) {
+      return this.visit(ctx.AssignExpression[0]) as ASTNodeAssignExpression;
     } else {
       // TODO
       return {
@@ -825,7 +890,7 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
       type: 'BracketHandler',
       items: ctx.$BracketHandlerItemGroup.map((item: any) => this.visit(item)),
       start: (ctx.LT[0] as IToken).startOffset,
-      end: (ctx.GT[0] as IToken).endOffset,
+      end: (ctx.GT[0] as IToken).endOffset + 1,
       errors: [],
     };
 

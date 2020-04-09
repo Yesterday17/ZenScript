@@ -105,7 +105,7 @@ class ZenScriptBasicInterpreter extends ZSParser.getBaseCstVisitorConstructor() 
       fName: ctx.FunctionName[0].image,
       fPara: ctx.ParameterList ? this.visit(ctx.ParameterList) : [],
       fType: ctx.TypeDeclare ? this.visit(ctx.TypeDeclare) : 'any',
-      body: this.visit(ctx.StatementBody),
+      fBody: this.visit(ctx.StatementBody),
       errors: [],
     };
   }
