@@ -1,6 +1,8 @@
 import { ZenScriptAdvancedCompletion } from './zsAdvancedCompletion';
 import { ZenScriptBasicCompletion } from './zsBasicCompletion';
+import { ZenScriptDocumentClose } from './zsDocumentClose';
 import { ZenScriptDocumentConfigChange } from './zsDocumentConfigChange';
+import { ZenScriptDocumentContentChange } from './zsDocumentContentChange';
 import { ZenScriptFormat } from './zsFormat';
 import { ZenScriptGlobalConfigChange } from './zsGlobalConfigChange';
 import { ZenScriptHover } from './zsHover';
@@ -21,6 +23,8 @@ export const ZenScriptServices: ZenScriptService[] = [
   new ZenScriptFormat(),
   new ZenScriptRCChange(),
   new ZenScriptSignatureHelp(),
+  new ZenScriptDocumentClose(),
+  new ZenScriptDocumentContentChange(),
 ];
 
 export const ZenScriptWorkspaceServices: ZenScriptInitializedService[] = [
