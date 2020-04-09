@@ -44,7 +44,11 @@ export async function readDirectory(uri: URI, connection: Connection) {
 }
 
 export async function stat(uri: URI, connection: Connection) {
-  return await connection.sendRequest(FSStatRequestType, uri);
+  try {
+    return await connection.sendRequest(FSStatRequestType, uri);
+  } catch (e) {
+    return undefined;
+  }
 }
 
 export async function exists(uri: URI, connection: Connection) {
