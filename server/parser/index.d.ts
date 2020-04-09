@@ -7,7 +7,7 @@ export interface ASTNode {
   start: number;
   end?: number;
 
-  errors?: ASTError[];
+  errors: ASTError[];
 }
 
 export interface ASTError {
@@ -81,53 +81,53 @@ export interface ASTNodeAssignExpression extends ASTNode {
 
 export interface ASTNodeConditionalExpression extends ASTNode {
   type: 'ConditionalExpression';
-  condition: ASTNode;
+  condition: ASTNodeOrOrExpression;
 
   valid?: ASTNodeOrOrExpression;
-  invalid?: ASTNodeOrOrExpression;
+  invalid?: ASTNodeConditionalExpression;
 }
 
 export interface ASTNodeOrOrExpression extends ASTNode {
   type: 'OrOrExpression';
 
-  left: ASTNodeOrOrExpression | ASTNodeAndAndExpression;
-  right?: ASTNodeAndAndExpression;
+  lhs: ASTNodeOrOrExpression | ASTNodeAndAndExpression;
+  rhs?: ASTNodeAndAndExpression;
 }
 
 export interface ASTNodeAndAndExpression extends ASTNode {
   type: 'AndAndExpression';
 
-  left: ASTNodeAndAndExpression | ASTNodeOrExpression;
-  right?: ASTNodeOrExpression;
+  lhs: ASTNodeAndAndExpression | ASTNodeOrExpression;
+  rhs?: ASTNodeOrExpression;
 }
 
 export interface ASTNodeOrExpression extends ASTNode {
   type: 'OrExpression';
 
-  left: ASTNodeOrExpression | ASTNodeXorExpression;
-  right?: ASTNodeXorExpression;
+  lhs: ASTNodeOrExpression | ASTNodeXorExpression;
+  rhs?: ASTNodeXorExpression;
 }
 
 export interface ASTNodeXorExpression extends ASTNode {
   type: 'XorExpression';
 
-  left: ASTNodeXorExpression | ASTNodeAndExpression;
-  right?: ASTNodeAndExpression;
+  lhs: ASTNodeXorExpression | ASTNodeAndExpression;
+  rhs?: ASTNodeAndExpression;
 }
 
 export interface ASTNodeAndExpression extends ASTNode {
   type: 'AndExpression';
 
-  left: ASTNodeAndExpression | ASTNode;
-  right?: ASTNode;
+  lhs: ASTNodeAndExpression | ASTNode;
+  rhs?: ASTNode;
 }
 
 export interface ASTNodeCompareExpression extends ASTNode {
   type: 'CompareExpression';
 
-  left: ASTNodeAddExpression;
+  lhs: ASTNodeAddExpression;
   operator?: string;
-  right?: ASTNodeAddExpression;
+  rhs?: ASTNodeAddExpression;
 }
 
 export interface ASTNodeAddExpression extends ASTNode {

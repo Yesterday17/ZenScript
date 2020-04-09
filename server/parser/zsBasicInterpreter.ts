@@ -91,6 +91,7 @@ class ZenScriptBasicInterpreter extends ZSParser.getBaseCstVisitorConstructor() 
       fPara: ctx.ParameterList ? this.visit(ctx.ParameterList) : [],
       fType: ctx.TypeDeclare ? this.visit(ctx.TypeDeclare) : 'any',
       body: this.visit(ctx.StatementBody),
+      errors: [],
     };
   }
 
@@ -98,6 +99,7 @@ class ZenScriptBasicInterpreter extends ZSParser.getBaseCstVisitorConstructor() 
     return {
       type: 'zenclass',
       start: 0,
+      errors: [],
     };
   }
 

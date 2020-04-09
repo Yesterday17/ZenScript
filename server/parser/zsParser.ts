@@ -376,16 +376,16 @@ export class ZenScriptParser extends Parser {
     this.SUBRULE(this.ConditionalExpression, { LABEL: 'lhs' });
     this.OPTION(() => {
       this.OR([
-        { ALT: () => this.CONSUME(ASSIGN) },
-        { ALT: () => this.CONSUME(PLUS_ASSIGN) },
-        { ALT: () => this.CONSUME(MINUS_ASSIGN) },
-        { ALT: () => this.CONSUME(TILDE_ASSIGN) },
-        { ALT: () => this.CONSUME(MUL_ASSIGN) },
-        { ALT: () => this.CONSUME(DIV_ASSIGN) },
-        { ALT: () => this.CONSUME(MOD_ASSIGN) },
-        { ALT: () => this.CONSUME(OR_ASSIGN) },
-        { ALT: () => this.CONSUME(AND_ASSIGN) },
-        { ALT: () => this.CONSUME(XOR_ASSIGN) },
+        { ALT: () => this.CONSUME(ASSIGN, { LABEL: 'operator' }) },
+        { ALT: () => this.CONSUME(PLUS_ASSIGN, { LABEL: 'operator' }) },
+        { ALT: () => this.CONSUME(MINUS_ASSIGN, { LABEL: 'operator' }) },
+        { ALT: () => this.CONSUME(TILDE_ASSIGN, { LABEL: 'operator' }) },
+        { ALT: () => this.CONSUME(MUL_ASSIGN, { LABEL: 'operator' }) },
+        { ALT: () => this.CONSUME(DIV_ASSIGN, { LABEL: 'operator' }) },
+        { ALT: () => this.CONSUME(MOD_ASSIGN, { LABEL: 'operator' }) },
+        { ALT: () => this.CONSUME(OR_ASSIGN, { LABEL: 'operator' }) },
+        { ALT: () => this.CONSUME(AND_ASSIGN, { LABEL: 'operator' }) },
+        { ALT: () => this.CONSUME(XOR_ASSIGN, { LABEL: 'operator' }) },
       ]);
       this.SUBRULE(this.AssignExpression, { LABEL: 'rhs' });
     });

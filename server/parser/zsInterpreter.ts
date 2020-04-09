@@ -27,6 +27,7 @@ import {
   NodeContext,
 } from '.';
 import { zGlobal } from '../api/global';
+import { BracketHandlerMap } from '../completion/bracketHandler/bracketHandlers';
 import { ZSParser } from './zsParser';
 
 /**
@@ -118,15 +119,23 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
     }
 
     if (ctx.Statement) {
-      ctx.Statement.forEach((s: CstNode) => this.visit(s));
+      ctx.Statement.forEach((s: CstNode) => {
+        const n = this.visit(s);
+        if (n.errors && n.errors.length > 0) {
+          node.errors.push(...n.errors);
+        }
+        pushBody(node, n);
+      });
     }
 
-    sortBody(node);
+    // sortBody(node);
 
     // Update if body exists
     if (node.body.length > 0) {
       node.start = node.body[0].start;
     }
+
+    console.log(node);
     return node;
   }
 
@@ -199,6 +208,7 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
       fPara: ctx.ParameterList ? this.visit(ctx.ParameterList) : [],
       fType: ctx.TypeDeclare ? this.visit(ctx.TypeDeclare) : 'any',
       body: this.visit(ctx.StatementBody),
+      errors: [],
     };
   }
 
@@ -206,6 +216,7 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
     return {
       type: 'zenclass',
       start: 0,
+      errors: [],
     };
   }
 
@@ -213,6 +224,7 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
     return {
       type: 'block-statement',
       start: 0,
+      errors: [],
     };
   }
 
@@ -225,6 +237,7 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
     return {
       type: 'statement-body',
       start: 0,
+      errors: [],
     };
   }
 
@@ -243,6 +256,7 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
     return {
       type: 'return',
       start: 0,
+      errors: [],
     };
   }
 
@@ -250,6 +264,7 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
     return {
       type: 'declare',
       start: 0,
+      errors: [],
     };
   }
 
@@ -257,6 +272,7 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
     return {
       type: 'if',
       start: 0,
+      errors: [],
     };
   }
 
@@ -264,6 +280,7 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
     return {
       type: 'for',
       start: 0,
+      errors: [],
     };
   }
 
@@ -271,6 +288,7 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
     return {
       type: 'while',
       start: 0,
+      errors: [],
     };
   }
 
@@ -278,6 +296,7 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
     return {
       type: 'version',
       start: 0,
+      errors: [],
     };
   }
 
@@ -285,6 +304,7 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
     return {
       type: 'break',
       start: 0,
+      errors: [],
     };
   }
 
@@ -295,6 +315,7 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
       start: node.start,
       end: node.end,
       expression: node,
+      errors: node.errors,
     };
   }
 
@@ -315,11 +336,19 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
       type: 'AssignExpression',
       start: 0,
       lhs: this.visit(ctx.lhs[0]),
+      errors: [],
     };
 
+    if (node.lhs.errors) {
+      node.errors.push(...node.lhs.errors);
+    }
+
     if (ctx.rhs) {
-      node.operator = ''; // TODO
+      node.operator = ctx.operator[0].image;
       node.rhs = this.visit(ctx.rhs[0]);
+      if (node.rhs.errors) {
+        node.errors.push(...node.lhs.errors);
+      }
     }
 
     return node;
@@ -330,6 +359,7 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
       type: 'UnaryExpression',
       start: 0,
       expression: this.visit(ctx.expression[0]),
+      errors: [],
     };
 
     if (ctx.operator) {
@@ -344,6 +374,8 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
       type: 'AddExpression',
       start: 0, // TODO
       end: 0,
+      errors: [],
+
       lhs: undefined,
       rhs: this.visit(
         ctx.MultiplyExpression[ctx.MultiplyExpression.length - 1]
@@ -359,6 +391,7 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
           type: 'AddExpression',
           start: 0, // TODO
           end: 0,
+          errors: [],
 
           lhs: undefined,
           rhs: this.visit(
@@ -383,6 +416,8 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
       type: 'MultiplyExpression',
       start: 0, // TODO
       end: 0,
+      errors: [],
+
       lhs: undefined,
       rhs: this.visit(ctx.UnaryExpression[ctx.UnaryExpression.length - 1]),
     };
@@ -396,6 +431,7 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
           type: 'MultiplyExpression',
           start: 0, // TODO
           end: 0,
+          errors: [],
 
           lhs: undefined,
           rhs: this.visit(
@@ -420,10 +456,11 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
       type: 'CompareExpression',
       start: 0, // TODO
       end: 0,
+      errors: [],
 
-      left: this.visit(ctx.AddExpression[0]),
+      lhs: this.visit(ctx.AddExpression[0]),
       operator: ctx.operator ? ctx.operator[0] : '',
-      right:
+      rhs:
         ctx.AddExpression.length > 1
           ? this.visit(ctx.AddExpression[1])
           : undefined,
@@ -435,8 +472,9 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
       type: 'AndExpression',
       start: 0, // TODO
       end: 0,
+      errors: [],
 
-      left: this.visit(ctx.CompareExpression[0]),
+      lhs: this.visit(ctx.CompareExpression[0]),
     };
 
     if (ctx.CompareExpression.length > 1) {
@@ -445,9 +483,10 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
           type: 'AndExpression',
           start: 0, // TODO
           end: 0,
+          errors: [],
 
-          left: node,
-          right: this.visit(ctx.CompareExpression[offset]),
+          lhs: node,
+          rhs: this.visit(ctx.CompareExpression[offset]),
         };
       }
     }
@@ -460,8 +499,9 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
       type: 'AndAndExpression',
       start: 0, // TODO
       end: 0,
+      errors: [],
 
-      left: this.visit(ctx.OrExpression[0]),
+      lhs: this.visit(ctx.OrExpression[0]),
     };
 
     if (ctx.OrExpression.length > 1) {
@@ -470,9 +510,10 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
           type: 'AndAndExpression',
           start: 0, // TODO
           end: 0,
+          errors: [],
 
-          left: node,
-          right: this.visit(ctx.OrExpression[offset]),
+          lhs: node,
+          rhs: this.visit(ctx.OrExpression[offset]),
         };
       }
     }
@@ -485,8 +526,9 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
       type: 'OrExpression',
       start: 0, // TODO
       end: 0,
+      errors: [],
 
-      left: this.visit(ctx.XorExpression[0]),
+      lhs: this.visit(ctx.XorExpression[0]),
     };
 
     if (ctx.XorExpression.length > 1) {
@@ -495,9 +537,10 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
           type: 'OrExpression',
           start: 0, // TODO
           end: 0,
+          errors: [],
 
-          left: node,
-          right: this.visit(ctx.XorExpression[offset]),
+          lhs: node,
+          rhs: this.visit(ctx.XorExpression[offset]),
         };
       }
     }
@@ -510,20 +553,29 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
       type: 'OrOrExpression',
       start: 0, // TODO
       end: 0,
+      errors: [],
 
-      left: this.visit(ctx.AndAndExpression[0]),
+      lhs: this.visit(ctx.AndAndExpression[0]),
     };
+    if (node.lhs.errors) {
+      node.errors.push(...node.lhs.errors);
+    }
 
+    // TODO: Fix implement
     if (ctx.AndAndExpression.length > 1) {
       for (let offset = 1; offset < ctx.AndAndExpression.length; offset++) {
         node = {
           type: 'OrOrExpression',
           start: 0, // TODO
           end: 0,
+          errors: [],
 
-          left: node,
-          right: this.visit(ctx.AndAndExpression[offset]),
+          lhs: node,
+          rhs: this.visit(ctx.AndAndExpression[offset]),
         };
+        if (node.rhs.errors) {
+          node.errors.push(...node.rhs.errors);
+        }
       }
     }
 
@@ -535,8 +587,9 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
       type: 'XorExpression',
       start: 0,
       end: 0,
+      errors: [],
 
-      left: this.visit(ctx.AndExpression[0]),
+      lhs: this.visit(ctx.AndExpression[0]),
     };
 
     if (ctx.AndExpression.length > 1) {
@@ -545,9 +598,10 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
           type: 'XorExpression',
           start: 0, // TODO
           end: 0,
+          errors: [],
 
-          left: node,
-          right: this.visit(ctx.AndExpression[offset]),
+          lhs: node,
+          rhs: this.visit(ctx.AndExpression[offset]),
         };
       }
     }
@@ -558,21 +612,32 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
   protected ConditionalExpression(
     ctx: NodeContext
   ): ASTNodeConditionalExpression {
-    const result: ASTNodeConditionalExpression = {
+    const node: ASTNodeConditionalExpression = {
       type: 'ConditionalExpression',
       start: 0, // TODO: calculate start and end
       end: 0,
+      errors: [],
 
       condition: this.visit(ctx.OrOrExpression[0]),
     };
+    if (node.condition.errors) {
+      node.errors.push(...node.condition.errors);
+    }
 
     // condition ? valid : invalid
     if (ctx.ConditionalExpression) {
-      result.valid = this.visit(ctx.OrOrExpression[1]);
-      result.invalid = this.visit(ctx.ConditionalExpression);
+      node.valid = this.visit(ctx.OrOrExpression[1]);
+      node.invalid = this.visit(ctx.ConditionalExpression);
+
+      if (node.valid.errors) {
+        node.errors.push(...node.valid.errors);
+      }
+      if (node.invalid.errors) {
+        node.errors.push(...node.invalid.errors);
+      }
     }
 
-    return result;
+    return node;
   }
 
   protected PostfixExpression(ctx: NodeContext): ASTNodePostfixExpression {
@@ -580,6 +645,7 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
     return {
       type: 'PostfixExpression',
       start: 0,
+      errors: [],
       primary: this.visit(ctx.PrimaryExpression[0]),
     };
   }
@@ -590,6 +656,7 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
         type: 'Literal',
         start: 0, // TODO
         end: 0,
+        errors: [],
 
         raw: ctx.literal[0].image,
         value: '',
@@ -607,6 +674,7 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
     return {
       type: 'lambda-function',
       start: 0,
+      errors: [],
     };
   }
 
@@ -619,8 +687,23 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
       type: 'BracketHandler',
       items: ctx.$BracketHandlerItemGroup.map((item: any) => this.visit(item)),
       start: (ctx.LT[0] as IToken).startOffset,
+      end: (ctx.GT[0] as IToken).startOffset,
+      errors: [],
     };
-    // console.log('<' + node.items.join(':') + '>');
+
+    if (
+      !BracketHandlerMap.has(node.items[0]) ||
+      BracketHandlerMap.get(node.items[0]).next(node.items).length === 0
+    ) {
+      node.errors = [
+        {
+          start: node.start,
+          end: node.end,
+          reason: 'BracketHandler error',
+          detail: `BracketHandler <${node.items.join(':')}> does not exist.`,
+        },
+      ];
+    }
     return node;
   }
 
@@ -640,6 +723,7 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
       type: 'array',
       array: arr,
       start: 0,
+      errors: [],
     };
   }
 
@@ -661,6 +745,7 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
       type: 'map',
       map: map,
       start: 0,
+      errors: [],
     };
   }
 
@@ -681,6 +766,7 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
       type: 'package',
       item: all.map((t) => t.image),
       start: (ctx.IDENTIFIER[0] as IToken).startOffset,
+      errors: [],
     };
   }
 
@@ -689,6 +775,7 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
       type: 'parameter-list',
       // item: ctx.Parameter.map((item: any) => this.visit(item)),
       start: 0,
+      errors: [],
     };
   }
 
@@ -698,6 +785,7 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
       // pName: ctx.IDENTIFIER[0].image,
       // pType: ctx.TypeDeclare ? this.visit(ctx.TypeDeclare[0]) : undefined,
       start: 0,
+      errors: [],
     };
   }
 
@@ -713,6 +801,7 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
       type = {
         type: 'IMPORT',
         start: (ctx.IDENTIFIER[0] as IToken).startOffset,
+        errors: [],
         // item: ctx.IDENTIFIER.map((identifier: IToken) => identifier.image),
       };
     }
@@ -722,6 +811,7 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
       type = {
         type: Object.keys(ctx)[0],
         start: 0,
+        errors: [],
       };
     }
 
@@ -731,6 +821,7 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
         type: 'FUNCTION',
         // item: ctx.ParameterType.map((type: any) => this.visit(type)),
         start: (ctx.FUNCTION[0] as IToken).startOffset,
+        errors: [],
         // return: this.visit(ctx.FunctionType),
       };
     }
@@ -741,6 +832,7 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
       type = {
         type: 'ARRAY',
         start: body.start,
+        errors: [],
         // item: body,
       };
     }
@@ -749,6 +841,7 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
       type = {
         type: 'A_ARRAY',
         start: 0,
+        errors: [],
         // start: type.start,
         // level: ctx.SQBR_OPEN.length,
         // body: [type],
