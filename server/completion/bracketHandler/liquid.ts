@@ -27,6 +27,10 @@ class Liquid implements IBracketHandler {
     };
   }
 
+  check(predecessor: string[]): boolean {
+    return predecessor.length === 2 && zGlobal.fluids.has(predecessor[1]);
+  }
+
   next(predecessor: string[]): CompletionItem[] {
     switch (predecessor.length) {
       case 1:

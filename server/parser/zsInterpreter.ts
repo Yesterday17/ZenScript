@@ -26,6 +26,7 @@ import {
   ASTNodeXorExpression,
   NodeContext,
 } from '.';
+import { ERROR_BRACKET_HANDLER } from '../api/constants';
 import { zGlobal } from '../api/global';
 import { BracketHandlerMap } from '../completion/bracketHandler/bracketHandlers';
 import { ZSParser } from './zsParser';
@@ -149,7 +150,6 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
       node.start = node.body[0].start;
     }
 
-    console.log(node);
     return node;
   }
 
@@ -380,6 +380,10 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
       node.operator = ctx.operator[0].image;
     }
 
+    if (node.expression.errors) {
+      node.errors.push(...node.expression.errors);
+    }
+
     return node;
   }
 
@@ -395,9 +399,11 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
         ctx.MultiplyExpression[ctx.MultiplyExpression.length - 1]
       ),
     };
+    if (node.rhs.errors) {
+      node.errors.push(...node.rhs.errors);
+    }
 
     let now = node;
-
     if (ctx.MultiplyExpression.length > 1) {
       for (let offset = 1; offset < ctx.MultiplyExpression.length; offset++) {
         now.operator = ctx.operator[ctx.operator.length - offset].image;
@@ -412,6 +418,9 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
             ctx.MultiplyExpression[ctx.MultiplyExpression.length - offset - 1]
           ),
         };
+        if (node.rhs.errors) {
+          node.errors.push(...node.rhs.errors);
+        }
         if (offset === ctx.MultiplyExpression.length - 1) {
           now.lhs = now.lhs.rhs;
         } else {
@@ -435,9 +444,11 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
       lhs: undefined,
       rhs: this.visit(ctx.UnaryExpression[ctx.UnaryExpression.length - 1]),
     };
+    if (node.rhs.errors) {
+      node.errors.push(...node.rhs.errors);
+    }
 
     let now = node;
-
     if (ctx.UnaryExpression.length > 1) {
       for (let offset = 1; offset < ctx.UnaryExpression.length; offset++) {
         now.operator = ctx.operator[ctx.operator.length - offset].image;
@@ -452,6 +463,9 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
             ctx.UnaryExpression[ctx.UnaryExpression.length - offset - 1]
           ),
         };
+        if (now.rhs.errors) {
+          node.errors.push(...now.rhs.errors);
+        }
         if (offset === ctx.UnaryExpression.length - 1) {
           now.lhs = now.lhs.rhs;
         } else {
@@ -462,11 +476,12 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
       node.lhs = node.rhs;
       delete node.rhs;
     }
+
     return node;
   }
 
   protected CompareExpression(ctx: NodeContext): ASTNodeCompareExpression {
-    return {
+    const node: ASTNodeCompareExpression = {
       type: 'CompareExpression',
       start: 0, // TODO
       end: 0,
@@ -479,145 +494,236 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
           ? this.visit(ctx.AddExpression[1])
           : undefined,
     };
+    if (node.lhs.errors) {
+      node.errors.push(...node.lhs.errors);
+    }
+    if (node.rhs && node.rhs.errors) {
+      node.errors.push(...node.rhs.errors);
+    }
+
+    return node;
   }
 
   protected AndExpression(ctx: NodeContext): ASTNodeAndExpression {
-    let node: ASTNodeAndExpression = {
+    const node: ASTNodeAndExpression = {
       type: 'AndExpression',
       start: 0, // TODO
       end: 0,
       errors: [],
 
-      lhs: this.visit(ctx.CompareExpression[0]),
+      lhs: undefined,
+      rhs: this.visit(ctx.CompareExpression[ctx.CompareExpression.length - 1]),
     };
+    if (node.rhs.errors) {
+      node.errors.push(...node.rhs.errors);
+    }
 
+    let now = node;
     if (ctx.CompareExpression.length > 1) {
       for (let offset = 1; offset < ctx.CompareExpression.length; offset++) {
-        node = {
+        now.lhs = {
           type: 'AndExpression',
           start: 0, // TODO
           end: 0,
           errors: [],
 
-          lhs: node,
-          rhs: this.visit(ctx.CompareExpression[offset]),
+          lhs: undefined,
+          rhs: this.visit(
+            ctx.CompareExpression[ctx.CompareExpression.length - offset - 1]
+          ),
         };
+        if (now.rhs.errors) {
+          node.errors.push(...now.rhs.errors);
+        }
+        if (offset === ctx.CompareExpression.length - 1) {
+          now.lhs = now.lhs.rhs;
+        } else {
+          now = now.lhs;
+        }
       }
+    } else {
+      node.lhs = node.rhs;
+      delete node.rhs;
     }
 
     return node;
   }
 
   protected AndAndExpression(ctx: NodeContext): ASTNodeAndAndExpression {
-    let node: ASTNodeAndAndExpression = {
+    const node: ASTNodeAndAndExpression = {
       type: 'AndAndExpression',
       start: 0, // TODO
       end: 0,
       errors: [],
 
-      lhs: this.visit(ctx.OrExpression[0]),
+      lhs: undefined,
+      rhs: this.visit(ctx.OrExpression[ctx.OrExpression.length - 1]),
     };
+    if (node.rhs.errors) {
+      node.errors.push(...node.rhs.errors);
+    }
 
+    let now = node;
     if (ctx.OrExpression.length > 1) {
       for (let offset = 1; offset < ctx.OrExpression.length; offset++) {
-        node = {
+        now.lhs = {
           type: 'AndAndExpression',
           start: 0, // TODO
           end: 0,
           errors: [],
 
-          lhs: node,
-          rhs: this.visit(ctx.OrExpression[offset]),
+          lhs: undefined,
+          rhs: this.visit(
+            ctx.OrExpression[ctx.OrExpression.length - offset - 1]
+          ),
         };
+        if (now.rhs.errors) {
+          node.errors.push(...now.rhs.errors);
+        }
+        if (offset === ctx.OrExpression.length - 1) {
+          now.lhs = now.lhs.rhs;
+        } else {
+          now = now.lhs;
+        }
       }
+    } else {
+      node.lhs = node.rhs;
+      delete node.rhs;
     }
 
     return node;
   }
 
   protected OrExpression(ctx: NodeContext): ASTNodeOrExpression {
-    let node: ASTNodeOrExpression = {
+    const node: ASTNodeOrExpression = {
       type: 'OrExpression',
       start: 0, // TODO
       end: 0,
       errors: [],
 
-      lhs: this.visit(ctx.XorExpression[0]),
+      lhs: undefined,
+      rhs: this.visit(ctx.XorExpression[ctx.XorExpression.length - 1]),
     };
+    if (node.rhs.errors) {
+      node.errors.push(...node.rhs.errors);
+    }
 
+    let now = node;
     if (ctx.XorExpression.length > 1) {
       for (let offset = 1; offset < ctx.XorExpression.length; offset++) {
-        node = {
+        now.lhs = {
           type: 'OrExpression',
           start: 0, // TODO
           end: 0,
           errors: [],
 
-          lhs: node,
-          rhs: this.visit(ctx.XorExpression[offset]),
+          lhs: undefined,
+          rhs: this.visit(
+            ctx.XorExpression[ctx.XorExpression.length - offset - 1]
+          ),
         };
+        if (now.rhs.errors) {
+          node.errors.push(...now.rhs.errors);
+        }
+        if (offset === ctx.XorExpression.length - 1) {
+          now.lhs = now.lhs.rhs;
+        } else {
+          now = now.lhs;
+        }
       }
+    } else {
+      node.lhs = node.rhs;
+      delete node.rhs;
     }
 
     return node;
   }
 
   protected OrOrExpression(ctx: NodeContext): ASTNodeOrOrExpression {
-    let node: ASTNodeOrOrExpression = {
+    const node: ASTNodeOrOrExpression = {
       type: 'OrOrExpression',
       start: 0, // TODO
       end: 0,
       errors: [],
 
-      lhs: this.visit(ctx.AndAndExpression[0]),
+      lhs: undefined,
+      rhs: this.visit(ctx.AndAndExpression[ctx.AndAndExpression.length - 1]),
     };
-    if (node.lhs.errors) {
-      node.errors.push(...node.lhs.errors);
+    if (node.rhs.errors) {
+      node.errors.push(...node.rhs.errors);
     }
 
-    // TODO: Fix implement
+    let now = node;
     if (ctx.AndAndExpression.length > 1) {
       for (let offset = 1; offset < ctx.AndAndExpression.length; offset++) {
-        node = {
+        now.lhs = {
           type: 'OrOrExpression',
           start: 0, // TODO
           end: 0,
           errors: [],
 
-          lhs: node,
-          rhs: this.visit(ctx.AndAndExpression[offset]),
+          lhs: undefined,
+          rhs: this.visit(
+            ctx.XorExpression[ctx.AndAndExpression.length - offset - 1]
+          ),
         };
-        if (node.rhs.errors) {
-          node.errors.push(...node.rhs.errors);
+        if (now.rhs.errors) {
+          node.errors.push(...now.rhs.errors);
+        }
+        if (offset === ctx.AndAndExpression.length - 1) {
+          now.lhs = now.lhs.rhs;
+        } else {
+          now = now.lhs;
         }
       }
+    } else {
+      node.lhs = node.rhs;
+      delete node.rhs;
     }
 
     return node;
   }
 
   protected XorExpression(ctx: NodeContext): ASTNodeXorExpression {
-    let node: ASTNodeXorExpression = {
+    const node: ASTNodeXorExpression = {
       type: 'XorExpression',
-      start: 0,
+      start: 0, // TODO
       end: 0,
       errors: [],
 
-      lhs: this.visit(ctx.AndExpression[0]),
+      lhs: undefined,
+      rhs: this.visit(ctx.AndExpression[ctx.AndExpression.length - 1]),
     };
+    if (node.rhs.errors) {
+      node.errors.push(...node.rhs.errors);
+    }
 
+    let now = node;
     if (ctx.AndExpression.length > 1) {
       for (let offset = 1; offset < ctx.AndExpression.length; offset++) {
-        node = {
+        now.lhs = {
           type: 'XorExpression',
           start: 0, // TODO
           end: 0,
           errors: [],
 
-          lhs: node,
-          rhs: this.visit(ctx.AndExpression[offset]),
+          lhs: undefined,
+          rhs: this.visit(
+            ctx.XorExpression[ctx.AndExpression.length - offset - 1]
+          ),
         };
+        if (now.rhs.errors) {
+          node.errors.push(...now.rhs.errors);
+        }
+        if (offset === ctx.AndExpression.length - 1) {
+          now.lhs = now.lhs.rhs;
+        } else {
+          now = now.lhs;
+        }
       }
+    } else {
+      node.lhs = node.rhs;
+      delete node.rhs;
     }
 
     return node;
@@ -655,13 +761,20 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
   }
 
   protected PostfixExpression(ctx: NodeContext): ASTNodePostfixExpression {
-    // TODO
-    return {
+    const node: ASTNodePostfixExpression = {
       type: 'PostfixExpression',
       start: 0,
       errors: [],
       primary: this.visit(ctx.PrimaryExpression[0]),
     };
+
+    if (node.primary.errors) {
+      node.errors.push(...node.primary.errors);
+    }
+
+    // TODO: Postfix
+
+    return node;
   }
 
   protected PrimaryExpression(ctx: NodeContext): ASTNodePrimaryExpression {
@@ -677,7 +790,18 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
       };
     } else if (ctx.BracketHandler) {
       return this.visit(ctx.BracketHandler[0]);
-    } // TODO
+    } else {
+      // TODO
+      return {
+        type: 'Literal',
+        start: 0, // TODO
+        end: 0,
+        errors: [],
+
+        raw: '',
+        value: '',
+      };
+    }
   }
 
   /**
@@ -701,19 +825,22 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
       type: 'BracketHandler',
       items: ctx.$BracketHandlerItemGroup.map((item: any) => this.visit(item)),
       start: (ctx.LT[0] as IToken).startOffset,
-      end: (ctx.GT[0] as IToken).startOffset,
+      end: (ctx.GT[0] as IToken).endOffset,
       errors: [],
     };
 
-    if (
-      !BracketHandlerMap.has(node.items[0]) ||
-      BracketHandlerMap.get(node.items[0]).next(node.items).length === 0
-    ) {
+    let exist = false;
+    if (BracketHandlerMap.has(node.items[0])) {
+      exist = BracketHandlerMap.get(node.items[0]).check(node.items);
+    } else if (node.items[0] !== 'item') {
+      exist = BracketHandlerMap.get('item').check(['item', ...node.items]);
+    }
+    if (!exist) {
       node.errors = [
         {
           start: node.start,
           end: node.end,
-          reason: 'BracketHandler error',
+          reason: ERROR_BRACKET_HANDLER,
           detail: `BracketHandler <${node.items.join(':')}> does not exist.`,
         },
       ];

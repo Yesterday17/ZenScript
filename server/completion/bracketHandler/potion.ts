@@ -22,6 +22,10 @@ class Potion implements IBracketHandler {
     },
   };
 
+  check(predecessor: string[]): boolean {
+    return predecessor.length === 3;
+  }
+
   next(predecessor: string[]): CompletionItem[] {
     return [];
   }

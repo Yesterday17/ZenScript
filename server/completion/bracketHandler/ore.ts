@@ -25,6 +25,13 @@ class Ore implements IBracketHandler {
     },
   };
 
+  check(predecessor: string[]): boolean {
+    return (
+      predecessor.length === 2 &&
+      zGlobal.rcFile.oredictionary.includes(predecessor[1])
+    );
+  }
+
   next(predecessor: string[]): CompletionItem[] {
     return predecessor.length === 1
       ? zGlobal.rcFile

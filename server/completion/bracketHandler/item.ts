@@ -36,6 +36,22 @@ class Item implements IBracketHandler {
     },
   };
 
+  check(predecessor: string[]): boolean {
+    const args = [...predecessor];
+    if (args.length === 3) {
+      args.push('0');
+    }
+    if (args.length === 4) {
+      if (!zGlobal.items.has(args.slice(1, args.length - 1).join(':'))) {
+        return false;
+      }
+      return zGlobal.items
+        .getStorage(args.slice(1, args.length - 1).join(':'))
+        .values.includes(args[args.length - 1]);
+    }
+    return false;
+  }
+
   next(predecessor: string[]): CompletionItem[] {
     switch (predecessor.length) {
       case 1:

@@ -5,6 +5,7 @@ import {
 } from 'vscode-languageserver';
 import { TextDocument } from 'vscode-languageserver-textdocument';
 import { URI } from 'vscode-uri';
+import { ERROR_BRACKET_HANDLER } from '../api/constants';
 import { zGlobal } from '../api/global';
 import { ZenParsedFile } from '../api/zenParsedFile';
 import { ZenScriptActiveService } from './zsService';
@@ -77,10 +78,19 @@ export class ZenScriptDocumentContentChange extends ZenScriptActiveService {
       diagnostics.push(diagnotic);
     });
 
-    // bracket errors
-    if (!file.ignoreBracketErrors) {
-      // TODO
-    }
+    file.ast.errors.forEach((error) => {
+      if (!file.ignoreBracketErrors || error.reason !== ERROR_BRACKET_HANDLER) {
+        const diagnotic: Diagnostic = {
+          severity: DiagnosticSeverity.Error,
+          range: {
+            start: textDocument.positionAt(error.start),
+            end: textDocument.positionAt(error.end),
+          },
+          message: error.detail,
+        };
+        diagnostics.push(diagnotic);
+      }
+    });
 
     // send error diagnostics to client
     zGlobal.conn.sendDiagnostics({ uri: textDocument.uri, diagnostics });

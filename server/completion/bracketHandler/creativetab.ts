@@ -22,6 +22,10 @@ class CreativeTab implements IBracketHandler {
     },
   };
 
+  check(predecessor: string[]): boolean {
+    return predecessor.length === 2;
+  }
+
   next(predecessor: string[]): CompletionItem[] {
     return [];
   }

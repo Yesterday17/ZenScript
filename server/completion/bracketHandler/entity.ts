@@ -24,6 +24,16 @@ class Entity implements IBracketHandler {
     },
   };
 
+  check(predecessor: string[]): boolean {
+    return (
+      predecessor.length === 3 &&
+      zGlobal.entities.has(predecessor[1]) &&
+      zGlobal.entities
+        .get(predecessor[1])
+        .find((e) => e.resourceLocation.path === predecessor[2]) !== undefined
+    );
+  }
+
   next(predecessor: string[]): CompletionItem[] {
     switch (predecessor.length) {
       case 1:

@@ -19,30 +19,38 @@ class DamageSource implements IBracketHandler {
     },
   };
 
+  static sources = [
+    'IN_FIRE',
+    'LIGHTNING_BOLT',
+    'ON_FIRE',
+    'LAVA',
+    'HOT_FLOOR',
+    'IN_WALL',
+    'CRAMMING',
+    'DROWN',
+    'STARVE',
+    'CACTUS',
+    'FALL',
+    'FLY_INTO_WALL',
+    'OUT_OF_WORLD',
+    'GENERIC',
+    'MAGIC',
+    'WITHER',
+    'ANVIL',
+    'FALLING_BLOCK',
+    'DRAGON_BREATH',
+    'FIREWORKS',
+  ];
+
+  check(predecessor: string[]): boolean {
+    return (
+      predecessor.length === 2 && DamageSource.sources.includes(predecessor[1])
+    );
+  }
+
   next(predecessor: string[]): CompletionItem[] {
     if (predecessor.length === 1) {
-      return [
-        'IN_FIRE',
-        'LIGHTNING_BOLT',
-        'ON_FIRE',
-        'LAVA',
-        'HOT_FLOOR',
-        'IN_WALL',
-        'CRAMMING',
-        'DROWN',
-        'STARVE',
-        'CACTUS',
-        'FALL',
-        'FLY_INTO_WALL',
-        'OUT_OF_WORLD',
-        'GENERIC',
-        'MAGIC',
-        'WITHER',
-        'ANVIL',
-        'FALLING_BLOCK',
-        'DRAGON_BREATH',
-        'FIREWORKS',
-      ].map((key) => {
+      return DamageSource.sources.map((key) => {
         return {
           label: key,
           detail: 'Vanilla',
