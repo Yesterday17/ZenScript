@@ -190,7 +190,7 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
   }
 
   protected GlobalStaticDeclaration(ctx: NodeContext): ASTNodeDeclare {
-    const declaration: ASTNodeDeclare = {
+    const node: ASTNodeDeclare = {
       type: 'global',
       start: -1,
       end: -1,
@@ -201,20 +201,20 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
       errors: [],
     };
 
-    declaration.type = ctx.GLOBAL_ZS ? 'global' : 'static';
-    declaration.vName = ctx.vName[0].image;
-    declaration.vType = ctx.vType ? this.visit(ctx.vType) : 'any';
-    declaration.value = this.visit(ctx.value);
+    node.type = ctx.GLOBAL_ZS ? 'global' : 'static';
+    node.vName = ctx.vName[0].image;
+    node.vType = ctx.vType ? this.visit(ctx.vType[0]) : 'any';
+    node.value = this.visit(ctx.value[0]);
+    if (node.value.errors) {
+      node.errors.push(...node.value.errors);
+    }
 
-    declaration.start = ctx.GLOBAL_ZS
+    node.start = ctx.GLOBAL_ZS
       ? (ctx.GLOBAL_ZS[0] as IToken).startOffset
       : (ctx.STATIC[0] as IToken).startOffset;
-    declaration.end = declaration.value.end;
-
-    if (declaration.errors.length === 0) {
-      delete declaration.errors;
-    }
-    return declaration;
+    node.end = node.value.end;
+    console.log(node);
+    return node;
   }
 
   protected FunctionDeclaration(ctx: NodeContext): ASTNodeFunction {
@@ -802,19 +802,22 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
 
     if (ctx.property) {
       //
-    } else if (ctx.to) {
+    }
+    if (ctx.to) {
       // TODO
       const to: ASTNodeAssignExpression = this.visit(ctx.to[0]);
       if (to.errors) {
         node.errors.push(...to.errors);
       }
-    } else if (ctx.dotdot) {
+    }
+    if (ctx.dotdot) {
       // TODO
       const dotdot: ASTNodeAssignExpression = this.visit(ctx.dotdot[0]);
       if (dotdot.errors) {
         node.errors.push(...dotdot.errors);
       }
-    } else if (ctx.index) {
+    }
+    if (ctx.index) {
       //
       if (ctx.indexAssign) {
         // TODO
@@ -823,7 +826,8 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
           node.errors.push(...assign.errors);
         }
       }
-    } else if (ctx.brExpressions) {
+    }
+    if (ctx.brExpressions) {
       // TODO
       ctx.brExpressions.forEach((e: any) => {
         const exp: ASTNodeAssignExpression = this.visit(e);
@@ -831,9 +835,11 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
           node.errors.push(...exp.errors);
         }
       });
-    } else if (ctx.type) {
+    }
+    if (ctx.type) {
       //
-    } else if (ctx.instanceof) {
+    }
+    if (ctx.instanceof) {
       //
     }
 

@@ -109,8 +109,6 @@ export class ZenParsedFile implements IPriority {
       // Interpreting
       this.ast = ZSInterpreter.visit(this.cst);
       this.interpreteErrors = this.ast.errors;
-
-      // TODO: BracketHandler Error
     }
 
     this.step = ParseStep.Parsed;
