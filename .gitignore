@@ -3,6 +3,7 @@ out
 
 # Build
 *.vsix
+*.zip
 
 # Autogen language files
 *.nls.*.json

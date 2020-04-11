@@ -21,8 +21,8 @@
   ],
   "repository": {
     "preprocessor": {
-      "name": "support.other.preprocessor.zenscript",
-      "match": "^(\\s*)(#)(debug|ignoreBracketErrors|norun|loader|priority|ikwid|profile|modloaded)"
+      "name": "meta.preprocessor.zenscript",
+      "match": "^(\\s*)#(debug|ignoreBracketErrors|norun|loader|priority|ikwid|profile|modloaded)"
     },
     "import": {
       "comment": "package import",
@@ -79,8 +79,8 @@
           "name": "meta.type.zenscript",
           "match": "\\b(?<=(\\sas\\s)|(\\sinstanceof\\s))(([a-zA-Z_]+\\.)+)(\\w+)\\b",
           "captures": {
-            "3":{
-              "name":"support.class"
+            "3": {
+              "name": "support.class"
             },
             "5": {
               "name": "constant.other.type.zenscript"
@@ -189,7 +189,7 @@
                 "1": {
                   "name": "keyword.operator"
                 },
-                "2":{
+                "2": {
                   "name": "constant.character.escape.unicode.zenscript"
                 }
               }
