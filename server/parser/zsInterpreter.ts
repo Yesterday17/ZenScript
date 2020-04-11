@@ -213,7 +213,6 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
       ? (ctx.GLOBAL_ZS[0] as IToken).startOffset
       : (ctx.STATIC[0] as IToken).startOffset;
     node.end = node.value.end;
-    console.log(node);
     return node;
   }
 

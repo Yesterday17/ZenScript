@@ -48,21 +48,6 @@ export class ZenScriptDocumentContentChange extends ZenScriptActiveService {
       .parse()
       .interprete();
 
-    const ast = file.ast;
-    // if (ast) {
-    //   zGlobal.console.log(
-    //     JSON.stringify({
-    //       type: ast.type,
-    //       import: ast.import,
-    //       // global: Array.from(ast.global),
-    //       // static: Array.from(ast.static),
-    //       // function: Array.from(ast.function),
-    //       body: ast.body,
-    //       error: ast.errors,
-    //     })
-    //   );
-    // }
-
     // parse errors
     [...file.parseErrors, ...file.interpreteErrors].forEach((error) => {
       const diagnotic: Diagnostic = {

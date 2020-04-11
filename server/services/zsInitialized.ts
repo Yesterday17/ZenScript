@@ -39,7 +39,7 @@ export class ZenScriptInitialized extends ZenScriptActiveService {
 
       // No Folder is opened / foldername !== scripts
       // disable most of language server features
-      let folder: WorkspaceFolder;
+      let folderURI: URI;
       for (const f of zGlobal.client.folders) {
         const furi = URI.parse(f.uri),
           fbase = path.basename(furi);
@@ -48,32 +48,25 @@ export class ZenScriptInitialized extends ZenScriptActiveService {
           fbase === 'scripts' ||
           (await fs.existInDirectory(furi, '.zsrc', zGlobal.conn)) // Remote url fix
         ) {
-          folder = f;
+          folderURI = furi;
         } else if (
           zGlobal.setting.supportMinecraftFolderMode &&
           (await fs.exists(path.join(furi, 'scripts'), zGlobal.conn))
         ) {
           // Rejudge minecraft folder mode
-          folder = {
-            ...f,
-            uri: path.join(furi, 'scripts').toString(),
-          };
+          folderURI = path.join(furi, 'scripts');
         }
       }
 
       // whether the target folder exists
-      if (folder) {
+      if (folderURI) {
         zGlobal.isProject = true;
-        zGlobal.baseFolder = folder.uri;
+        zGlobal.baseFolder = folderURI.toString();
         await reloadRCFile(zGlobal.conn);
 
         // Load all files
         zGlobal.bus.revoke('all-zs-parsed');
-        const files = await AllZSFiles(
-          URI.parse(zGlobal.baseFolder),
-          zGlobal.conn,
-          'scripts'
-        );
+        const files = await AllZSFiles(folderURI, zGlobal.conn, 'scripts');
         for (const { uri, pkg } of files) {
           // new parsed file
           const zsFile = new ZenParsedFile(uri, pkg, zGlobal.conn);
