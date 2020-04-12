@@ -6,6 +6,7 @@ import {
   TextDocuments,
 } from 'vscode-languageserver';
 import { TextDocument } from 'vscode-languageserver-textdocument';
+import { URI } from 'vscode-uri';
 import { Directory, ZenFunction, ZenScriptSettings } from '.';
 import { ClientInfo } from '../services/zsService';
 import { RCStorage } from '../utils/rcStorage';
@@ -46,7 +47,7 @@ class Global {
   console: RemoteConsole;
 
   isProject: boolean;
-  baseFolder: string;
+  baseFolderUri: URI;
   setting: ZenScriptSettings;
   documentSettings: Map<string, Promise<ZenScriptSettings>>;
 
@@ -92,7 +93,7 @@ class Global {
     this.bus = new StateEventBus();
 
     this.isProject = false;
-    this.baseFolder = '';
+    this.baseFolderUri = null;
 
     this.setting = undefined;
     this.documentSettings = new Map();

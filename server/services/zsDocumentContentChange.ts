@@ -32,7 +32,7 @@ export class ZenScriptDocumentContentChange extends ZenScriptActiveService {
       let pkg =
         'scripts.' +
         textDocument.uri
-          .substr(zGlobal.baseFolder.length)
+          .substr(zGlobal.baseFolderUri.toString().length)
           .replace(/^\//g, '')
           .replace(/[\/\\]/g, '.')
           .replace(/\.zs$/, '');

@@ -1,11 +1,9 @@
-import { Connection } from 'vscode-languageserver';
-import { URI } from 'vscode-uri';
+import get from 'get-value';
+import set from 'set-value';
 import { zGlobal } from '../api/global';
+import { MemberGetter, MemberMethod, MemberSetter } from '../api/rcFile';
 import * as fs from '../utils/fs';
 import * as path from './path';
-import set from 'set-value';
-import get from 'get-value';
-import { MemberMethod, MemberGetter, MemberSetter } from '../api/rcFile';
 
 function isMemberMethod(p: any): p is MemberMethod {
   return typeof p['methods'] !== 'undefined';
@@ -21,25 +19,20 @@ function isMemberSetter(p: any): p is MemberSetter {
 
 /**
  * Reload /scripts/.zsrc
- * @param connection connection
  */
-export async function reloadRCFile(connection: Connection) {
+export async function reloadRCFile() {
   zGlobal.bus.revoke('rc-loaded');
   try {
     if (
-      !(await fs.existInDirectory(
-        URI.parse(zGlobal.baseFolder),
-        '.zsrc',
-        connection
-      ))
+      !(await fs.existInDirectory(zGlobal.baseFolderUri, '.zsrc', zGlobal.conn))
     ) {
       zGlobal.isProject = false;
       return;
     }
 
     const json = await fs.readFileString(
-      path.join(URI.parse(zGlobal.baseFolder), '.zsrc'),
-      connection
+      path.join(zGlobal.baseFolderUri, '.zsrc'),
+      zGlobal.conn
     );
     zGlobal.rcFile = JSON.parse(json);
 
@@ -63,7 +56,7 @@ export async function reloadRCFile(connection: Connection) {
           ].join(':');
           zGlobal.items.set(key, value);
         } catch (e) {
-          connection.console.error(
+          zGlobal.console.error(
             `Failed to load item: ${value.unlocalizedName}`
           );
         }
@@ -165,6 +158,6 @@ export async function reloadRCFile(connection: Connection) {
 
     zGlobal.bus.finish('rc-loaded');
   } catch (e) {
-    connection.console.error(e.message);
+    zGlobal.console.error(e.message);
   }
 }

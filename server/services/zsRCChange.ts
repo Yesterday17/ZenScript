@@ -1,6 +1,6 @@
-import { URL } from 'url';
 import { InitializeResult } from 'vscode-languageserver';
 import { zGlobal } from '../api/global';
+import * as path from '../utils/path';
 import { reloadRCFile } from '../utils/zsrcFile';
 import { ClientInfo, ZenScriptService } from './zsService';
 
@@ -17,11 +17,8 @@ export class ZenScriptRCChange implements ZenScriptService {
     zGlobal.conn.onDidChangeWatchedFiles(async (change) => {
       if (zGlobal.isProject) {
         for (const c of change.changes) {
-          // TODO: use relative path instead
-          if (
-            new URL(c.uri).hash === new URL(zGlobal.baseFolder + '/.zsrc').hash
-          ) {
-            reloadRCFile(zGlobal.conn);
+          if (c.uri === path.join(zGlobal.baseFolderUri, '.zsrc').path) {
+            reloadRCFile();
             break;
           }
         }

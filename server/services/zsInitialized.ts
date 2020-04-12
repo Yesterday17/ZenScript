@@ -1,4 +1,4 @@
-import { InitializeResult, WorkspaceFolder } from 'vscode-languageserver';
+import { InitializeResult } from 'vscode-languageserver';
 import { URI } from 'vscode-uri';
 import { ServerStatusRequestType } from '../../api/requests/ServerStatusRequest';
 import { zGlobal } from '../api/global';
@@ -61,8 +61,8 @@ export class ZenScriptInitialized extends ZenScriptActiveService {
       // whether the target folder exists
       if (folderURI) {
         zGlobal.isProject = true;
-        zGlobal.baseFolder = folderURI.toString();
-        await reloadRCFile(zGlobal.conn);
+        zGlobal.baseFolderUri = folderURI;
+        await reloadRCFile();
 
         // Load all files
         zGlobal.bus.revoke('all-zs-parsed');
@@ -81,7 +81,7 @@ export class ZenScriptInitialized extends ZenScriptActiveService {
 
       // Isn't a folder warn.
       if (
-        zGlobal.baseFolder === '' &&
+        zGlobal.baseFolderUri &&
         !zGlobal.isProject &&
         zGlobal.setting.showIsProjectWarn
       ) {
