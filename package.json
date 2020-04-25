@@ -4,7 +4,7 @@
   "description": "For Modpack makers.",
   "repository": "https://github.com/Yesterday17/ZenScript",
   "license": "MIT",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "publisher": "yesterday17",
   "engines": {
     "vscode": "^1.43.0"
