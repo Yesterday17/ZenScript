@@ -41,7 +41,9 @@ export class ZenScriptInitialized extends ZenScriptActiveService {
       // disable most of language server features
       let folderURI: URI;
       for (const f of zGlobal.client.folders) {
-        const furi = URI.parse(f.uri),
+        const furi = f.uri.match(/^[^:]+:\/\//)
+            ? URI.parse(f.uri)
+            : URI.file(f.uri),
           fbase = path.basename(furi);
         if (
           f.name === 'scripts' ||
