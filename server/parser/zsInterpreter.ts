@@ -899,11 +899,16 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
       errors: [],
     };
 
-    let exist = false;
-    if (BracketHandlerMap.has(node.items[0])) {
-      exist = BracketHandlerMap.get(node.items[0]).check(node.items);
-    } else if (node.items[0] !== 'item') {
-      exist = BracketHandlerMap.get('item').check(['item', ...node.items]);
+    // FIXME: <modid:item:meta:*> should be invalid
+    let exist = false,
+      items = node.items;
+    if (items[items.length - 1] === '*') {
+      items = items.slice(0, items.length - 1);
+    }
+    if (BracketHandlerMap.has(items[0])) {
+      exist = BracketHandlerMap.get(items[0]).check(items);
+    } else if (items[0] !== 'item') {
+      exist = BracketHandlerMap.get('item').check(['item', ...items]);
     }
     if (!exist) {
       node.errors = [
