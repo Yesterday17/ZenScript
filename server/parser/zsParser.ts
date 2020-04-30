@@ -666,7 +666,6 @@ export class ZenScriptParser extends Parser {
               { ALT: () => this.CONSUME(A_CLOSE, { LABEL: 'part' }) },
               { ALT: () => this.CONSUME(SQBR_OPEN, { LABEL: 'part' }) },
               { ALT: () => this.CONSUME(SQBR_CLOSE, { LABEL: 'part' }) },
-              { ALT: () => this.CONSUME(DOT2, { LABEL: 'part' }) },
               { ALT: () => this.CONSUME(DOT, { LABEL: 'part' }) },
               { ALT: () => this.CONSUME(COMMA, { LABEL: 'part' }) },
               { ALT: () => this.CONSUME(PLUS, { LABEL: 'part' }) },
@@ -674,9 +673,7 @@ export class ZenScriptParser extends Parser {
               { ALT: () => this.CONSUME(MUL, { LABEL: 'part' }) },
               { ALT: () => this.CONSUME(DIV, { LABEL: 'part' }) }, // #7
               { ALT: () => this.CONSUME(MOD, { LABEL: 'part' }) },
-              { ALT: () => this.CONSUME(OR2, { LABEL: 'part' }) },
               { ALT: () => this.CONSUME(OR, { LABEL: 'part' }) },
-              { ALT: () => this.CONSUME(AND2, { LABEL: 'part' }) },
               { ALT: () => this.CONSUME(AND, { LABEL: 'part' }) },
               { ALT: () => this.CONSUME(XOR, { LABEL: 'part' }) },
               { ALT: () => this.CONSUME(QUEST, { LABEL: 'part' }) },
@@ -684,9 +681,7 @@ export class ZenScriptParser extends Parser {
               { ALT: () => this.CONSUME(BR_CLOSE, { LABEL: 'part' }) },
               { ALT: () => this.CONSUME(TILDE, { LABEL: 'part' }) },
               { ALT: () => this.CONSUME(SEMICOLON, { LABEL: 'part' }) },
-              { ALT: () => this.CONSUME(EQ, { LABEL: 'part' }) },
               { ALT: () => this.CONSUME(ASSIGN, { LABEL: 'part' }) },
-              { ALT: () => this.CONSUME(NOT_EQ, { LABEL: 'part' }) },
               { ALT: () => this.CONSUME(NOT, { LABEL: 'part' }) },
               { ALT: () => this.CONSUME(DOLLAR, { LABEL: 'part' }) },
             ]);

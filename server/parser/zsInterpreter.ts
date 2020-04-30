@@ -924,7 +924,7 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
   }
 
   protected BracketHandler$BracketHandlerItemGroup(ctx: NodeContext) {
-    return ctx.part[0].image;
+    return ctx.part.map((t: any) => t.image).join('');
   }
 
   protected ZSArray(ctx: NodeContext): ASTNodeArray {
