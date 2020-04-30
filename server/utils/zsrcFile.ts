@@ -90,8 +90,9 @@ export async function reloadRCFile() {
     // Fluids
     zGlobal.fluids.clear();
     if (zGlobal.rcFile.config.fluids && zGlobal.rcFile.fluids) {
-      zGlobal.rcFile.fluids.forEach((value) =>
-        zGlobal.fluids.set(value.unlocalizedName, value)
+      zGlobal.rcFile.fluids.forEach(
+        (value) => zGlobal.fluids.set(value.name, value)
+        // TODO: Warn if two liquids have the same name
       );
     }
 
