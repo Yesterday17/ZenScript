@@ -63,19 +63,24 @@ export class ZenScriptDocumentContentChange extends ZenScriptActiveService {
       diagnostics.push(diagnotic);
     });
 
-    file.ast.errors.forEach((error) => {
-      if (!file.ignoreBracketErrors || error.reason !== ERROR_BRACKET_HANDLER) {
-        const diagnotic: Diagnostic = {
-          severity: DiagnosticSeverity.Error,
-          range: {
-            start: textDocument.positionAt(error.start),
-            end: textDocument.positionAt(error.end),
-          },
-          message: error.detail,
-        };
-        diagnostics.push(diagnotic);
-      }
-    });
+    if (file.ast) {
+      file.ast.errors.forEach((error) => {
+        if (
+          !file.ignoreBracketErrors ||
+          error.reason !== ERROR_BRACKET_HANDLER
+        ) {
+          const diagnotic: Diagnostic = {
+            severity: DiagnosticSeverity.Error,
+            range: {
+              start: textDocument.positionAt(error.start),
+              end: textDocument.positionAt(error.end),
+            },
+            message: error.detail,
+          };
+          diagnostics.push(diagnotic);
+        }
+      });
+    }
 
     // send error diagnostics to client
     zGlobal.conn.sendDiagnostics({ uri: textDocument.uri, diagnostics });
