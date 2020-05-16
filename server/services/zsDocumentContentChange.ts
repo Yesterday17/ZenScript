@@ -29,13 +29,18 @@ export class ZenScriptDocumentContentChange extends ZenScriptActiveService {
 
     // save lexing result
     if (!zGlobal.zsFiles.has(textDocument.uri)) {
-      let pkg =
-        'scripts.' +
-        textDocument.uri
-          .substr(zGlobal.baseFolderUri.toString().length)
-          .replace(/^\//g, '')
-          .replace(/[\/\\]/g, '.')
-          .replace(/\.zs$/, '');
+      let pkg;
+      if (zGlobal.isProject) {
+        pkg =
+          'scripts.' +
+          textDocument.uri
+            .substr(zGlobal.baseFolderUri.toString().length)
+            .replace(/^\//g, '')
+            .replace(/[\/\\]/g, '.')
+            .replace(/\.zs$/, '');
+      } else {
+        pkg = '';
+      }
       zGlobal.zsFiles.set(
         textDocument.uri,
         new ZenParsedFile(URI.parse(textDocument.uri), pkg, zGlobal.conn)
