@@ -46,27 +46,27 @@ class Global {
    */
   console: RemoteConsole;
 
-  isProject: boolean;
+  isProject: boolean = false;
   baseFolderUri: URI;
   setting: ZenScriptSettings;
-  documentSettings: Map<string, Promise<ZenScriptSettings>>;
+  documentSettings: Map<string, Promise<ZenScriptSettings>> = new Map();
 
   // .zsrc File
   rcFile: ZSRCFile;
   directory: Directory;
 
-  mods: Map<string, ModEntry>;
-  items: RCStorage;
-  enchantments: Map<string, EnchantmentEntry[]>;
-  entities: Map<string, EntityEntry[]>;
-  fluids: Map<string, FluidEntry>;
+  mods: Map<string, ModEntry> = new Map();
+  items: RCStorage = new RCStorage('item', 3);
+  enchantments: Map<string, EnchantmentEntry[]> = new Map();
+  entities: Map<string, EntityEntry[]> = new Map();
+  fluids: Map<string, FluidEntry> = new Map();
   packages: Object;
 
-  global: Map<String, Object>;
-  globalFunction: Map<String, ZenFunction[]>;
+  global: Map<String, Object> = new Map();
+  globalFunction: Map<String, ZenFunction[]> = new Map();
 
   // zs file
-  zsFiles: Map<string, ZenParsedFile>;
+  zsFiles: Map<string, ZenParsedFile> = new Map();
 
   constructor() {
     this.reset();
