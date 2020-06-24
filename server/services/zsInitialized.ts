@@ -51,10 +51,7 @@ export class ZenScriptInitialized extends ZenScriptActiveService {
           (await fs.existInDirectory(furi, '.zsrc', zGlobal.conn)) // Remote url fix
         ) {
           folderURI = furi;
-        } else if (
-          zGlobal.setting.supportMinecraftFolderMode &&
-          (await fs.exists(path.join(furi, 'scripts'), zGlobal.conn))
-        ) {
+        } else if (await fs.exists(path.join(furi, 'scripts'), zGlobal.conn)) {
           // Rejudge minecraft folder mode
           folderURI = path.join(furi, 'scripts');
         }

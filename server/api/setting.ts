@@ -7,7 +7,6 @@ export const defaultSettings: ZenScriptSettings = {
   maxNumberOfProblems: 100,
   maxHistoryEntries: 20,
 
-  supportMinecraftFolderMode: false,
   showIsProjectWarn: true,
   autoshowLTCompletion: true,
   modIdItemCompletion: false,
