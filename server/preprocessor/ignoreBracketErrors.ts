@@ -5,7 +5,10 @@ import { IPreProcessor } from './IPreProcessor';
 class IgnoreBracketErrorsPreProcessor implements IPreProcessor {
   completion = HashIgnoreBracketErrors;
   handle(path: string, args: string[]) {
-    zGlobal.zsFiles.get(path).ignoreBracketErrors = true;
+    const file = zGlobal.zsFiles.get(path);
+    if (file) {
+      file.ignoreBracketErrors = true;
+    }
   }
 }
 

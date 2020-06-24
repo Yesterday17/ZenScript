@@ -25,13 +25,13 @@ class Entity implements IBracketHandler {
   };
 
   check(predecessor: string[]): boolean {
-    return (
-      predecessor.length === 3 &&
-      zGlobal.entities.has(predecessor[1]) &&
-      zGlobal.entities
-        .get(predecessor[1])
-        .find((e) => e.resourceLocation.path === predecessor[2]) !== undefined
-    );
+    if (predecessor.length === 3 && zGlobal.entities.has(predecessor[1])) {
+      const entity = zGlobal.entities.get(predecessor[1]);
+      if (entity) {
+        return !!entity.find((e) => e.resourceLocation.path === predecessor[2]);
+      }
+    }
+    return false;
   }
 
   next(predecessor: string[]): CompletionItem[] {
@@ -51,8 +51,10 @@ class Entity implements IBracketHandler {
         return result;
       case 2:
         // entity:modid:[item]
-        return zGlobal.entities.has(predecessor[1])
-          ? zGlobal.entities.get(predecessor[1]).map((item, i) => {
+        if (zGlobal.entities.has(predecessor[1])) {
+          const entity = zGlobal.entities.get(predecessor[1]);
+          if (entity) {
+            return entity.map((item, i) => {
               return {
                 label: item.resourceLocation.path,
                 filterText: [item.name, item.resourceLocation.path].join(''),
@@ -62,9 +64,11 @@ class Entity implements IBracketHandler {
                   predecessor,
                   position: i,
                 },
-              } as CompletionItem;
-            })
-          : [];
+              };
+            });
+          }
+        }
+        return [];
       default:
         return [];
     }
@@ -80,27 +84,32 @@ class Entity implements IBracketHandler {
           return item;
         }
         const mod = zGlobal.mods.get(item.label);
-        return {
-          ...item,
-          detail: mod.name,
-          documentation: {
-            kind: 'markdown',
-            value: mod.description,
-          },
-        };
+        if (mod) {
+          return {
+            ...item,
+            detail: mod.name,
+            documentation: {
+              kind: 'markdown',
+              value: mod.description,
+            },
+          };
+        }
+        return item;
       case 2:
         // entity:modid:[item]
-        const entityFound = zGlobal.entities.get(item.data.predecessor[1])[
-          item.data.position
-        ];
-        return {
-          ...item,
-          detail: entityFound.name,
-          documentation: {
-            kind: 'markdown',
-            value: ``,
-          },
-        };
+        const entity = zGlobal.entities.get(item.data.predecessor[1]);
+        if (entity) {
+          const detail = entity[item.data.position];
+          return {
+            ...item,
+            detail: detail.name,
+            documentation: {
+              kind: 'markdown',
+              value: ``,
+            },
+          };
+        }
+        return item;
       default:
         return item;
     }

@@ -17,7 +17,7 @@ import { StatusBar } from './view/statusbar';
 
 let client: LanguageClient;
 
-export function activate(context: ExtensionContext) {
+export function activate(context: ExtensionContext): void {
   const serverModule = context.asAbsolutePath(
     path.join('out', 'server', 'server.js')
   );
@@ -76,9 +76,9 @@ export function activate(context: ExtensionContext) {
   client.start();
 }
 
-export function deactivate(): Thenable<void> {
+export async function deactivate(): Promise<void> {
   if (!client) {
     return;
   }
-  return client.stop();
+  return await client.stop();
 }

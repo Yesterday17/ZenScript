@@ -12,7 +12,7 @@ import { ZenScriptActiveService } from './zsService';
 
 export class ZenScriptDocumentContentChange extends ZenScriptActiveService {
   apply(service: InitializeResult): void {
-    zGlobal.documents.onDidChangeContent(async (event) => {
+    zGlobal.documents?.onDidChangeContent(async (event) => {
       ZenScriptDocumentContentChange.validateTextDocument(event.document);
     });
   }
@@ -88,6 +88,6 @@ export class ZenScriptDocumentContentChange extends ZenScriptActiveService {
     }
 
     // send error diagnostics to client
-    zGlobal.conn.sendDiagnostics({ uri: textDocument.uri, diagnostics });
+    zGlobal.conn?.sendDiagnostics({ uri: textDocument.uri, diagnostics });
   }
 }

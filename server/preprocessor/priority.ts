@@ -9,7 +9,10 @@ class PriorityPreProcessor implements IPreProcessor {
       return;
     }
 
-    zGlobal.zsFiles.get(path).priority = parseInt(args[1]);
+    const file = zGlobal.zsFiles.get(path);
+    if (file) {
+      file.priority = parseInt(args[1]);
+    }
   }
 }
 

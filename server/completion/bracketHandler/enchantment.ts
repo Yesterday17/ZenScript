@@ -25,20 +25,22 @@ class Enchantment implements IBracketHandler {
   };
 
   check(predecessor: string[]): boolean {
-    return (
-      predecessor.length === 3 &&
-      zGlobal.enchantments.has(predecessor[1]) &&
-      zGlobal.enchantments
-        .get(predecessor[1])
-        .find((e) => e.resourceLocation.path === predecessor[2]) !== undefined
-    );
+    if (predecessor.length === 3 && zGlobal.enchantments.has(predecessor[1])) {
+      const enchantment = zGlobal.enchantments.get(predecessor[1]);
+      if (enchantment) {
+        return !!enchantment.find(
+          (e) => e.resourceLocation.path === predecessor[2]
+        );
+      }
+    }
+    return false;
   }
 
   next(predecessor: string[]): CompletionItem[] {
     switch (predecessor.length) {
       case 1:
         // enchantment:[modid]
-        const result = Array.from(zGlobal.enchantments.keys()).map((key) => {
+        return Array.from(zGlobal.enchantments.keys()).map((key) => {
           return {
             label: key,
             kind: BracketHandlerKind,
@@ -48,20 +50,18 @@ class Enchantment implements IBracketHandler {
             },
           } as CompletionItem;
         });
-        return result;
       case 2:
         // enchantment:modid:[enchantment]
-        return zGlobal.enchantments.has(predecessor[1])
-          ? zGlobal.enchantments.get(predecessor[1]).map((item, i) => {
-              const enchantmentFound = zGlobal.enchantments.get(predecessor[1])[
-                i
-              ];
+        if (zGlobal.enchantments.has(predecessor[1])) {
+          const enchantment = zGlobal.enchantments.get(predecessor[1]);
+          if (enchantment) {
+            return enchantment.map((item, i) => {
               return {
                 label: item.resourceLocation.path,
                 filterText: [
-                  enchantmentFound.name,
-                  enchantmentFound.unlocalizedName,
-                  enchantmentFound.resourceLocation.path,
+                  item.name,
+                  item.unlocalizedName,
+                  item.resourceLocation.path,
                 ].join(''),
                 kind: CompletionItemKind.Value,
                 data: {
@@ -69,9 +69,11 @@ class Enchantment implements IBracketHandler {
                   predecessor,
                   position: i,
                 },
-              } as CompletionItem;
-            })
-          : [];
+              };
+            });
+          }
+        }
+        return [];
       default:
         return [];
     }
@@ -87,27 +89,32 @@ class Enchantment implements IBracketHandler {
           return item;
         }
         const mod = zGlobal.mods.get(item.label);
-        return {
-          ...item,
-          detail: mod.name,
-          documentation: {
-            kind: 'markdown',
-            value: mod.description,
-          },
-        };
+        if (mod) {
+          return {
+            ...item,
+            detail: mod.name,
+            documentation: {
+              kind: 'markdown',
+              value: mod.description,
+            },
+          };
+        }
+        return item;
       case 2:
         // enchantment:modid:[enchantment]
-        const enchantmentFound = zGlobal.enchantments.get(
-          item.data.predecessor[1]
-        )[item.data.position];
-        return {
-          ...item,
-          detail: enchantmentFound.name,
-          documentation: {
-            kind: 'markdown',
-            value: '**Type**: ' + enchantmentFound.type,
-          },
-        };
+        const enchantment = zGlobal.enchantments.get(item.data.predecessor[1]);
+        if (enchantment) {
+          const detail = enchantment[item.data.position];
+          return {
+            ...item,
+            detail: detail.name,
+            documentation: {
+              kind: 'markdown',
+              value: '**Type**: ' + detail.type,
+            },
+          };
+        }
+        return item;
       default:
         return item;
     }

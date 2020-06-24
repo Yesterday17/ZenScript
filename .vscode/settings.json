@@ -2,15 +2,11 @@
 {
   "files.exclude": {
     "*.vsix": true,
-    "api": true,
     "assets": true,
-    "client": true,
     "docs": true,
     "i18n": true,
     "language": true,
-    "server": true,
     "test": true,
-    "yarn.lock": true,
-    "zenscript.code-workspace": true
+    "yarn.lock": true
   }
 }

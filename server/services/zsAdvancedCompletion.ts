@@ -20,6 +20,11 @@ import { findToken } from '../utils/findToken';
 import { getdocumentSettings } from '../utils/setting';
 import { ClientInfo, ZenScriptService } from './zsService';
 
+export const defaultCompletion = [
+  ...GlobalCompletion(),
+  ...SnippetCompletions(),
+];
+
 export class ZenScriptAdvancedCompletion implements ZenScriptService {
   test(client: ClientInfo): boolean {
     return (
@@ -37,15 +42,15 @@ export class ZenScriptAdvancedCompletion implements ZenScriptService {
       };
     }
     // #preprocessor
-    service.capabilities.completionProvider.triggerCharacters.push(
+    service.capabilities?.completionProvider?.triggerCharacters?.push(
       '#',
       '.',
       ':',
       '<',
       ' '
     );
-    zGlobal.conn.onCompletion(ZenScriptAdvancedCompletion.doCompletion);
-    zGlobal.conn.onCompletionResolve(
+    zGlobal.conn?.onCompletion(ZenScriptAdvancedCompletion.doCompletion);
+    zGlobal.conn?.onCompletionResolve(
       ZenScriptAdvancedCompletion.doCompletionResolve
     );
   }
@@ -56,13 +61,23 @@ export class ZenScriptAdvancedCompletion implements ZenScriptService {
     await zGlobal.bus.wait('all-zs-parsed');
 
     // 获得当前正在修改的 document
-    const document = zGlobal.documents.get(completion.textDocument.uri);
+    const document = zGlobal.documents?.get(completion.textDocument.uri);
+    if (!document) {
+      return defaultCompletion;
+    }
+
     // 当前补全的位置
     const position = completion.position;
     // 当前补全的 offset
     let offset = document.offsetAt(position);
+
+    const doc = zGlobal.zsFiles.get(document.uri);
+    if (!doc) {
+      return defaultCompletion;
+    }
+
     // Tokens
-    const tokens = zGlobal.zsFiles.get(document.uri).tokens;
+    const tokens = doc.tokens;
 
     const now = document.positionAt(offset - 1);
     const first = { line: now.line, character: 0 };
@@ -71,15 +86,13 @@ export class ZenScriptAdvancedCompletion implements ZenScriptService {
       end: position,
     });
 
-    let trigger = completion.context.triggerCharacter;
-    const manuallyTriggerred = trigger === undefined;
+    let trigger = completion?.context?.triggerCharacter;
+
+    const manuallyTriggerred = !trigger;
     if (manuallyTriggerred) {
       let token = findToken(tokens, offset - 1);
       if (!token.exist) {
-        const token = findToken(
-          zGlobal.zsFiles.get(document.uri).comments,
-          offset - 1
-        );
+        token = findToken(doc.comments, offset - 1);
         if (token.exist && token.found.token.image === '#') {
           trigger = token.found.token.image;
         }
@@ -122,7 +135,7 @@ export class ZenScriptAdvancedCompletion implements ZenScriptService {
             end: document.positionAt(offset + 1),
           });
         } while (s === ' ');
-        let token = findToken(tokens, offset - 1);
+        const token = findToken(tokens, offset - 1);
         if (token.exist && token.found.token.tokenType === IMPORT) {
           return ImportCompletion([]);
         }
@@ -133,8 +146,8 @@ export class ZenScriptAdvancedCompletion implements ZenScriptService {
         if (!now.exist) {
           return [];
         }
-        let pos,
-          prev = [];
+        let pos;
+        const prev = [];
         for (
           pos = now.found.position;
           tokens[pos].tokenType === DOT;
@@ -147,7 +160,7 @@ export class ZenScriptAdvancedCompletion implements ZenScriptService {
         }
         break;
       case ':':
-        // 位于 <> 内的内容
+        // inside <>
         let predecessor = line
           .substring(line.lastIndexOf('<') + 1, line.lastIndexOf(':'))
           .split(':');
@@ -160,31 +173,31 @@ export class ZenScriptAdvancedCompletion implements ZenScriptService {
           predecessor = ['item', ...predecessor];
         }
 
-        return BracketHandlerMap.get(predecessor[0])
-          ? BracketHandlerMap.get(predecessor[0])
-              .next(predecessor)
-              .map((b) => {
-                b.commitCharacters = [':'];
-                return b;
-              })
-          : [];
+        const handler = BracketHandlerMap.get(predecessor[0]);
+        if (handler) {
+          return handler.next(predecessor).map((b) => {
+            b.commitCharacters = [':'];
+            return b;
+          });
+        }
+        return [];
       case '<':
         const setting = await getdocumentSettings(completion.textDocument.uri);
-        return manuallyTriggerred || setting.autoshowLTCompletion
-          ? setting.modIdItemCompletion
-            ? [
-                ...SimpleBracketHandlers,
-                ...ItemBracketHandler.next(['item']).map((i) => {
-                  i.commitCharacters = [':'];
-                  return i;
-                }),
-              ]
-            : [...SimpleBracketHandlers]
-          : [];
-
-      default:
-        return [...GlobalCompletion(), ...SnippetCompletions()];
+        if (manuallyTriggerred || setting.autoshowLTCompletion) {
+          const result = [...SimpleBracketHandlers];
+          if (setting.modIdItemCompletion) {
+            result.push(
+              ...ItemBracketHandler.next(['item']).map((i) => {
+                i.commitCharacters = [':'];
+                return i;
+              })
+            );
+          }
+          return result;
+        }
+        return [];
     }
+    return defaultCompletion;
   }
 
   static doCompletionResolve(item: CompletionItem): CompletionItem {
@@ -198,10 +211,12 @@ export class ZenScriptAdvancedCompletion implements ZenScriptService {
             item.data.predecessor instanceof Array &&
             item.data.predecessor.length > 0
           ) {
-            return BracketHandlerMap.get(item.data.predecessor[0]).detail(item);
-          } else {
-            return { label: '' };
+            const handler = BracketHandlerMap.get(item.data.predecessor[0]);
+            if (handler) {
+              return handler.detail(item);
+            }
           }
+          break;
         case '<':
           const handler = DetailBracketHandlers.find(
             (i) => i.label === item.label
@@ -209,12 +224,9 @@ export class ZenScriptAdvancedCompletion implements ZenScriptService {
           if (handler) {
             return handler;
           }
-        // else here should return
-        // and jumped to default
-        // so `else return;` can be deleted
-        default:
-          return { label: '' };
+          break;
       }
     }
+    return { label: '' };
   }
 }

@@ -25,6 +25,7 @@ function getKind(obj: any, k: string): CompletionItemKind {
         return CompletionItemKind.Module;
       }
     }
+    return CompletionItemKind.Text;
   }
 }
 

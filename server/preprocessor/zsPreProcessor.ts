@@ -8,7 +8,7 @@ import { NoRunHandler } from './norun';
 import { NoWarnHandler } from './nowarn';
 import { PriorityHandler } from './priority';
 
-export function preparePreprocessors(comments: IToken[], path: string) {
+export function preparePreprocessors(comments: IToken[], path: string): void {
   comments
     .filter((t) => t.tokenType === LINE_COMMENT_PREPROCESSOR)
     .map((t) => t.image.substr(1).split(' '))

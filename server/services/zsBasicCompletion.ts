@@ -29,22 +29,28 @@ export class ZenScriptBasicCompletion implements ZenScriptService {
       };
     }
     // #preprocessor
-    service.capabilities.completionProvider.triggerCharacters.push('#');
-    zGlobal.conn.onCompletion(ZenScriptBasicCompletion.doCompletion);
+    service.capabilities?.completionProvider?.triggerCharacters?.push('#');
+    zGlobal.conn?.onCompletion(ZenScriptBasicCompletion.doCompletion);
   }
 
   static async doCompletion(c: CompletionParams): Promise<CompletionItem[]> {
     await zGlobal.bus.wait('all-zs-parsed');
 
-    const document = zGlobal.documents.get(c.textDocument.uri);
+    const document = zGlobal.documents?.get(c.textDocument.uri);
+    if (!document) {
+      return [];
+    }
+
+    const doc = zGlobal.zsFiles.get(document.uri);
+    if (!doc) {
+      return [];
+    }
+
     const offset = document.offsetAt(c.position);
 
-    let trigger = c.context.triggerCharacter;
+    let trigger = c.context?.triggerCharacter;
     if (!trigger) {
-      const token = findToken(
-        zGlobal.zsFiles.get(document.uri).comments,
-        offset - 1
-      );
+      const token = findToken(doc.comments, offset - 1);
       if (token.exist && token.found.token.image === '#') {
         trigger = token.found.token.image;
       }

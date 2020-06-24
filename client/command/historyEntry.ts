@@ -1,4 +1,4 @@
-import { window } from 'vscode';
+import { window, TextEditor } from 'vscode';
 import { CommandBase } from '../api/CommandBase';
 import {
   HistoryEntryGetRequestType,
@@ -8,23 +8,27 @@ import {
 class HistoryEntryGet extends CommandBase {
   public command = 'zenscript.command.gethistoryentry';
   public handler = () => {
-    this.client.sendRequest(HistoryEntryGetRequestType).then(items => {
+    this.client.sendRequest(HistoryEntryGetRequestType).then((items) => {
       if (items.length === 0) {
         window.showInformationMessage('No HistoryEntry available!');
         return;
       }
 
-      window.showQuickPick(items.map(item => item.element)).then(selected => {
-        window.activeTextEditor.edit(builder => {
-          window.activeTextEditor.selections.forEach(selection => {
-            builder.replace(selection, selected);
-            this.client.sendRequest(HistoryEntryAddRequestType, selected);
+      const editor = window.activeTextEditor as TextEditor;
+
+      window
+        .showQuickPick(items.map((item) => item.element))
+        .then((selected: string) => {
+          editor.edit((builder) => {
+            editor.selections.forEach((selection) => {
+              builder.replace(selection, selected);
+              this.client.sendRequest(HistoryEntryAddRequestType, selected);
+            });
           });
+          window.showInformationMessage(selected);
         });
-        window.showInformationMessage(selected);
-      });
     });
-  }
+  };
 }
 
 class HistoryEntryAdd extends CommandBase {
@@ -32,6 +36,7 @@ class HistoryEntryAdd extends CommandBase {
   public handler = () => {
     // If anything is selected
     if (
+      window.activeTextEditor &&
       window.activeTextEditor.selection.start.compareTo(
         window.activeTextEditor.selection.end
       ) !== 0
@@ -48,7 +53,7 @@ class HistoryEntryAdd extends CommandBase {
       // Nothing is selected, open an inputbox
       window
         .showInputBox({ placeHolder: 'History entry to add:' })
-        .then(value => {
+        .then((value) => {
           if (value) {
             this.client
               .sendRequest(HistoryEntryAddRequestType, value)
@@ -58,7 +63,7 @@ class HistoryEntryAdd extends CommandBase {
           }
         });
     }
-  }
+  };
 }
 
 export const CommandHistoryEntryGet = new HistoryEntryGet();

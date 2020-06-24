@@ -26,23 +26,22 @@ class Ore implements IBracketHandler {
   };
 
   check(predecessor: string[]): boolean {
-    return (
-      predecessor.length === 2 &&
-      zGlobal.rcFile.oredictionary.includes(predecessor[1])
-    );
+    if (predecessor.length === 2 && zGlobal.rcFile) {
+      return zGlobal.rcFile.oredictionary.includes(predecessor[1]);
+    }
+    return false;
   }
 
   next(predecessor: string[]): CompletionItem[] {
-    return predecessor.length === 1
-      ? zGlobal.rcFile
-        ? zGlobal.rcFile.oredictionary.map((od) => {
-            return {
-              label: od,
-              kind: CompletionItemKind.Value,
-            } as CompletionItem;
-          })
-        : []
-      : [];
+    if (predecessor.length === 1 && zGlobal.rcFile) {
+      return zGlobal.rcFile.oredictionary.map((od) => {
+        return {
+          label: od,
+          kind: CompletionItemKind.Value,
+        };
+      });
+    }
+    return [];
   }
 
   detail(item: CompletionItem): CompletionItem {

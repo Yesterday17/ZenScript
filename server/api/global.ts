@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/ban-types */
 import {
   Connection,
   createConnection,
@@ -15,6 +16,7 @@ import {
   EnchantmentEntry,
   EntityEntry,
   FluidEntry,
+  ItemEntry,
   ModEntry,
   ZSRCFile,
 } from './rcFile';
@@ -46,7 +48,7 @@ class Global {
    */
   console: RemoteConsole;
 
-  isProject: boolean = false;
+  isProject = false;
   baseFolderUri: URI;
   setting: ZenScriptSettings;
   documentSettings: Map<string, Promise<ZenScriptSettings>> = new Map();
@@ -56,14 +58,14 @@ class Global {
   directory: Directory;
 
   mods: Map<string, ModEntry> = new Map();
-  items: RCStorage = new RCStorage('item', 3);
+  items: RCStorage<ItemEntry> = new RCStorage('item', 3);
   enchantments: Map<string, EnchantmentEntry[]> = new Map();
   entities: Map<string, EntityEntry[]> = new Map();
   fluids: Map<string, FluidEntry> = new Map();
   packages: Object;
 
-  global: Map<String, Object> = new Map();
-  globalFunction: Map<String, ZenFunction[]> = new Map();
+  global: Map<string, Object> = new Map();
+  globalFunction: Map<string, ZenFunction[]> = new Map();
 
   // zs file
   zsFiles: Map<string, ZenParsedFile> = new Map();
@@ -93,7 +95,7 @@ class Global {
     this.bus = new StateEventBus();
 
     this.isProject = false;
-    this.baseFolderUri = null;
+    this.baseFolderUri = undefined;
 
     this.setting = undefined;
     this.documentSettings = new Map();

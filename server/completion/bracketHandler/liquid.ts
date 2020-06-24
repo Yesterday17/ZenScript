@@ -35,23 +35,28 @@ class Liquid implements IBracketHandler {
     switch (predecessor.length) {
       case 1:
         // liquid:[liquid]
-        const result = Array.from(zGlobal.fluids.keys()).map((key) => {
-          const fluid = zGlobal.fluids.get(key);
-          return {
-            label: fluid.name,
-            filterText: [
-              fluid.name,
-              fluid.unlocalizedName,
-              fluid.resourceLocation.path,
-            ].join(''),
-            kind: CompletionItemKind.Value,
-            data: {
-              triggerCharacter: ':',
-              predecessor,
-              key,
-            },
-          } as CompletionItem;
-        });
+        const result = Array.from(zGlobal.fluids.keys())
+          .map((key) => {
+            const fluid = zGlobal.fluids.get(key);
+            if (fluid) {
+              return {
+                label: fluid.name,
+                filterText: [
+                  fluid.name,
+                  fluid.unlocalizedName,
+                  fluid.resourceLocation.path,
+                ].join(''),
+                kind: CompletionItemKind.Value,
+                data: {
+                  triggerCharacter: ':',
+                  predecessor,
+                  key,
+                },
+              };
+            }
+            return { label: '' };
+          })
+          .filter((f) => f.label !== '');
         return result;
       default:
         return [];
@@ -63,18 +68,21 @@ class Liquid implements IBracketHandler {
       case 1:
         // liquid:[liquid]
         const fluid = zGlobal.fluids.get(item.data.key);
-        return {
-          ...item,
-          detail: fluid.name,
-          documentation: {
-            kind: 'markdown',
-            value:
-              `UnlocalizedName: ${fluid.unlocalizedName}  \n` +
-              `Rarity: ${fluid.rarity}  \n` +
-              `Density: ${fluid.density}  \n` +
-              `Color: ${fluid.color}  \n`,
-          },
-        };
+        if (fluid) {
+          return {
+            ...item,
+            detail: fluid.name,
+            documentation: {
+              kind: 'markdown',
+              value:
+                `UnlocalizedName: ${fluid.unlocalizedName}  \n` +
+                `Rarity: ${fluid.rarity}  \n` +
+                `Density: ${fluid.density}  \n` +
+                `Color: ${fluid.color}  \n`,
+            },
+          };
+        }
+        return item;
       default:
         return item;
     }

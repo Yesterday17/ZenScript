@@ -11,12 +11,12 @@ export class ZenScriptDocumentConfigChange
     );
   }
   apply(): void {
-    zGlobal.conn.client.register(
+    zGlobal.conn?.client.register(
       DidChangeConfigurationNotification.type,
       undefined
     );
 
-    zGlobal.conn.onDidChangeConfiguration(() => {
+    zGlobal.conn?.onDidChangeConfiguration(() => {
       zGlobal.documentSettings.clear();
       // TODO: Now it's not necessary to revalidate documents after config change
       //       But maybe we'll need it in the future

@@ -1,20 +1,22 @@
-export class RCStorage {
+export class RCStorage<T> {
   public readonly type: string;
   public readonly depth: number;
-  private storage: Map<symbol, Object | RCStorage>;
+  private storage: Map<symbol, T | RCStorage<T>>;
 
   public get keys(): string[] {
-    return Array.from(this.storage.keys()).map(sym => Symbol.keyFor(sym));
+    return Array.from(this.storage.keys()).map(
+      (s) => Symbol.keyFor(s) as string
+    );
   }
 
   public get values(): string[] {
     const result: string[] = [];
-    Array.from(this.storage.keys()).forEach(key => {
+    Array.from(this.storage.keys()).forEach((key) => {
       const value = this.storage.get(key);
       if (value instanceof RCStorage) {
-        result.push(...value.values.map(v => `${Symbol.keyFor(key)}:${v}`));
+        result.push(...value.values.map((v) => `${Symbol.keyFor(key)}:${v}`));
       } else {
-        result.push(Symbol.keyFor(key));
+        result.push(Symbol.keyFor(key) as string);
       }
     });
     return result;
@@ -22,11 +24,11 @@ export class RCStorage {
 
   public get valueTypes(): string[] {
     return Array.from(this.storage.values()).map(
-      value => (value as RCStorage).type
+      (value) => (value as RCStorage<T>).type
     );
   }
 
-  constructor(type: string, depth: number = 1) {
+  constructor(type: string, depth = 1) {
     this.type = type;
     this.storage = new Map();
 
@@ -50,11 +52,11 @@ export class RCStorage {
     }
   }
 
-  getStorage(key: string): RCStorage {
-    return this.get(key) as RCStorage;
+  getStorage(key: string): RCStorage<T> {
+    return this.get(key) as RCStorage<T>;
   }
 
-  get(entry: string): Object | RCStorage | undefined {
+  get(entry: string): T | RCStorage<T> | undefined {
     const keys = entry.split(':');
     if (keys.length === 1) {
       return this.storage.get(Symbol.for(keys[0]));
@@ -66,18 +68,16 @@ export class RCStorage {
     }
   }
 
-  create(key: string) {
+  create(key: string): void {
     this.storage.set(Symbol.for(key), new RCStorage(key, this.depth - 1));
   }
 
-  set(entry: string, value: Object) {
+  set(entry: string, value: T): void {
     const keys = entry.split(':');
 
     if (keys.length !== this.depth) {
       throw new Error(
-        `Incorrect depth! Depth of RCStorage is ${
-          this.depth
-        }, but depth of key is ${keys.length}!`
+        `Incorrect depth! Depth of RCStorage is ${this.depth}, but depth of key is ${keys.length}!`
       );
     }
 
@@ -87,11 +87,11 @@ export class RCStorage {
       if (!this.has(keys[0])) {
         this.create(keys[0]);
       }
-      (this.get(keys[0]) as RCStorage).set(keys.slice(1).join(':'), value);
+      (this.get(keys[0]) as RCStorage<T>).set(keys.slice(1).join(':'), value);
     }
   }
 
-  clear() {
+  clear(): void {
     this.storage.clear();
   }
 

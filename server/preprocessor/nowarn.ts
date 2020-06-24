@@ -5,7 +5,10 @@ import { IPreProcessor } from './IPreProcessor';
 class NoWarnPreProcessor implements IPreProcessor {
   completion = HashNoWarn;
   handle(path: string, args: string[]) {
-    zGlobal.zsFiles.get(path).nowarn = true;
+    const file = zGlobal.zsFiles.get(path);
+    if (file) {
+      file.nowarn = true;
+    }
   }
 }
 

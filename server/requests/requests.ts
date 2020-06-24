@@ -9,6 +9,6 @@ const Requests = [
   PriorityTreeGetRequest,
 ];
 
-export function applyRequests(connection: Connection) {
+export function applyRequests(connection: Connection): void {
   Requests.forEach((req) => req.onRequest(connection));
 }

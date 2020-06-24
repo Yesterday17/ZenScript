@@ -6,10 +6,10 @@ import {
 } from '../../api/requests/PriorityTreeRequest';
 
 export class PriorityTreeGetRequest {
-  static onRequest(connection: Connection) {
+  static onRequest(connection: Connection): void {
     connection.onRequest(PriorityTreeGetRequestType, () => {
       return Array.from(zGlobal.zsFiles.values())
-        .map(file => {
+        .map((file) => {
           return {
             name: file.name,
             path: file.path,

@@ -161,8 +161,10 @@
     "@types/node": "^10.17.18",
     "@types/set-value": "^2.0.0",
     "@types/vscode": "^1.43.0",
+    "@typescript-eslint/eslint-plugin": "^3.4.0",
+    "@typescript-eslint/parser": "^3.4.0",
     "del": "^3.0.0",
-    "tslint": "^6.1.1",
+    "eslint": "^7.3.1",
     "typescript": "^3.8.3",
     "vsce": "^1.75.0",
     "vscode-nls-dev": "^3.3.1"

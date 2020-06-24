@@ -32,9 +32,11 @@ class PriorityProvider implements TreeDataProvider<PriorityItem>, Registerable {
       // doesn't need tree view, so any node has no chlidren
       return Promise.resolve([]);
     } else {
-      return this.client.sendRequest(PriorityTreeGetRequestType).then(items => {
-        return items.map(item => new PriorityItem(item));
-      });
+      return this.client
+        .sendRequest(PriorityTreeGetRequestType)
+        .then((items) => {
+          return items.map((item) => new PriorityItem(item));
+        });
     }
   }
 }

@@ -1,5 +1,4 @@
 import { Snippet } from './snippet';
-import { CompletionItemKind } from 'vscode-languageserver';
 
 export const JEI: Snippet = {
   mods: ['jei'],

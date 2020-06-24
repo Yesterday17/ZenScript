@@ -15,6 +15,6 @@ const Requests = [
   StatusBarRequest,
 ];
 
-export function applyRequests(client: LanguageClient) {
+export function applyRequests(client: LanguageClient): void {
   Requests.forEach((req) => req.onRequest(client));
 }

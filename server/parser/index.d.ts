@@ -5,7 +5,7 @@ export interface NodeContext {
 export interface ASTNode {
   type: string;
   start: number;
-  end?: number;
+  end: number;
 
   errors: ASTError[];
 }
@@ -23,7 +23,7 @@ export interface ASTBody extends ASTNode {
 
 export interface ASTSymbolTable {
   subtables: ASTSymbolTable[];
-  table: Map<String, ASTSymbol>;
+  table: Map<string, ASTSymbol>;
 }
 
 export interface ASTSymbol {
@@ -52,7 +52,8 @@ export interface ASTNodeDeclare extends ASTNode {
   vName: string;
   // TODO: Fix variable type
   vType: string;
-  value: ASTNode;
+
+  value?: ASTNode;
 }
 
 export interface ASTNodeGlobalDeclare extends ASTNodeDeclare {

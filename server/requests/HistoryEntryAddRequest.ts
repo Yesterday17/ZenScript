@@ -4,10 +4,13 @@ import { HistoryEntryAddRequestType } from '../../api/requests/HistoryEntryReque
 import { HistoryEntries } from '../utilities/historyEntry';
 
 export class HistoryEntryAddRequest {
-  static onRequest(connection: Connection) {
-    connection.onRequest(HistoryEntryAddRequestType, entry => {
+  static onRequest(connection: Connection): void {
+    connection.onRequest(HistoryEntryAddRequestType, (entry) => {
       HistoryEntries.add(entry);
-      return HistoryEntries.entries.slice(0, zGlobal.setting.maxHistoryEntries);
+      return HistoryEntries.entries.slice(
+        0,
+        zGlobal.setting?.maxHistoryEntries
+      );
     });
   }
 }

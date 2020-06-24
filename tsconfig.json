@@ -1,12 +1,33 @@
 {
-  "files": [],
-  "include": [],
-  "references": [
-    {
-      "path": "./client"
-    },
-    {
-      "path": "./server"
-    }
-  ]
+  "compilerOptions": {
+    "pretty": true,
+    "lib": ["ESNext"],
+    "target": "es6",
+    "outDir": "./out/",
+
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "composite": true,
+    "noEmitOnError": true,
+
+    // "strictNullChecks": true,
+    "noImplicitAny": true,
+    "noImplicitThis": true,
+    // "strictPropertyInitialization": true,
+
+    "skipLibCheck": true,
+
+    // "alwaysStrict": true,
+    "preserveConstEnums": true,
+    "newLine": "lf",
+
+    "types": []
+  },
+  "include": ["./api/**/*", "./client/**/*", "./server/**/*", ".eslintrc.js"],
+  "exclude": ["node_modules", ".vscode-test"]
 }

@@ -12,7 +12,7 @@ export class ZenScriptGlobalConfigChange implements ZenScriptService {
   }
 
   apply(service: InitializeResult): void {
-    zGlobal.conn.onDidChangeConfiguration((change) => {
+    zGlobal.conn?.onDidChangeConfiguration((change) => {
       zGlobal.setting = <ZenScriptSettings>(
         (change.settings.zenscript || defaultSettings)
       );

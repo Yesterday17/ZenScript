@@ -9,7 +9,10 @@ class LoaderPreProcessor implements IPreProcessor {
       return;
     }
 
-    zGlobal.zsFiles.get(path).loader = args[1];
+    const file = zGlobal.zsFiles.get(path);
+    if (file) {
+      file.loader = args[1];
+    }
   }
 }
 

@@ -16,11 +16,11 @@ export class ZenScriptFormat implements ZenScriptService {
 
   apply(service: InitializeResult): void {
     service.capabilities.documentFormattingProvider = true;
-    zGlobal.conn.onDocumentFormatting(ZenScriptFormat.doFormat);
+    zGlobal.conn?.onDocumentFormatting(ZenScriptFormat.doFormat);
   }
 
-  static doFormat(format: DocumentFormattingParams): Promise<TextEdit[]> {
+  static async doFormat(format: DocumentFormattingParams): Promise<TextEdit[]> {
     // TODO: Support ZenScript Formatting
-    return null;
+    return [];
   }
 }

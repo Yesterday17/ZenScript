@@ -5,7 +5,10 @@ import { IPreProcessor } from './IPreProcessor';
 class NoRunPreProcessor implements IPreProcessor {
   completion = HashNoRun;
   handle(path: string, args: string[]) {
-    zGlobal.zsFiles.get(path).norun = true;
+    const file = zGlobal.zsFiles.get(path);
+    if (file) {
+      file.norun = true;
+    }
   }
 }
 

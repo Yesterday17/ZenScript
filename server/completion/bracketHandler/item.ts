@@ -1,8 +1,8 @@
 import { CompletionItem, CompletionItemKind } from 'vscode-languageserver';
 import { zGlobal } from '../../api/global';
-import { ItemEntry } from '../../api/rcFile';
 import { BracketHandlerKind } from './bracketHandlers';
 import { IBracketHandler } from './IBracketHandler';
+import { RCStorage } from '../../utils/rcStorage';
 
 class Item implements IBracketHandler {
   name = 'item';
@@ -65,26 +65,27 @@ class Item implements IBracketHandler {
               triggerCharacter: ':',
               completion: 1,
             },
-          } as CompletionItem;
+          };
         });
         return result;
       case 2:
         // item:modid:[item]
-        return zGlobal.items.has(predecessor[1])
-          ? zGlobal.items.getStorage(predecessor[1]).values.map((item, i) => {
-              const itemFound: ItemEntry = zGlobal.items.get(
-                [...predecessor.slice(1), item].join(':')
-              ) as ItemEntry;
-              const itemLabel =
-                item.slice(item.length - 2) === ':0'
-                  ? item.slice(0, item.length - 2)
-                  : item;
+        if (zGlobal.items.has(predecessor[1])) {
+          return zGlobal.items.getStorage(predecessor[1]).values.map((item) => {
+            const found = zGlobal.items.get(
+              [...predecessor.slice(1), item].join(':')
+            );
+            const label =
+              item.slice(item.length - 2) === ':0'
+                ? item.slice(0, item.length - 2)
+                : item;
+            if (found && !(found instanceof RCStorage)) {
               return {
-                label: itemLabel,
+                label,
                 filterText: [
-                  itemFound.name,
-                  itemFound.unlocalizedName,
-                  itemFound.resourceLocation.path,
+                  found.name,
+                  found.unlocalizedName,
+                  found.resourceLocation.path,
                 ].join(''),
                 kind: CompletionItemKind.Value,
                 data: {
@@ -93,24 +94,29 @@ class Item implements IBracketHandler {
                   completion: 2,
                   item: [...predecessor.slice(1), item].join(':'),
                 },
-              } as CompletionItem;
-            })
-          : [];
+              };
+            }
+
+            return { label };
+          });
+        }
+        return [];
       case 3:
         // item:modid:item:[metadata]
-        return zGlobal.items.has(predecessor.slice(1).join(':'))
-          ? zGlobal.items
-              .getStorage(predecessor.slice(1).join(':'))
-              .values.map((item, i) => {
-                const itemFound: ItemEntry = zGlobal.items.get(
-                  [...predecessor.slice(1), item].join(':')
-                ) as ItemEntry;
+        if (zGlobal.items.has(predecessor.slice(1).join(':'))) {
+          return zGlobal.items
+            .getStorage(predecessor.slice(1).join(':'))
+            .values.map((item) => {
+              const found = zGlobal.items.get(
+                [...predecessor.slice(1), item].join(':')
+              );
+              if (found && !(found instanceof RCStorage)) {
                 return {
                   label: item,
                   filterText: [
-                    itemFound.name,
-                    itemFound.unlocalizedName,
-                    itemFound.resourceLocation.path,
+                    found.name,
+                    found.unlocalizedName,
+                    found.resourceLocation.path,
                   ].join(''),
                   kind: CompletionItemKind.Value,
                   data: {
@@ -119,9 +125,12 @@ class Item implements IBracketHandler {
                     completion: 3,
                     item: [...predecessor.slice(1), item].join(':'),
                   },
-                } as CompletionItem;
-              })
-          : [];
+                };
+              }
+              return { label: item };
+            });
+        }
+        return [];
       default:
         return [];
     }
@@ -137,33 +146,37 @@ class Item implements IBracketHandler {
           return item;
         }
         const mod = zGlobal.mods.get(item.label);
-        return {
-          ...item,
-          detail: mod.name,
-          documentation: {
-            kind: 'markdown',
-            value: mod.description,
-          },
-        };
+        if (mod) {
+          return {
+            ...item,
+            detail: mod.name,
+            documentation: {
+              kind: 'markdown',
+              value: mod.description,
+            },
+          };
+        }
+        return item;
       case 2:
       case 3:
         // item:modid:[item]:[metadata];
-        const itemFound: ItemEntry = zGlobal.items.get(
-          item.data.item
-        ) as ItemEntry;
-        return {
-          ...item,
-          detail: itemFound.name,
-          documentation: {
-            kind: 'markdown',
-            value:
-              `UnlocalizedName: ${itemFound.unlocalizedName}  \n` +
-              `MaxStackSize: ${itemFound.maxStackSize}  \n` +
-              `MaxDamage: ${itemFound.maxDamage}  \n` +
-              `CanRepair: ${itemFound.canRepair}  \n` +
-              `Tooltips:  \n${itemFound.tooltips.join('  \n')}`,
-          },
-        };
+        const found = zGlobal.items.get(item.data.item);
+        if (found && !(found instanceof RCStorage)) {
+          return {
+            ...item,
+            detail: found.name,
+            documentation: {
+              kind: 'markdown',
+              value:
+                `UnlocalizedName: ${found.unlocalizedName}  \n` +
+                `MaxStackSize: ${found.maxStackSize}  \n` +
+                `MaxDamage: ${found.maxDamage}  \n` +
+                `CanRepair: ${found.canRepair}  \n` +
+                `Tooltips:  \n${found.tooltips.join('  \n')}`,
+            },
+          };
+        }
+        return item;
       default:
         return item;
     }

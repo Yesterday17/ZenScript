@@ -26,13 +26,13 @@ export class ZenParsedFile implements IPriority {
   pkg: string; // package: scripts.xx.yy
   private connection: Connection;
 
-  get path() {
+  get path(): string {
     return this.uri.toString();
   }
   content: string;
 
   private step: ParseStep = ParseStep.NotLoaded;
-  get isInterpreted() {
+  get isInterpreted(): boolean {
     return this.step === ParseStep.Parsed;
   }
 
@@ -47,11 +47,11 @@ export class ZenParsedFile implements IPriority {
   ast: ASTNodeProgram;
   bracketHandlers: any;
 
-  priority: number = 0;
-  ignoreBracketErrors: boolean = false;
-  loader: string = 'crafttweaker';
-  norun: boolean = false;
-  nowarn: boolean = false;
+  priority = 0;
+  ignoreBracketErrors = false;
+  loader = 'crafttweaker';
+  norun = false;
+  nowarn = false;
 
   constructor(uri: URI, pkg: string, connection: Connection) {
     this.uri = uri;
@@ -63,18 +63,18 @@ export class ZenParsedFile implements IPriority {
   /**
    * Load file from `this.path`
    */
-  async load() {
+  async load(): Promise<void> {
     this.content = await fs.readFileString(this.uri, this.connection);
     this.step = ParseStep.Loaded;
   }
 
-  text(text: string) {
+  text(text: string): ZenParsedFile {
     this.content = text;
     this.step = ParseStep.Loaded;
     return this;
   }
 
-  parse() {
+  parse(): ZenParsedFile {
     // Lexing
     this.lexResult = ZSLexer.tokenize(this.content);
     this.comments = this.lexResult.groups['COMMENT'];
@@ -104,7 +104,7 @@ export class ZenParsedFile implements IPriority {
   /**
    * Interprete file, generate ast.
    */
-  interprete() {
+  interprete(): ZenParsedFile {
     if (this.parseErrors.length === 0) {
       // Interpreting
       this.ast = ZSInterpreter.visit(this.cst);

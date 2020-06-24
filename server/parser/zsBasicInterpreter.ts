@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { IToken } from 'chevrotain';
 import {
   ASTBasicProgram,
@@ -77,7 +78,6 @@ class ZenScriptBasicInterpreter extends ZSParser.getBaseCstVisitorConstructor() 
       end: -1,
       vName: '',
       vType: 'any',
-      value: undefined,
 
       errors: [],
     };
@@ -102,6 +102,7 @@ class ZenScriptBasicInterpreter extends ZSParser.getBaseCstVisitorConstructor() 
     return {
       type: 'function',
       start: (ctx.FunctionName[0] as IToken).startOffset,
+      end: -1,
       fName: ctx.FunctionName[0].image,
       fPara: ctx.ParameterList ? this.visit(ctx.ParameterList) : [],
       fType: ctx.TypeDeclare ? this.visit(ctx.TypeDeclare) : 'any',
@@ -114,6 +115,7 @@ class ZenScriptBasicInterpreter extends ZSParser.getBaseCstVisitorConstructor() 
     return {
       type: 'class',
       start: (ctx.ZEN_CLASS[0] as IToken).startOffset,
+      end: -1,
       cName: ctx.name[0].image,
       errors: [],
     };
