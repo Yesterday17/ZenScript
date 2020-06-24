@@ -183,19 +183,16 @@ export class ZenScriptAdvancedCompletion implements ZenScriptService {
         return [];
       case '<':
         const setting = await getdocumentSettings(completion.textDocument.uri);
-        if (manuallyTriggerred || setting.autoshowLTCompletion) {
-          const result = [...SimpleBracketHandlers];
-          if (setting.modIdItemCompletion) {
-            result.push(
-              ...ItemBracketHandler.next(['item']).map((i) => {
-                i.commitCharacters = [':'];
-                return i;
-              })
-            );
-          }
-          return result;
+        const result = [...SimpleBracketHandlers];
+        if (setting.modIdItemCompletion) {
+          result.push(
+            ...ItemBracketHandler.next(['item']).map((i) => {
+              i.commitCharacters = [':'];
+              return i;
+            })
+          );
         }
-        return [];
+        return result;
     }
     return defaultCompletion;
   }

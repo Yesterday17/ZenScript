@@ -8,6 +8,5 @@ export const defaultSettings: ZenScriptSettings = {
   maxHistoryEntries: 20,
 
   showIsProjectWarn: true,
-  autoshowLTCompletion: true,
   modIdItemCompletion: false,
 };

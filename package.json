@@ -95,12 +95,6 @@
           "default": true,
           "description": "%zenscript.showIsProjectWarn.desc%"
         },
-        "zenscript.autoshowLTCompletion": {
-          "scope": "resource",
-          "type": "boolean",
-          "default": true,
-          "description": "%zenscript.autoshowLTCompletion.desc%"
-        },
         "zenscript.modIdItemCompletion": {
           "scope": "resource",
           "type": "boolean",

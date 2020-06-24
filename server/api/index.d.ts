@@ -18,7 +18,6 @@ export interface ZenScriptSettings {
   maxHistoryEntries: number;
 
   showIsProjectWarn: boolean;
-  autoshowLTCompletion: boolean;
 
   // Whether to show modid autocompletion with bracketHandlers.
   modIdItemCompletion: boolean;

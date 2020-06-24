@@ -39,7 +39,6 @@ This extension contributes the following settings:
 - `zenscript.maxNumberOfProblems`: Controls the maximum number of problems produced by the server.
 - `zenscript.maxHistoryEntries`: Controls the maximum number of history entries responsed by the server.
 - `zenscript.showIsProjectWarn`: Whether to show warning of isProject.
-- `zenscript.autoshowLTCompletion`: Whether to show autocompletion after typing <.
 - `zenscript.modIdItemCompletion`: Whether to show modid autocompletion with bracketHandlers.
 - `zenscript.trace.server`: Traces the communication between VS Code and the language server.
 
