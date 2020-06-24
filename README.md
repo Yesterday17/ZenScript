@@ -1,5 +1,7 @@
 # ZenScript
 
+[![](https://img.shields.io/badge/chat-on%20disord-green.svg?logo=discord)](https://discord.gg/R7wH4Kd)
+
 ZenScript is a vscode plugin for [CraftTweaker](https://crafttweaker.readthedocs.io/en/latest/) [ZenScript](https://github.com/CraftTweaker/ZenScript).
 
 ## Features
