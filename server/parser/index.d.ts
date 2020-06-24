@@ -17,6 +17,11 @@ export interface ASTError {
   detail: string;
 }
 
+export interface ASTBracketHandlerError extends ASTError {
+  reason: 'BracketHandler error';
+  isItem: boolean;
+}
+
 export interface ASTBody extends ASTNode {
   body: ASTNode[];
 }

@@ -8,6 +8,8 @@ import { URI } from 'vscode-uri';
 import { ERROR_BRACKET_HANDLER } from '../api/constants';
 import { zGlobal } from '../api/global';
 import { ZenParsedFile } from '../api/zenParsedFile';
+import { ASTBracketHandlerError } from '../parser';
+import { getdocumentSettings } from '../utils/setting';
 import { ZenScriptActiveService } from './zsService';
 
 export class ZenScriptDocumentContentChange extends ZenScriptActiveService {
@@ -69,21 +71,28 @@ export class ZenScriptDocumentContentChange extends ZenScriptActiveService {
     });
 
     if (file.ast) {
+      const setting = await getdocumentSettings(textDocument.uri);
       file.ast.errors.forEach((error) => {
-        if (
-          !file.ignoreBracketErrors ||
-          error.reason !== ERROR_BRACKET_HANDLER
-        ) {
-          const diagnotic: Diagnostic = {
-            severity: DiagnosticSeverity.Error,
-            range: {
-              start: textDocument.positionAt(error.start),
-              end: textDocument.positionAt(error.end),
-            },
-            message: error.detail,
-          };
-          diagnostics.push(diagnotic);
+        if (error.reason === ERROR_BRACKET_HANDLER) {
+          if (file.ignoreBracketErrors) {
+            return;
+          }
+          const e = error as ASTBracketHandlerError;
+          if (!e.isItem && !setting.modIdItemCompletion) {
+            return;
+          }
         }
+
+        // not ignored
+        const diagnotic: Diagnostic = {
+          severity: DiagnosticSeverity.Error,
+          range: {
+            start: textDocument.positionAt(error.start),
+            end: textDocument.positionAt(error.end),
+          },
+          message: error.detail,
+        };
+        diagnostics.push(diagnotic);
       });
     }
 

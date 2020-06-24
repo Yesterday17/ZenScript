@@ -26,6 +26,7 @@ import {
   ASTNodeUnaryExpression,
   ASTNodeXorExpression,
   NodeContext,
+  ASTBracketHandlerError,
 } from '.';
 import { ERROR_BRACKET_HANDLER } from '../api/constants';
 import { zGlobal } from '../api/global';
@@ -931,14 +932,14 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
       exist = BracketHandlerMap.get('item').check(['item', ...items]);
     }
     if (!exist) {
-      node.errors = [
-        {
-          start: node.start,
-          end: node.end,
-          reason: ERROR_BRACKET_HANDLER,
-          detail: `BracketHandler <${node.items.join(':')}> does not exist.`,
-        },
-      ];
+      const error: ASTBracketHandlerError = {
+        start: node.start,
+        end: node.end,
+        reason: ERROR_BRACKET_HANDLER,
+        detail: `BracketHandler <${node.items.join(':')}> does not exist.`,
+        isItem: items[0] === 'item',
+      };
+      node.errors.push(error);
     }
     return node;
   }

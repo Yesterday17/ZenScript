@@ -19,6 +19,8 @@ export interface ZenScriptSettings {
 
   showIsProjectWarn: boolean;
   autoshowLTCompletion: boolean;
+
+  // Whether to show modid autocompletion with bracketHandlers.
   modIdItemCompletion: boolean;
 }
 
