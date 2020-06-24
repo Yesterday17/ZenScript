@@ -3,11 +3,10 @@ src/**
 
 # Build files
 **/tsconfig.json
-**/tsconfig-base.json
-**/tslint.json
+**/.eslintrc.js
 **/*.map
 **/*.ts
-*.tsbuildinfo
+**/*.tsbuildinfo
 
 # VSCode files
 *.code-workspace
@@ -23,3 +22,9 @@ out/test/**
 
 # node_modules
 node_modules/**/*.md
+
+# assets
+**/*.psd
+
+# zip
+**/*.zip
