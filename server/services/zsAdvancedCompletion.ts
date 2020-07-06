@@ -224,6 +224,6 @@ export class ZenScriptAdvancedCompletion implements ZenScriptService {
           break;
       }
     }
-    return { label: '' };
+    return item;
   }
 }
