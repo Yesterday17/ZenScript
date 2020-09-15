@@ -115,8 +115,8 @@ export interface ASTNodeBinaryExpression extends ASTNode {
 export interface ASTNodeUnaryExpression extends ASTNode {
   type: 'UnaryExpression';
 
-  operator?: string;
-  expression: ASTNodeUnaryExpression;
+  operator: string;
+  expression: ASTNodeUnaryExpression | ASTNodePostfixExpression;
 }
 
 export interface ASTNodePostfixExpression extends ASTNode {
@@ -126,6 +126,7 @@ export interface ASTNodePostfixExpression extends ASTNode {
 
 type ASTNodePrimaryExpression =
   | ASTNodeLiteral
+  | ASTNodeIdentifier
   | ASTNodeBracketHandler
   | ASTNodeAssignExpression; // TODO
 
@@ -138,6 +139,11 @@ export interface ASTNodeLiteral extends ASTNode {
   type: 'Literal';
   value: number | boolean | null | string;
   raw: string;
+}
+
+export interface ASTNodeIdentifier extends ASTNode {
+  type: 'Identifier';
+  name: string;
 }
 
 export interface ASTNodePackage extends ASTNode {

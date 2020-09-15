@@ -186,6 +186,16 @@ class ZenScriptBasicInterpreter extends ZSParser.getBaseCstVisitorConstructor() 
 
   protected PrimaryExpression(ctx: NodeContext) {}
 
+  protected PostfixExpressionMemberCall(ctx: NodeContext) {}
+
+  protected PostfixExpressionTo(ctx: NodeContext) {}
+
+  protected PostfixExpressionDotDot(ctx: NodeContext) {}
+
+  protected PostfixExpressionArray(ctx: NodeContext) {}
+
+  protected PostfixExpressionFunctionCall(ctx: NodeContext) {}
+
   /**
    * Level 6 Others
    * =================================================================================================

@@ -518,56 +518,34 @@ export class ZenScriptParser extends Parser {
       this.OR([
         {
           ALT: () => {
-            this.CONSUME(DOT);
-            this.OR2([
-              { ALT: () => this.CONSUME(IDENTIFIER, { LABEL: 'property' }) },
-              { ALT: () => this.CONSUME(VERSION, { LABEL: 'property' }) },
-              { ALT: () => this.CONSUME(STRING, { LABEL: 'property' }) },
-            ]);
+            this.SUBRULE(this.PostfixExpressionMemberCall);
           },
         },
         {
           GATE: () =>
             this.LA(1).tokenType === IDENTIFIER && this.LA(1).image === 'to',
           ALT: () => {
-            this.CONSUME2(IDENTIFIER);
-            this.SUBRULE(this.AssignExpression, { LABEL: 'to' });
+            this.SUBRULE(this.PostfixExpressionTo);
           },
         },
         {
           ALT: () => {
-            this.CONSUME(DOT2);
-            this.SUBRULE2(this.AssignExpression, { LABEL: 'dotdot' });
+            this.SUBRULE(this.PostfixExpressionDotDot);
           },
         },
         {
           ALT: () => {
-            this.CONSUME(SQBR_OPEN);
-            this.SUBRULE3(this.AssignExpression, { LABEL: 'index' });
-            this.CONSUME(SQBR_CLOSE);
-            this.OPTION(() => {
-              this.CONSUME(ASSIGN);
-              this.SUBRULE4(this.AssignExpression, { LABEL: 'indexAssign' });
-            });
+            this.SUBRULE(this.PostfixExpressionArray);
           },
         },
         {
           ALT: () => {
-            this.CONSUME(BR_OPEN);
-            this.MANY_SEP({
-              SEP: COMMA,
-              DEF: () => {
-                this.SUBRULE5(this.AssignExpression, {
-                  LABEL: 'brExpressions',
-                });
-              },
-            });
-            this.CONSUME(BR_CLOSE);
+            this.SUBRULE(this.PostfixExpressionFunctionCall);
           },
         },
         {
           ALT: () => {
-            this.SUBRULE(this.TypeDeclare, { LABEL: 'type' });
+            this.SUBRULE(this.TypeDeclare);
           },
         },
         {
@@ -579,6 +557,57 @@ export class ZenScriptParser extends Parser {
       ]);
     });
   });
+
+  protected PostfixExpressionMemberCall = this.RULE(
+    'PostfixExpressionMemberCall',
+    () => {
+      this.CONSUME(DOT);
+      this.OR([
+        { ALT: () => this.CONSUME(IDENTIFIER, { LABEL: 'property' }) },
+        { ALT: () => this.CONSUME(VERSION, { LABEL: 'property' }) },
+        { ALT: () => this.CONSUME(STRING, { LABEL: 'property' }) },
+      ]);
+    }
+  );
+
+  protected PostfixExpressionTo = this.RULE('PostfixExpressionTo', () => {
+    this.CONSUME(IDENTIFIER);
+    this.SUBRULE(this.AssignExpression, { LABEL: 'to' });
+  });
+
+  protected PostfixExpressionDotDot = this.RULE(
+    'PostfixExpressionDotDot',
+    () => {
+      this.CONSUME(DOT2);
+      this.SUBRULE(this.AssignExpression, { LABEL: 'dotdot' });
+    }
+  );
+
+  protected PostfixExpressionArray = this.RULE('PostfixExpressionArray', () => {
+    this.CONSUME(SQBR_OPEN);
+    this.SUBRULE(this.AssignExpression, { LABEL: 'index' });
+    this.CONSUME(SQBR_CLOSE);
+    this.OPTION(() => {
+      this.CONSUME(ASSIGN);
+      this.SUBRULE2(this.AssignExpression, { LABEL: 'value' });
+    });
+  });
+
+  protected PostfixExpressionFunctionCall = this.RULE(
+    'PostfixExpressionFunctionCall',
+    () => {
+      this.CONSUME(BR_OPEN);
+      this.MANY_SEP({
+        SEP: COMMA,
+        DEF: () => {
+          this.SUBRULE(this.AssignExpression, {
+            LABEL: 'argument',
+          });
+        },
+      });
+      this.CONSUME(BR_CLOSE);
+    }
+  );
 
   protected PrimaryExpression = this.RULE('PrimaryExpression', () => {
     this.OR([
