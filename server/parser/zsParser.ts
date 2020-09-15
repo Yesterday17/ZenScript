@@ -79,6 +79,7 @@ import {
   ZEN_CLASS,
   ZEN_CONSTRUCTOR,
   zsAllTokens,
+  CONTINUE,
 } from './zsLexer';
 
 export class ZenScriptParser extends Parser {
@@ -281,6 +282,9 @@ export class ZenScriptParser extends Parser {
       },
       { ALT: () => this.SUBRULE(this.BreakStatement, { LABEL: 'component' }) },
       {
+        ALT: () => this.SUBRULE(this.ContinueStatement, { LABEL: 'component' }),
+      },
+      {
         ALT: () =>
           this.SUBRULE(this.ExpressionStatement, { LABEL: 'component' }),
       },
@@ -359,6 +363,11 @@ export class ZenScriptParser extends Parser {
 
   protected BreakStatement = this.RULE('BreakStatement', () => {
     this.CONSUME(BREAK);
+    this.CONSUME(SEMICOLON, { ERR_MSG: '; expected' });
+  });
+
+  protected ContinueStatement = this.RULE('ContinueStatement', () => {
+    this.CONSUME(CONTINUE);
     this.CONSUME(SEMICOLON, { ERR_MSG: '; expected' });
   });
 
@@ -655,6 +664,7 @@ export class ZenScriptParser extends Parser {
               { ALT: () => this.CONSUME(INSTANCEOF, { LABEL: 'part' }) },
               { ALT: () => this.CONSUME(WHILE, { LABEL: 'part' }) },
               { ALT: () => this.CONSUME(BREAK, { LABEL: 'part' }) },
+              { ALT: () => this.CONSUME(CONTINUE, { LABEL: 'part' }) },
               { ALT: () => this.CONSUME(NULL, { LABEL: 'part' }) },
               { ALT: () => this.CONSUME(TRUE, { LABEL: 'part' }) },
               { ALT: () => this.CONSUME(FALSE, { LABEL: 'part' }) },
@@ -761,6 +771,7 @@ export class ZenScriptParser extends Parser {
             { ALT: () => this.CONSUME(INSTANCEOF) },
             { ALT: () => this.CONSUME(WHILE) },
             { ALT: () => this.CONSUME(BREAK) },
+            { ALT: () => this.CONSUME(CONTINUE) },
             { ALT: () => this.CONSUME(NULL) },
             { ALT: () => this.CONSUME(TRUE) },
             { ALT: () => this.CONSUME(FALSE) },

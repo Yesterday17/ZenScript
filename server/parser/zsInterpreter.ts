@@ -378,6 +378,15 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
     };
   }
 
+  protected ContinueStatement(ctx: NodeContext): ASTNode {
+    return {
+      type: 'continue',
+      start: 0,
+      end: 0,
+      errors: [],
+    };
+  }
+
   protected ExpressionStatement(ctx: NodeContext): ASTNodeExpressionStatement {
     const node = this.visit(ctx.Expression[0]);
     return {

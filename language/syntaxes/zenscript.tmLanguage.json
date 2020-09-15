@@ -62,7 +62,7 @@
         {
           "comment": "control keywords",
           "name": "keyword.control.zenscript",
-          "match": "\\b(void|version|for|return|while|break)\\b"
+          "match": "\\b(void|version|for|return|while|break|continue)\\b"
         },
         {
           "comment": "storage keywords",

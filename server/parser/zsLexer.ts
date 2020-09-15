@@ -256,6 +256,11 @@ export const BREAK = createToken({
   pattern: /break/,
   longer_alt: IDENTIFIER,
 });
+export const CONTINUE = createToken({
+  name: 'CONTINUE',
+  pattern: /continue/,
+  longer_alt: IDENTIFIER,
+});
 
 export const NULL = createToken({
   name: 'NULL',
@@ -368,6 +373,7 @@ export const zsAllTokens = [
   STATIC,
   WHILE,
   BREAK,
+  CONTINUE,
   NULL,
   TRUE,
   FALSE,

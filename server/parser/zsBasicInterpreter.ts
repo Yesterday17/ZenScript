@@ -150,6 +150,8 @@ class ZenScriptBasicInterpreter extends ZSParser.getBaseCstVisitorConstructor() 
 
   protected BreakStatement(ctx: NodeContext) {}
 
+  protected ContinueStatement(ctx: NodeContext) {}
+
   protected ExpressionStatement(ctx: NodeContext) {}
 
   /**
