@@ -1,5 +1,4 @@
 {
-  "zenscript.maxNumberOfProblems.desc": "最大问题数。",
   "zenscript.maxHistoryEntries.desc": "最多记录的历史条目数量。",
 
   "zenscript.showIsProjectWarn.desc": "是否显示“该目录并非工作目录”的警告。",

@@ -77,12 +77,6 @@
       "type": "object",
       "title": "ZenScript",
       "properties": {
-        "zenscript.maxNumberOfProblems": {
-          "scope": "resource",
-          "type": "number",
-          "default": 100,
-          "description": "%zenscript.maxNumberOfProblems.desc%"
-        },
         "zenscript.maxHistoryEntries": {
           "scope": "resource",
           "type": "number",

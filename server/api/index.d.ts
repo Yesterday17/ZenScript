@@ -14,7 +14,6 @@ import { CompletionItem } from 'vscode';
  * Settings
  */
 export interface ZenScriptSettings {
-  maxNumberOfProblems: number;
   maxHistoryEntries: number;
 
   showIsProjectWarn: boolean;

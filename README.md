@@ -36,7 +36,6 @@ The following table shows the version of `Probe` used in different `Zenscript` v
 
 This extension contributes the following settings:
 
-- `zenscript.maxNumberOfProblems`: Controls the maximum number of problems produced by the server.
 - `zenscript.maxHistoryEntries`: Controls the maximum number of history entries responsed by the server.
 - `zenscript.showIsProjectWarn`: Whether to show warning of isProject.
 - `zenscript.modIdItemCompletion`: Whether to show modid autocompletion with bracketHandlers.
