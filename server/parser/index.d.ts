@@ -48,8 +48,14 @@ export interface ASTBasicProgram {
 
 export interface ASTNodeProgram extends ASTNode, ASTBody, ASTSymbolTable {
   type: string = 'Program';
-  import: any[];
+  import: ASTNodeImport[];
   table: { [key: string]: ASTSymbol };
+}
+
+export interface ASTNodeImport extends ASTNode {
+  type: string = 'Import';
+  package: string[];
+  alias?: string;
 }
 
 export interface ASTNodeDeclare extends ASTNode {
@@ -99,63 +105,11 @@ export interface ASTNodeConditionalExpression extends ASTNode {
   invalid?: ASTNodeConditionalExpression;
 }
 
-export interface ASTNodeOrOrExpression extends ASTNode {
-  type: 'OrOrExpression';
-
-  lhs: ASTNodeOrOrExpression | ASTNodeAndAndExpression;
-  rhs?: ASTNodeAndAndExpression;
-}
-
-export interface ASTNodeAndAndExpression extends ASTNode {
-  type: 'AndAndExpression';
-
-  lhs: ASTNodeAndAndExpression | ASTNodeOrExpression;
-  rhs?: ASTNodeOrExpression;
-}
-
-export interface ASTNodeOrExpression extends ASTNode {
-  type: 'OrExpression';
-
-  lhs: ASTNodeOrExpression | ASTNodeXorExpression;
-  rhs?: ASTNodeXorExpression;
-}
-
-export interface ASTNodeXorExpression extends ASTNode {
-  type: 'XorExpression';
-
-  lhs: ASTNodeXorExpression | ASTNodeAndExpression;
-  rhs?: ASTNodeAndExpression;
-}
-
-export interface ASTNodeAndExpression extends ASTNode {
-  type: 'AndExpression';
-
-  lhs: ASTNodeAndExpression | ASTNode;
-  rhs?: ASTNode;
-}
-
-export interface ASTNodeCompareExpression extends ASTNode {
-  type: 'CompareExpression';
-
-  lhs: ASTNodeAddExpression;
-  operator?: string;
-  rhs?: ASTNodeAddExpression;
-}
-
-export interface ASTNodeAddExpression extends ASTNode {
-  type: 'AddExpression';
-
-  lhs: ASTNodeAddExpression | ASTNodeMultiplyExpression;
-  operator?: string;
-  rhs?: ASTNodeMultiplyExpression;
-}
-
-export interface ASTNodeMultiplyExpression extends ASTNode {
-  type: 'MultiplyExpression';
-
-  lhs: ASTNodeMultiplyExpression | ASTNodeUnaryExpression; // TODO
-  operator?: string;
-  rhs?: ASTNodeUnaryExpression;
+export interface ASTNodeBinaryExpression extends ASTNode {
+  type: 'BinaryExpression';
+  left: ASTNode;
+  right: ASTNode;
+  operator: string;
 }
 
 export interface ASTNodeUnaryExpression extends ASTNode {

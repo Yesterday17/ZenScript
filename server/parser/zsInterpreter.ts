@@ -3,48 +3,29 @@ import { CstNode, IToken } from 'chevrotain';
 import get from 'get-value';
 import {
   ASTBody,
+  ASTBracketHandlerError,
   ASTNode,
-  ASTNodeAddExpression,
-  ASTNodeAndAndExpression,
-  ASTNodeAndExpression,
   ASTNodeArray,
   ASTNodeAssignExpression,
   ASTNodeBracketHandler,
-  ASTNodeCompareExpression,
   ASTNodeConditionalExpression,
   ASTNodeDeclare,
   ASTNodeExpressionStatement,
   ASTNodeFunction,
+  ASTNodeImport,
   ASTNodeMap,
-  ASTNodeMultiplyExpression,
-  ASTNodeOrExpression,
-  ASTNodeOrOrExpression,
   ASTNodePackage,
   ASTNodePostfixExpression,
   ASTNodePrimaryExpression,
   ASTNodeProgram,
   ASTNodeUnaryExpression,
-  ASTNodeXorExpression,
   NodeContext,
-  ASTBracketHandlerError,
+  ASTNodeBinaryExpression,
 } from '.';
 import { ERROR_BRACKET_HANDLER } from '../api/constants';
 import { zGlobal } from '../api/global';
 import { BracketHandlerMap } from '../completion/bracketHandler/bracketHandlers';
 import { ZSParser } from './zsParser';
-
-/**
- * Sort a node and its bodys' body.
- * @param node The root node to sort body
- */
-function sortBody(node: ASTBody): ASTNode {
-  if (node.body.length > 0) {
-    node.body.sort((a, b) => {
-      return a.start - b.start;
-    });
-  }
-  return node;
-}
 
 /**
  * Push a node to a parent.
@@ -82,6 +63,49 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
     this.validateVisitor();
   }
 
+  parseBinaryExpression(
+    operators: IToken[],
+    rules: CstNode[]
+  ): ASTNodeBinaryExpression | ASTNode {
+    const first: ASTNode = this.visit(rules[0]);
+    if (!operators) {
+      // operators undefined
+      return first;
+    }
+
+    let root: ASTNodeBinaryExpression = {
+      type: 'BinaryExpression',
+      start: first.start,
+      end: -1,
+      left: first,
+      right: undefined,
+      operator: '',
+      errors: [],
+    };
+
+    operators.forEach((op, i) => {
+      root.operator = op.image;
+      root.right = this.visit(rules[i + 1]);
+
+      if (i === operators.length - 1) {
+        // last item
+        root.end = root.right.end;
+      } else {
+        root = {
+          type: 'BinaryExpression',
+          start: root.left.start,
+          end: -1,
+          left: root,
+          right: undefined,
+          operator: '',
+          errors: [],
+        };
+      }
+    });
+
+    return root;
+  }
+
   protected Program(ctx: NodeContext): ASTNodeProgram {
     const node: ASTNodeProgram = {
       type: 'Program',
@@ -116,7 +140,6 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
           global: child.type === 'global',
           static: child.type === 'static',
         };
-        pushBody(node, child);
       });
     }
 
@@ -135,7 +158,6 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
           global: false,
           static: false,
         };
-        pushBody(node, func);
       });
     }
 
@@ -148,8 +170,6 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
         pushBody(node, n);
       });
     }
-
-    // sortBody(node);
 
     // Update if body exists
     if (node.body.length > 0) {
@@ -164,14 +184,11 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
    * =================================================================================================
    */
 
-  protected ImportStatement(ctx: NodeContext) {
-    const token: {
-      start: number;
-      package: any;
-      errors: Object[];
-      alias?: string;
-    } = {
+  protected ImportStatement(ctx: NodeContext): ASTNodeImport {
+    const token: ASTNodeImport = {
+      type: 'Import',
       start: ctx.IMPORT[0].startOffset,
+      end: 0,
       package: ctx.Package.map((pkg: CstNode) => this.visit(pkg))[0].item,
       errors: [],
     };
@@ -186,7 +203,8 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
       token.errors.push({
         start: token.start,
         end: ctx.SEMICOLON[0].endOffset,
-        message: 'Unknown package: ' + token.package.join('.'),
+        reason: 'Unknown package',
+        detail: 'Unknown package: ' + token.package.join('.'),
       });
     }
     return token;
@@ -194,31 +212,25 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
 
   protected GlobalStaticDeclaration(ctx: NodeContext): ASTNodeDeclare {
     const node: ASTNodeDeclare = {
-      type: 'global',
+      type: ctx.GLOBAL_ZS ? 'global' : 'static',
       start: -1,
       end: -1,
-      vName: '',
-      vType: 'any',
-      value: undefined,
+      vName: ctx.vName[0].image,
+      vType: ctx.vType ? this.visit(ctx.vType[0]) : 'any',
+      value: this.visit(ctx.value[0]),
 
       errors: [],
     };
 
-    node.type = ctx.GLOBAL_ZS ? 'global' : 'static';
-    node.vName = ctx.vName[0].image;
-    node.vType = ctx.vType ? this.visit(ctx.vType[0]) : 'any';
-
-    const value = this.visit(ctx.value[0]);
-    if (value.errors) {
-      node.errors.push(...value.errors);
+    if (node.value.errors) {
+      node.errors.push(...node.value.errors);
     }
 
     node.start = ctx.GLOBAL_ZS
       ? (ctx.GLOBAL_ZS[0] as IToken).startOffset
       : (ctx.STATIC[0] as IToken).startOffset;
-    node.end = value.end;
+    node.end = node.value.end;
 
-    node.value = value;
     return node;
   }
 
@@ -433,346 +445,44 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
     return node;
   }
 
-  protected AddExpression(ctx: NodeContext): ASTNodeAddExpression {
-    const node: ASTNodeAddExpression = {
-      type: 'AddExpression',
-      start: 0, // TODO
-      end: 0,
-      errors: [],
-
-      lhs: undefined,
-      rhs: this.visit(
-        ctx.MultiplyExpression[ctx.MultiplyExpression.length - 1]
-      ),
-    };
-    if (node.rhs.errors) {
-      node.errors.push(...node.rhs.errors);
-    }
-
-    let now = node;
-    if (ctx.MultiplyExpression.length > 1) {
-      for (let offset = 1; offset < ctx.MultiplyExpression.length; offset++) {
-        now.operator = ctx.operator[ctx.operator.length - offset].image;
-        now.lhs = {
-          type: 'AddExpression',
-          start: 0, // TODO
-          end: 0,
-          errors: [],
-
-          lhs: undefined,
-          rhs: this.visit(
-            ctx.MultiplyExpression[ctx.MultiplyExpression.length - offset - 1]
-          ),
-        };
-        if (node.rhs.errors) {
-          node.errors.push(...node.rhs.errors);
-        }
-        if (offset === ctx.MultiplyExpression.length - 1) {
-          now.lhs = now.lhs.rhs;
-        } else {
-          now = now.lhs;
-        }
-      }
-    } else {
-      node.lhs = node.rhs;
-      delete node.rhs;
-    }
-    return node;
+  protected AddExpression(ctx: NodeContext): ASTNodeBinaryExpression | ASTNode {
+    return this.parseBinaryExpression(ctx.operator, ctx.MultiplyExpression);
   }
 
-  protected MultiplyExpression(ctx: NodeContext): ASTNodeMultiplyExpression {
-    const node: ASTNodeMultiplyExpression = {
-      type: 'MultiplyExpression',
-      start: 0, // TODO
-      end: 0,
-      errors: [],
-
-      lhs: null,
-      rhs: this.visit(ctx.UnaryExpression[ctx.UnaryExpression.length - 1]),
-    };
-    if (node.rhs.errors) {
-      node.errors.push(...node.rhs.errors);
-    }
-
-    let now = node;
-    if (ctx.UnaryExpression.length > 1) {
-      for (let offset = 1; offset < ctx.UnaryExpression.length; offset++) {
-        now.operator = ctx.operator[ctx.operator.length - offset].image;
-        now.lhs = {
-          type: 'MultiplyExpression',
-          start: 0, // TODO
-          end: 0,
-          errors: [],
-
-          lhs: undefined,
-          rhs: this.visit(
-            ctx.UnaryExpression[ctx.UnaryExpression.length - offset - 1]
-          ),
-        };
-        if (now.rhs.errors) {
-          node.errors.push(...now.rhs.errors);
-        }
-        if (offset === ctx.UnaryExpression.length - 1) {
-          now.lhs = now.lhs.rhs;
-        } else {
-          now = now.lhs;
-        }
-      }
-    } else {
-      node.lhs = node.rhs;
-      delete node.rhs;
-    }
-
-    return node;
+  protected MultiplyExpression(
+    ctx: NodeContext
+  ): ASTNodeBinaryExpression | ASTNode {
+    return this.parseBinaryExpression(ctx.operator, ctx.UnaryExpression);
   }
 
-  protected CompareExpression(ctx: NodeContext): ASTNodeCompareExpression {
-    const node: ASTNodeCompareExpression = {
-      type: 'CompareExpression',
-      start: 0, // TODO
-      end: 0,
-      errors: [],
-
-      lhs: this.visit(ctx.AddExpression[0]),
-      operator: ctx.operator ? ctx.operator[0] : '',
-      rhs:
-        ctx.AddExpression.length > 1
-          ? this.visit(ctx.AddExpression[1])
-          : undefined,
-    };
-    if (node.lhs.errors) {
-      node.errors.push(...node.lhs.errors);
-    }
-    if (node.rhs && node.rhs.errors) {
-      node.errors.push(...node.rhs.errors);
-    }
-
-    return node;
+  protected CompareExpression(
+    ctx: NodeContext
+  ): ASTNodeBinaryExpression | ASTNode {
+    return this.parseBinaryExpression(ctx.operator, ctx.AddExpression);
   }
 
-  protected AndExpression(ctx: NodeContext): ASTNodeAndExpression {
-    const node: ASTNodeAndExpression = {
-      type: 'AndExpression',
-      start: 0, // TODO
-      end: 0,
-      errors: [],
-
-      lhs: undefined,
-      rhs: this.visit(ctx.CompareExpression[ctx.CompareExpression.length - 1]),
-    };
-    if (node.rhs.errors) {
-      node.errors.push(...node.rhs.errors);
-    }
-
-    let now = node;
-    if (ctx.CompareExpression.length > 1) {
-      for (let offset = 1; offset < ctx.CompareExpression.length; offset++) {
-        now.lhs = {
-          type: 'AndExpression',
-          start: 0, // TODO
-          end: 0,
-          errors: [],
-
-          lhs: undefined,
-          rhs: this.visit(
-            ctx.CompareExpression[ctx.CompareExpression.length - offset - 1]
-          ),
-        };
-        if (now.rhs.errors) {
-          node.errors.push(...now.rhs.errors);
-        }
-        if (offset === ctx.CompareExpression.length - 1) {
-          now.lhs = now.lhs.rhs;
-        } else {
-          now = now.lhs;
-        }
-      }
-    } else {
-      node.lhs = node.rhs;
-      delete node.rhs;
-    }
-
-    return node;
+  protected AndExpression(ctx: NodeContext): ASTNodeBinaryExpression | ASTNode {
+    return this.parseBinaryExpression(ctx.operator, ctx.CompareExpression);
   }
 
-  protected AndAndExpression(ctx: NodeContext): ASTNodeAndAndExpression {
-    const node: ASTNodeAndAndExpression = {
-      type: 'AndAndExpression',
-      start: 0, // TODO
-      end: 0,
-      errors: [],
-
-      lhs: undefined,
-      rhs: this.visit(ctx.OrExpression[ctx.OrExpression.length - 1]),
-    };
-    if (node.rhs.errors) {
-      node.errors.push(...node.rhs.errors);
-    }
-
-    let now = node;
-    if (ctx.OrExpression.length > 1) {
-      for (let offset = 1; offset < ctx.OrExpression.length; offset++) {
-        now.lhs = {
-          type: 'AndAndExpression',
-          start: 0, // TODO
-          end: 0,
-          errors: [],
-
-          lhs: undefined,
-          rhs: this.visit(
-            ctx.OrExpression[ctx.OrExpression.length - offset - 1]
-          ),
-        };
-        if (now.rhs.errors) {
-          node.errors.push(...now.rhs.errors);
-        }
-        if (offset === ctx.OrExpression.length - 1) {
-          now.lhs = now.lhs.rhs;
-        } else {
-          now = now.lhs;
-        }
-      }
-    } else {
-      node.lhs = node.rhs;
-      delete node.rhs;
-    }
-
-    return node;
+  protected AndAndExpression(
+    ctx: NodeContext
+  ): ASTNodeBinaryExpression | ASTNode {
+    return this.parseBinaryExpression(ctx.operator, ctx.OrExpression);
   }
 
-  protected OrExpression(ctx: NodeContext): ASTNodeOrExpression {
-    const node: ASTNodeOrExpression = {
-      type: 'OrExpression',
-      start: 0, // TODO
-      end: 0,
-      errors: [],
-
-      lhs: undefined,
-      rhs: this.visit(ctx.XorExpression[ctx.XorExpression.length - 1]),
-    };
-    if (node.rhs.errors) {
-      node.errors.push(...node.rhs.errors);
-    }
-
-    let now = node;
-    if (ctx.XorExpression.length > 1) {
-      for (let offset = 1; offset < ctx.XorExpression.length; offset++) {
-        now.lhs = {
-          type: 'OrExpression',
-          start: 0, // TODO
-          end: 0,
-          errors: [],
-
-          lhs: undefined,
-          rhs: this.visit(
-            ctx.XorExpression[ctx.XorExpression.length - offset - 1]
-          ),
-        };
-        if (now.rhs.errors) {
-          node.errors.push(...now.rhs.errors);
-        }
-        if (offset === ctx.XorExpression.length - 1) {
-          now.lhs = now.lhs.rhs;
-        } else {
-          now = now.lhs;
-        }
-      }
-    } else {
-      node.lhs = node.rhs;
-      delete node.rhs;
-    }
-
-    return node;
+  protected OrExpression(ctx: NodeContext): ASTNodeBinaryExpression | ASTNode {
+    return this.parseBinaryExpression(ctx.operator, ctx.XorExpression);
   }
 
-  protected OrOrExpression(ctx: NodeContext): ASTNodeOrOrExpression {
-    const node: ASTNodeOrOrExpression = {
-      type: 'OrOrExpression',
-      start: 0, // TODO
-      end: 0,
-      errors: [],
-
-      lhs: undefined,
-      rhs: this.visit(ctx.AndAndExpression[ctx.AndAndExpression.length - 1]),
-    };
-    if (node.rhs.errors) {
-      node.errors.push(...node.rhs.errors);
-    }
-
-    let now = node;
-    if (ctx.AndAndExpression.length > 1) {
-      for (let offset = 1; offset < ctx.AndAndExpression.length; offset++) {
-        now.lhs = {
-          type: 'OrOrExpression',
-          start: 0, // TODO
-          end: 0,
-          errors: [],
-
-          lhs: undefined,
-          rhs: this.visit(
-            ctx.XorExpression[ctx.AndAndExpression.length - offset - 1]
-          ),
-        };
-        if (now.rhs.errors) {
-          node.errors.push(...now.rhs.errors);
-        }
-        if (offset === ctx.AndAndExpression.length - 1) {
-          now.lhs = now.lhs.rhs;
-        } else {
-          now = now.lhs;
-        }
-      }
-    } else {
-      node.lhs = node.rhs;
-      delete node.rhs;
-    }
-
-    return node;
+  protected OrOrExpression(
+    ctx: NodeContext
+  ): ASTNodeBinaryExpression | ASTNode {
+    return this.parseBinaryExpression(ctx.operator, ctx.AndAndExpression);
   }
 
-  protected XorExpression(ctx: NodeContext): ASTNodeXorExpression {
-    const node: ASTNodeXorExpression = {
-      type: 'XorExpression',
-      start: 0, // TODO
-      end: 0,
-      errors: [],
-
-      lhs: undefined,
-      rhs: this.visit(ctx.AndExpression[ctx.AndExpression.length - 1]),
-    };
-    if (node.rhs.errors) {
-      node.errors.push(...node.rhs.errors);
-    }
-
-    let now = node;
-    if (ctx.AndExpression.length > 1) {
-      for (let offset = 1; offset < ctx.AndExpression.length; offset++) {
-        now.lhs = {
-          type: 'XorExpression',
-          start: 0, // TODO
-          end: 0,
-          errors: [],
-
-          lhs: undefined,
-          rhs: this.visit(
-            ctx.XorExpression[ctx.AndExpression.length - offset - 1]
-          ),
-        };
-        if (now.rhs.errors) {
-          node.errors.push(...now.rhs.errors);
-        }
-        if (offset === ctx.AndExpression.length - 1) {
-          now.lhs = now.lhs.rhs;
-        } else {
-          now = now.lhs;
-        }
-      }
-    } else {
-      node.lhs = node.rhs;
-      delete node.rhs;
-    }
-
-    return node;
+  protected XorExpression(ctx: NodeContext): ASTNodeBinaryExpression | ASTNode {
+    return this.parseBinaryExpression(ctx.operator, ctx.AndExpression);
   }
 
   protected ConditionalExpression(

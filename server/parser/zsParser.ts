@@ -456,7 +456,7 @@ export class ZenScriptParser extends Parser {
   protected AndExpression = this.RULE('AndExpression', () => {
     this.SUBRULE(this.CompareExpression);
     this.MANY(() => {
-      this.CONSUME(AND);
+      this.CONSUME(AND, { LABEL: 'operator' });
       this.SUBRULE2(this.CompareExpression);
     });
   });
@@ -464,7 +464,7 @@ export class ZenScriptParser extends Parser {
   protected AndAndExpression = this.RULE('AndAndExpression', () => {
     this.SUBRULE(this.OrExpression);
     this.MANY(() => {
-      this.CONSUME(AND2);
+      this.CONSUME(AND2, { LABEL: 'operator' });
       this.SUBRULE2(this.OrExpression);
     });
   });
@@ -472,7 +472,7 @@ export class ZenScriptParser extends Parser {
   protected OrExpression = this.RULE('OrExpression', () => {
     this.SUBRULE(this.XorExpression);
     this.MANY(() => {
-      this.CONSUME(OR);
+      this.CONSUME(OR, { LABEL: 'operator' });
       this.SUBRULE2(this.XorExpression);
     });
   });
@@ -480,7 +480,7 @@ export class ZenScriptParser extends Parser {
   protected OrOrExpression = this.RULE('OrOrExpression', () => {
     this.SUBRULE(this.AndAndExpression);
     this.MANY(() => {
-      this.CONSUME(OR2);
+      this.CONSUME(OR2, { LABEL: 'operator' });
       this.SUBRULE2(this.AndAndExpression);
     });
   });
@@ -488,7 +488,7 @@ export class ZenScriptParser extends Parser {
   protected XorExpression = this.RULE('XorExpression', () => {
     this.SUBRULE(this.AndExpression);
     this.MANY(() => {
-      this.CONSUME(XOR);
+      this.CONSUME(XOR, { LABEL: 'operator' });
       this.SUBRULE2(this.AndExpression);
     });
   });
