@@ -13,22 +13,28 @@ import { ZenScriptActiveService } from './zsService';
 export class ZenScriptInitialized extends ZenScriptActiveService {
   apply(service: InitializeResult): void {
     zGlobal.conn.onInitialized(async () => {
+      let beginRequest = false;
       const i = setInterval(() => {
-        zGlobal.conn.sendRequest(
-          ServerStatusRequestType,
-          (() => {
-            if (zGlobal.isProject && !zGlobal.bus.isFinished('rc-loaded')) {
-              return false;
-            }
-            const result = zGlobal.bus.isFinished('all-zs-parsed');
+        if (
+          !beginRequest || // first request to initialize client
+          (zGlobal.isProject && !zGlobal.bus.isFinished('rc-loaded')) // indicate server has loaded
+        ) {
+          zGlobal.conn.sendRequest(
+            ServerStatusRequestType,
+            (() => {
+              if (zGlobal.isProject && !zGlobal.bus.isFinished('rc-loaded')) {
+                return false;
+              }
+              const result = zGlobal.bus.isFinished('all-zs-parsed');
 
-            if (result) {
-              // TODO
-              // clearInterval(i);
-            }
-            return result;
-          })()
-        );
+              if (result) {
+                clearInterval(i);
+              }
+              return result;
+            })()
+          );
+          beginRequest = true;
+        }
       }, 500);
 
       // Override the global setting.

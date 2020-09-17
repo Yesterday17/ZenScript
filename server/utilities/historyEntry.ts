@@ -6,7 +6,7 @@ import { HistoryEntryItem } from '../../api/requests/HistoryEntryRequest';
 
 class EntryNode {
   public readonly element: string;
-  public usage: number = 1;
+  public usage = 1;
   public next: EntryNode;
 
   constructor(elem: string) {
@@ -15,6 +15,7 @@ class EntryNode {
   }
 
   at(position: number): EntryNode {
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
     let now: EntryNode = this;
     for (; position > 0; position--, now = now.next) {
       if (now === null) {
@@ -27,7 +28,7 @@ class EntryNode {
 
 class HistoryEntryHandler {
   private top: EntryNode = new EntryNode('ENTRY_NODE_TOP');
-  private len: number = 0;
+  private len = 0;
 
   constructor() {
     // Set usage of top to 0
