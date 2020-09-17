@@ -150,7 +150,7 @@ export interface ASTNodeDeclare extends ASTNode {
   type: 'global' | 'static' | 'var' | 'val';
   vName: string;
   // TODO: Fix variable type
-  vType: string;
+  vType: ASTNode;
 
   value?: ASTNode;
 }
@@ -165,6 +165,11 @@ export interface ASTNodeFunction extends ASTNode {
   fPara: any[];
   fType: any;
   fBody: ASTNode;
+}
+
+export interface ASTNodeParams extends ASTNode {
+  type: 'params';
+  params: any[];
 }
 
 export interface ASTNodeZenClass extends ASTNode {

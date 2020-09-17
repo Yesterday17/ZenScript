@@ -16,6 +16,7 @@ import {
   ASTNodeImport,
   ASTNodeMap,
   ASTNodePackage,
+  ASTNodeParams,
   ASTNodePostfixExpression,
   ASTNodePrimaryExpression,
   ASTNodeProgram,
@@ -63,11 +64,31 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
     this.validateVisitor();
   }
 
-  parseBinaryExpression(
+  protected zsVisit<T extends ASTNode>(
+    element: CstElement | CstNode | CstElement[] | CstNode[],
+    position = false
+  ): T {
+    if (Array.isArray(element)) {
+      element = element[0] as CstNode;
+    } else {
+      element = element as CstNode;
+    }
+
+    const node: T = this.visit(element as CstNode);
+
+    if (position && element.location) {
+      node.start = element.location.startOffset;
+      node.end = element.location.endOffset;
+    }
+
+    return node;
+  }
+
+  protected parseBinaryExpression(
     operators: CstElement[],
     rules: CstElement[]
   ): ASTNodeBinaryExpression | ASTNode {
-    const first: ASTNode = this.visit(rules[0] as CstNode);
+    const first: ASTNode = this.zsVisit(rules[0]);
     if (!operators) {
       // operators undefined
       return first;
@@ -85,7 +106,7 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
 
     operators.forEach((op: IToken, i) => {
       root.operator = op.image;
-      root.right = this.visit(rules[i + 1] as CstNode);
+      root.right = this.zsVisit(rules[i + 1]);
 
       if (i === operators.length - 1) {
         // last item
@@ -216,8 +237,15 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
       start: -1,
       end: -1,
       vName: (ctx.vName[0] as IToken).image,
-      vType: ctx.vType ? this.visit(ctx.vType as CstNode[]) : 'any',
-      value: this.visit(ctx.value as CstNode[]),
+      vType: ctx.vType
+        ? this.zsVisit(ctx.vType)
+        : {
+            type: 'any',
+            start: -1,
+            end: -1,
+            errors: [],
+          },
+      value: this.zsVisit(ctx.value),
 
       errors: [],
     };
@@ -242,10 +270,10 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
       end: -1, // TODO
       fName: funcName.image,
       fPara: ctx.ParameterList
-        ? this.visit(ctx.ParameterList as CstNode[])
+        ? this.zsVisit<ASTNodeParams>(ctx.ParameterList).params
         : [],
-      fType: ctx.TypeDeclare ? this.visit(ctx.TypeDeclare as CstNode[]) : 'any',
-      fBody: this.visit(ctx.StatementBody as CstNode[]),
+      fType: ctx.TypeDeclare ? this.zsVisit(ctx.TypeDeclare) : 'any',
+      fBody: this.zsVisit(ctx.StatementBody),
       errors: [],
     };
 
@@ -299,7 +327,7 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
 
     // TODO
     if (ctx.BlockStatement) {
-      const n: ASTNode = this.visit(ctx.BlockStatement as CstNode[]);
+      const n = this.zsVisit(ctx.BlockStatement);
       if (n.errors) {
         node.errors.push(...n.errors);
       }
@@ -312,7 +340,7 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
    * Single statement
    */
   protected Statement(ctx: NodeContext): ASTNode {
-    return this.visit(ctx.component as CstNode[]);
+    return this.zsVisit(ctx.component);
   }
 
   /**
@@ -400,7 +428,7 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
   }
 
   protected ExpressionStatement(ctx: NodeContext): ASTNodeExpressionStatement {
-    const node = this.visit(ctx.Expression as CstNode[]);
+    const node = this.zsVisit<ASTNodeAssignExpression>(ctx.Expression);
     return {
       type: 'ExpressionStatement',
       start: node.start,
@@ -415,11 +443,7 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
    * =================================================================================================
    */
   protected Expression(ctx: NodeContext): ASTNode {
-    const node = this.visit(ctx.expression as CstNode[]);
-    if (!node.rhs) {
-      node.type = 'Expression';
-    }
-    return node;
+    return this.zsVisit(ctx.expression);
   }
 
   protected AssignExpression(ctx: NodeContext): ASTNodeAssignExpression {
@@ -427,7 +451,7 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
       type: 'AssignExpression',
       start: 0,
       end: 0,
-      lhs: this.visit(ctx.lhs as CstNode[]),
+      lhs: this.zsVisit(ctx.lhs),
       errors: [],
     };
 
@@ -437,7 +461,7 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
 
     if (ctx.rhs) {
       node.operator = (ctx.operator[0] as IToken).image;
-      node.rhs = this.visit(ctx.rhs as CstNode[]);
+      node.rhs = this.zsVisit(ctx.rhs);
       if (node.rhs.errors) {
         node.errors.push(...node.lhs.errors);
       }
@@ -449,8 +473,8 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
   protected UnaryExpression(
     ctx: NodeContext
   ): ASTNodeUnaryExpression | ASTNodePostfixExpression {
-    const exp: ASTNodeUnaryExpression | ASTNodePostfixExpression = this.visit(
-      ctx.expression as CstNode[]
+    const exp: ASTNodeUnaryExpression | ASTNodePostfixExpression = this.zsVisit(
+      ctx.expression
     );
 
     if (ctx.operator) {
@@ -516,7 +540,7 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
       end: 0,
       errors: [],
 
-      condition: this.visit(ctx.OrOrExpression[0] as CstNode),
+      condition: this.zsVisit(ctx.OrOrExpression[0]),
     };
     if (node.condition.errors) {
       node.errors.push(...node.condition.errors);
@@ -524,8 +548,8 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
 
     // condition ? valid : invalid
     if (ctx.ConditionalExpression) {
-      node.valid = this.visit(ctx.OrOrExpression[1] as CstNode);
-      node.invalid = this.visit(ctx.ConditionalExpression as CstNode[]);
+      node.valid = this.zsVisit(ctx.OrOrExpression[1]);
+      node.invalid = this.zsVisit(ctx.ConditionalExpression);
 
       if (node.valid.errors) {
         node.errors.push(...node.valid.errors);
@@ -539,8 +563,12 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
     }
   }
 
-  protected PostfixExpression(ctx: NodeContext): ASTNodePostfixExpression {
-    const primary = this.visit(ctx.PrimaryExpression[0] as CstNode);
+  protected PostfixExpression(
+    ctx: NodeContext
+  ): ASTNodePrimaryExpression | ASTNodePostfixExpression {
+    const primary = this.zsVisit<ASTNodePrimaryExpression>(
+      ctx.PrimaryExpression[0]
+    );
 
     let hasPostfix = false;
     const node: ASTNodePostfixExpression = {
@@ -619,20 +647,16 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
         end: 0,
         errors: [],
 
-        name: (ctx.literal[0] as IToken).image,
+        name: (ctx.identifier[0] as IToken).image,
       };
     } else if (ctx.BracketHandler) {
-      return this.visit(
-        ctx.BracketHandler[0] as CstNode
-      ) as ASTNodeBracketHandler;
+      return this.zsVisit(ctx.BracketHandler[0]) as ASTNodeBracketHandler;
     } else if (ctx.AssignExpression) {
-      return this.visit(
-        ctx.AssignExpression[0] as CstNode
-      ) as ASTNodeAssignExpression;
+      return this.zsVisit(ctx.AssignExpression[0]) as ASTNodeAssignExpression;
     } else if (ctx.ZSMap) {
-      return this.visit(ctx.ZSMap[0] as CstNode);
+      return this.zsVisit(ctx.ZSMap[0]);
     } else if (ctx.ZSArray) {
-      return this.visit(ctx.ZSArray[0] as CstNode);
+      return this.zsVisit(ctx.ZSArray[0]);
     }
   }
 
@@ -650,7 +674,7 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
   }
 
   protected InBracket(ctx: NodeContext): ASTNode {
-    return this.visit(ctx.AssignExpression as CstNode[]);
+    return this.zsVisit(ctx.AssignExpression);
   }
 
   protected BracketHandler(ctx: NodeContext): ASTNodeBracketHandler {
@@ -733,10 +757,7 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
   }
 
   protected ZSMapEntry(ctx: NodeContext) {
-    return [
-      this.visit(ctx.KEY as CstNode[]),
-      this.visit(ctx.VALUE as CstNode[]),
-    ];
+    return [this.zsVisit(ctx.KEY), this.zsVisit(ctx.VALUE)];
   }
 
   protected Package(ctx: NodeContext): ASTNodePackage {
@@ -779,7 +800,7 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
   }
 
   protected TypeDeclare(ctx: NodeContext) {
-    return this.visit(ctx.TypeAnnotation as CstNode[]);
+    return this.zsVisit(ctx.TypeAnnotation);
   }
 
   protected TypeAnnotation(ctx: NodeContext): ASTNode {
@@ -820,7 +841,7 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
 
     // Array type
     if (ctx.ArrayType) {
-      const body: ASTNode = this.visit(ctx.ArrayType as CstNode[]);
+      const body = this.zsVisit(ctx.ArrayType);
       type = {
         type: 'ARRAY',
         start: body.start,
