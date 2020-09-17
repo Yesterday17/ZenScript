@@ -93,8 +93,6 @@ export interface ASTNode {
   type: string;
   start: number;
   end: number;
-
-  errors: ASTError[];
 }
 
 export interface ASTError {
@@ -186,8 +184,8 @@ export interface ASTNodeAssignExpression extends ASTNode {
   type: 'AssignExpression';
   lhs: ASTNodeConditionalExpression;
 
-  operator?: string;
-  rhs?: AssignExpression;
+  operator: string;
+  rhs: AssignExpression;
 }
 
 export interface ASTNodeConditionalExpression extends ASTNode {
@@ -252,6 +250,13 @@ export interface ASTNodeArray extends ASTNode {
 export interface ASTNodeMap extends ASTNode {
   type: string = 'map';
   map: Map;
+}
+
+export interface ASTNodeDeclaration extends ASTNode {
+  type: 'VariableDeclaration';
+  kind: 'let' | 'const';
+  id: string; // TODO: ASTNodeIdentifier
+  init?: ASTNode;
 }
 
 export interface CommentEntry {

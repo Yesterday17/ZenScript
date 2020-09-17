@@ -116,10 +116,7 @@ class ZenScriptBasicInterpreter extends ZSParser.getBaseCstVisitorConstructorWit
         type: 'any',
         start: -1,
         end: -1,
-        errors: [],
       },
-
-      errors: [],
     };
   }
 
@@ -134,7 +131,6 @@ class ZenScriptBasicInterpreter extends ZSParser.getBaseCstVisitorConstructorWit
         : [],
       fType: ctx.TypeDeclare ? this.visit(ctx.TypeDeclare as CstNode[]) : 'any',
       fBody: this.visit(ctx.StatementBody as CstNode[]),
-      errors: [],
     };
   }
 
@@ -144,7 +140,6 @@ class ZenScriptBasicInterpreter extends ZSParser.getBaseCstVisitorConstructorWit
       start: -1,
       end: -1,
       cName: (ctx.name[0] as IToken).image,
-      errors: [],
     };
   }
 }

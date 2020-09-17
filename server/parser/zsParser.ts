@@ -1,6 +1,6 @@
 // This parser follows https://github.com/CraftTweaker/ZenScript/tree/1f3f16efb9abe93a36bb4b7c11d10c27b67fca6f
 
-import { IToken, Parser } from 'chevrotain';
+import { CstNode, IToken, Parser } from 'chevrotain';
 import {
   AND,
   AND2,
@@ -17,6 +17,7 @@ import {
   BYTE,
   COLON,
   COMMA,
+  CONTINUE,
   DIV,
   DIV_ASSIGN,
   DOLLAR,
@@ -79,7 +80,6 @@ import {
   ZEN_CLASS,
   ZEN_CONSTRUCTOR,
   zsAllTokens,
-  CONTINUE,
 } from './zsLexer';
 
 export class ZenScriptParser extends Parser {
@@ -92,7 +92,7 @@ export class ZenScriptParser extends Parser {
     this.performSelfAnalysis();
   }
 
-  parse(input: IToken[]) {
+  parse(input: IToken[]): CstNode {
     this.input = input;
     return this.Program();
   }
@@ -306,11 +306,12 @@ export class ZenScriptParser extends Parser {
 
   protected DeclareStatement = this.RULE('DeclareStatement', () => {
     this.OR([
-      { ALT: () => this.CONSUME(VAR) }, // let
-      { ALT: () => this.CONSUME(VAL) }, // const
+      { ALT: () => this.CONSUME(VAR, { LABEL: 'declare_kind' }) }, // let
+      { ALT: () => this.CONSUME(VAL, { LABEL: 'declare_kind' }) }, // const
     ]);
 
     this.CONSUME(IDENTIFIER, {
+      LABEL: 'declare_name',
       ERR_MSG: 'Identifier expected.',
     });
     this.OPTION(() => {
@@ -318,7 +319,7 @@ export class ZenScriptParser extends Parser {
     });
     this.OPTION2(() => {
       this.CONSUME(ASSIGN);
-      this.SUBRULE(this.Expression);
+      this.SUBRULE(this.Expression, { LABEL: 'declare_init' });
     });
     this.CONSUME(SEMICOLON, { ERR_MSG: '; expected' });
   });
