@@ -108,7 +108,7 @@ export class ZenParsedFile implements IPriority {
     if (this.parseErrors.length === 0) {
       // Interpreting
       this.ast = ZSInterpreter.visit(this.cst);
-      console.log(JSON.stringify(this.ast));
+      console.log(this.ast);
       this.interpreteErrors = this.ast.errors;
     }
 

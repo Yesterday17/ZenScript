@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/ban-types */
-import { CstNode, IToken } from 'chevrotain';
+import { CstElement, CstNode, IToken } from 'chevrotain';
 import get from 'get-value';
 import {
   ASTBody,
@@ -7,6 +7,7 @@ import {
   ASTNode,
   ASTNodeArray,
   ASTNodeAssignExpression,
+  ASTNodeBinaryExpression,
   ASTNodeBracketHandler,
   ASTNodeConditionalExpression,
   ASTNodeDeclare,
@@ -20,7 +21,6 @@ import {
   ASTNodeProgram,
   ASTNodeUnaryExpression,
   NodeContext,
-  ASTNodeBinaryExpression,
 } from '.';
 import { ERROR_BRACKET_HANDLER } from '../api/constants';
 import { zGlobal } from '../api/global';
@@ -64,10 +64,10 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
   }
 
   parseBinaryExpression(
-    operators: IToken[],
-    rules: CstNode[]
+    operators: CstElement[],
+    rules: CstElement[]
   ): ASTNodeBinaryExpression | ASTNode {
-    const first: ASTNode = this.visit(rules[0]);
+    const first: ASTNode = this.visit(rules[0] as CstNode);
     if (!operators) {
       // operators undefined
       return first;
@@ -83,9 +83,9 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
       errors: [],
     };
 
-    operators.forEach((op, i) => {
+    operators.forEach((op: IToken, i) => {
       root.operator = op.image;
-      root.right = this.visit(rules[i + 1]);
+      root.right = this.visit(rules[i + 1] as CstNode);
 
       if (i === operators.length - 1) {
         // last item
@@ -119,7 +119,7 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
     };
 
     if (ctx.ImportStatement) {
-      ctx.ImportStatement.forEach((imp: any) => {
+      ctx.ImportStatement.forEach((imp: CstNode) => {
         const r = this.visit(imp);
         node.errors.push(...r.errors);
         delete r.errors;
@@ -128,7 +128,7 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
     }
 
     if (ctx.GlobalStaticDeclaration) {
-      ctx.GlobalStaticDeclaration.forEach((element: any) => {
+      ctx.GlobalStaticDeclaration.forEach((element: CstNode) => {
         const child: ASTNodeDeclare = this.visit(element);
         if (child.vName in node.table) {
           // TODO: Error
@@ -144,7 +144,7 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
     }
 
     if (ctx.FunctionDeclaration) {
-      ctx.FunctionDeclaration.forEach((element: any) => {
+      ctx.FunctionDeclaration.forEach((element: CstNode) => {
         const func: ASTNodeFunction = this.visit(element);
         if (func.fName in node.table) {
           // TODO: Error
@@ -193,7 +193,7 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
       errors: [],
     };
     if (ctx.alias && ctx.alias.length && ctx.alias.length === 1) {
-      token.alias = ctx.alias[0].image;
+      token.alias = (ctx.alias[0] as IToken).image;
     }
     if (
       zGlobal.isProject &&
@@ -215,9 +215,9 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
       type: ctx.GLOBAL_ZS ? 'global' : 'static',
       start: -1,
       end: -1,
-      vName: ctx.vName[0].image,
-      vType: ctx.vType ? this.visit(ctx.vType[0]) : 'any',
-      value: this.visit(ctx.value[0]),
+      vName: (ctx.vName[0] as IToken).image,
+      vType: ctx.vType ? this.visit(ctx.vType as CstNode[]) : 'any',
+      value: this.visit(ctx.value as CstNode[]),
 
       errors: [],
     };
@@ -227,22 +227,25 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
     }
 
     node.start = ctx.GLOBAL_ZS
-      ? (ctx.GLOBAL_ZS[0] as IToken).startOffset
-      : (ctx.STATIC[0] as IToken).startOffset;
+      ? ctx.GLOBAL_ZS[0].startOffset
+      : ctx.STATIC[0].startOffset;
     node.end = node.value.end;
 
     return node;
   }
 
   protected FunctionDeclaration(ctx: NodeContext): ASTNodeFunction {
+    const funcName = ctx.FunctionName[0] as IToken;
     const node: ASTNodeFunction = {
       type: 'function',
-      start: (ctx.FunctionName[0] as IToken).startOffset,
+      start: funcName.startOffset,
       end: -1, // TODO
-      fName: ctx.FunctionName[0].image,
-      fPara: ctx.ParameterList ? this.visit(ctx.ParameterList[0]) : [],
-      fType: ctx.TypeDeclare ? this.visit(ctx.TypeDeclare[0]) : 'any',
-      fBody: this.visit(ctx.StatementBody[0]),
+      fName: funcName.image,
+      fPara: ctx.ParameterList
+        ? this.visit(ctx.ParameterList as CstNode[])
+        : [],
+      fType: ctx.TypeDeclare ? this.visit(ctx.TypeDeclare as CstNode[]) : 'any',
+      fBody: this.visit(ctx.StatementBody as CstNode[]),
       errors: [],
     };
 
@@ -270,7 +273,7 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
       end: 0,
       errors: [],
     };
-    ctx.Statement.forEach((s: any) => {
+    ctx.Statement.forEach((s: CstNode) => {
       // TODO
       const n: ASTNode = this.visit(s);
       if (n.errors) {
@@ -296,7 +299,7 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
 
     // TODO
     if (ctx.BlockStatement) {
-      const n: ASTNode = this.visit(ctx.BlockStatement[0]);
+      const n: ASTNode = this.visit(ctx.BlockStatement as CstNode[]);
       if (n.errors) {
         node.errors.push(...n.errors);
       }
@@ -309,7 +312,7 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
    * Single statement
    */
   protected Statement(ctx: NodeContext): ASTNode {
-    return this.visit(ctx.component[0]);
+    return this.visit(ctx.component as CstNode[]);
   }
 
   /**
@@ -397,7 +400,7 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
   }
 
   protected ExpressionStatement(ctx: NodeContext): ASTNodeExpressionStatement {
-    const node = this.visit(ctx.Expression[0]);
+    const node = this.visit(ctx.Expression as CstNode[]);
     return {
       type: 'ExpressionStatement',
       start: node.start,
@@ -412,7 +415,7 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
    * =================================================================================================
    */
   protected Expression(ctx: NodeContext): ASTNode {
-    const node = this.visit(ctx.expression[0]);
+    const node = this.visit(ctx.expression as CstNode[]);
     if (!node.rhs) {
       node.type = 'Expression';
     }
@@ -424,7 +427,7 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
       type: 'AssignExpression',
       start: 0,
       end: 0,
-      lhs: this.visit(ctx.lhs[0]),
+      lhs: this.visit(ctx.lhs as CstNode[]),
       errors: [],
     };
 
@@ -433,8 +436,8 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
     }
 
     if (ctx.rhs) {
-      node.operator = ctx.operator[0].image;
-      node.rhs = this.visit(ctx.rhs[0]);
+      node.operator = (ctx.operator[0] as IToken).image;
+      node.rhs = this.visit(ctx.rhs as CstNode[]);
       if (node.rhs.errors) {
         node.errors.push(...node.lhs.errors);
       }
@@ -447,7 +450,7 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
     ctx: NodeContext
   ): ASTNodeUnaryExpression | ASTNodePostfixExpression {
     const exp: ASTNodeUnaryExpression | ASTNodePostfixExpression = this.visit(
-      ctx.expression[0]
+      ctx.expression as CstNode[]
     );
 
     if (ctx.operator) {
@@ -455,7 +458,7 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
         type: 'UnaryExpression',
         start: exp.start, // FIXME
         end: exp.end,
-        operator: ctx.operator[0].image,
+        operator: (ctx.operator[0] as IToken).image,
         expression: exp,
         errors: [],
       };
@@ -513,7 +516,7 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
       end: 0,
       errors: [],
 
-      condition: this.visit(ctx.OrOrExpression[0]),
+      condition: this.visit(ctx.OrOrExpression[0] as CstNode),
     };
     if (node.condition.errors) {
       node.errors.push(...node.condition.errors);
@@ -521,8 +524,8 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
 
     // condition ? valid : invalid
     if (ctx.ConditionalExpression) {
-      node.valid = this.visit(ctx.OrOrExpression[1]);
-      node.invalid = this.visit(ctx.ConditionalExpression);
+      node.valid = this.visit(ctx.OrOrExpression[1] as CstNode);
+      node.invalid = this.visit(ctx.ConditionalExpression as CstNode[]);
 
       if (node.valid.errors) {
         node.errors.push(...node.valid.errors);
@@ -537,7 +540,7 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
   }
 
   protected PostfixExpression(ctx: NodeContext): ASTNodePostfixExpression {
-    const primary = this.visit(ctx.PrimaryExpression[0]);
+    const primary = this.visit(ctx.PrimaryExpression[0] as CstNode);
 
     let hasPostfix = false;
     const node: ASTNodePostfixExpression = {
@@ -606,7 +609,7 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
         end: 0,
         errors: [],
 
-        raw: ctx.literal[0].image,
+        raw: (ctx.literal[0] as IToken).image,
         value: '',
       };
     } else if (ctx.identifier) {
@@ -616,16 +619,20 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
         end: 0,
         errors: [],
 
-        name: ctx.literal[0].image,
+        name: (ctx.literal[0] as IToken).image,
       };
     } else if (ctx.BracketHandler) {
-      return this.visit(ctx.BracketHandler[0]) as ASTNodeBracketHandler;
+      return this.visit(
+        ctx.BracketHandler[0] as CstNode
+      ) as ASTNodeBracketHandler;
     } else if (ctx.AssignExpression) {
-      return this.visit(ctx.AssignExpression[0]) as ASTNodeAssignExpression;
+      return this.visit(
+        ctx.AssignExpression[0] as CstNode
+      ) as ASTNodeAssignExpression;
     } else if (ctx.ZSMap) {
-      return this.visit(ctx.ZSMap[0]);
+      return this.visit(ctx.ZSMap[0] as CstNode);
     } else if (ctx.ZSArray) {
-      return this.visit(ctx.ZSArray[0]);
+      return this.visit(ctx.ZSArray[0] as CstNode);
     }
   }
 
@@ -643,15 +650,17 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
   }
 
   protected InBracket(ctx: NodeContext): ASTNode {
-    return this.visit(ctx.AssignExpression);
+    return this.visit(ctx.AssignExpression as CstNode[]);
   }
 
   protected BracketHandler(ctx: NodeContext): ASTNodeBracketHandler {
     const node: ASTNodeBracketHandler = {
       type: 'BracketHandler',
-      items: ctx.$BracketHandlerItemGroup.map((item: any) => this.visit(item)),
-      start: (ctx.LT[0] as IToken).startOffset,
-      end: (ctx.GT[0] as IToken).endOffset + 1,
+      items: ctx.$BracketHandlerItemGroup.map((item: CstNode) =>
+        this.visit(item)
+      ),
+      start: ctx.LT[0].startOffset,
+      end: ctx.GT[0].endOffset + 1,
       errors: [],
     };
 
@@ -680,13 +689,13 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
   }
 
   protected BracketHandler$BracketHandlerItemGroup(ctx: NodeContext) {
-    return ctx.part.map((t: any) => t.image).join('');
+    return ctx.part.map((t: IToken) => t.image).join('');
   }
 
   protected ZSArray(ctx: NodeContext): ASTNodeArray {
-    const arr: any[] = [];
+    const arr: ASTNode[] = [];
     if (ctx.AssignExpression) {
-      ctx.AssignExpression.forEach((item: any) => {
+      ctx.AssignExpression.forEach((item: CstNode) => {
         arr.push(this.visit(item));
       });
     }
@@ -704,7 +713,7 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
     const map = new Map();
 
     if (ctx.ZSMapEntry) {
-      ctx.ZSMapEntry.forEach((entry: any) => {
+      ctx.ZSMapEntry.forEach((entry: CstNode) => {
         const e = this.visit(entry);
         if (!map.has(e[0])) {
           map.set(e[0], e[1]);
@@ -724,7 +733,10 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
   }
 
   protected ZSMapEntry(ctx: NodeContext) {
-    return [this.visit(ctx.KEY), this.visit(ctx.VALUE)];
+    return [
+      this.visit(ctx.KEY as CstNode[]),
+      this.visit(ctx.VALUE as CstNode[]),
+    ];
   }
 
   protected Package(ctx: NodeContext): ASTNodePackage {
@@ -733,13 +745,13 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
       if (k === 'DOT') {
         continue;
       }
-      all.push(...ctx[k]);
+      all.push(...(ctx[k] as IToken[]));
     }
     all.sort((a, b) => a.startOffset - b.startOffset);
     return {
       type: 'package',
       item: all.map((t) => t.image),
-      start: (ctx.IDENTIFIER[0] as IToken).startOffset,
+      start: ctx.IDENTIFIER[0].startOffset,
       end: 0,
       errors: [],
     };
@@ -767,7 +779,7 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
   }
 
   protected TypeDeclare(ctx: NodeContext) {
-    return this.visit(ctx.TypeAnnotation);
+    return this.visit(ctx.TypeAnnotation as CstNode[]);
   }
 
   protected TypeAnnotation(ctx: NodeContext): ASTNode {
@@ -777,7 +789,7 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
     if (ctx.IDENTIFIER) {
       type = {
         type: 'IMPORT',
-        start: (ctx.IDENTIFIER[0] as IToken).startOffset,
+        start: ctx.IDENTIFIER[0].startOffset,
         end: 0,
         errors: [],
         // item: ctx.IDENTIFIER.map((identifier: IToken) => identifier.image),
@@ -799,7 +811,7 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
       type = {
         type: 'FUNCTION',
         // item: ctx.ParameterType.map((type: any) => this.visit(type)),
-        start: (ctx.FUNCTION[0] as IToken).startOffset,
+        start: ctx.FUNCTION[0].startOffset,
         end: 0,
         errors: [],
         // return: this.visit(ctx.FunctionType),
@@ -808,7 +820,7 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
 
     // Array type
     if (ctx.ArrayType) {
-      const body: ASTNode = this.visit(ctx.ArrayType);
+      const body: ASTNode = this.visit(ctx.ArrayType as CstNode[]);
       type = {
         type: 'ARRAY',
         start: body.start,
