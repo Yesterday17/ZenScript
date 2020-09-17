@@ -68,22 +68,9 @@ export class ZenScriptDocumentContentChange extends ZenScriptActiveService {
       diagnostics.push(diagnotic);
     });
 
-    // interprete error
-    file.interpreteErrors.forEach((error) => {
-      const diagnotic: Diagnostic = {
-        severity: DiagnosticSeverity.Error,
-        range: {
-          start: textDocument.positionAt(error.start),
-          end: textDocument.positionAt(error.end),
-        },
-        message: error.message,
-      };
-      diagnostics.push(diagnotic);
-    });
-
     if (file.ast) {
       const setting = await getdocumentSettings(textDocument.uri);
-      file.ast.errors.forEach((error) => {
+      file.interpreteErrors.forEach((error) => {
         if (error.info === ERROR_BRACKET_HANDLER) {
           if (file.ignoreBracketErrors) {
             return;
