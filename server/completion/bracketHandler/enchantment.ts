@@ -85,7 +85,6 @@ class Enchantment implements IBracketHandler {
         // enchantment:[modid]
         if (!zGlobal.mods.has(item.label)) {
           // For example, minecraft
-          // TODO: Add description for minecraft.
           return item;
         }
         const mod = zGlobal.mods.get(item.label);

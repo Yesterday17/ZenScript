@@ -11,7 +11,6 @@ import { PotionBracketHandler } from './potion';
 
 export const BracketHandlerKind: CompletionItemKind = CompletionItemKind.Unit;
 
-// TODO: Support all the bracketHandlers here.
 export const BracketHandlers: IBracketHandler[] = [
   CreativeTabBracketHandler,
   DamageSourceBracketHandler,

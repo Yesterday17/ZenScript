@@ -65,7 +65,6 @@ class DamageSource implements IBracketHandler {
     return [];
   }
 
-  // TODO: Add detail here. (But there's no detail in wiki)
   detail(item: CompletionItem): CompletionItem {
     return { ...item, detail: 'Vanilla' };
   }
