@@ -89,15 +89,32 @@ export type LexToken = {
   IDENTIFIER: IToken[];
 };
 
-export interface ASTNode {
-  type: string;
+/**
+ * Offset property, includes start offset & end offset
+ */
+export interface Offset {
   start: number;
   end: number;
 }
 
-export interface ASTError {
-  start: number;
-  end: number;
+/**
+ * Base AST Node, includes type information and Offset
+ */
+export interface ASTNode extends Offset {
+  type: string;
+}
+
+/**
+ * Body part of AST Node, can be extended by AST Nodes using body
+ */
+export interface ASTBody {
+  body: ASTNode[];
+}
+
+/**
+ * Error when generating AST and interpreting
+ */
+export interface ASTError extends Offset {
   info: string;
   message: string;
 }
@@ -107,15 +124,6 @@ export interface ASTBracketHandlerError extends ASTError {
   isItem: boolean;
 }
 
-export interface ASTBody extends ASTNode {
-  body: ASTNode[];
-}
-
-export interface ASTSymbolTable {
-  subtables: ASTSymbolTable[];
-  table: Map<string, ASTSymbol>;
-}
-
 export interface ASTSymbol {
   name: string;
   type: 'variable' | 'function';
@@ -123,16 +131,12 @@ export interface ASTSymbol {
   global: boolean;
 }
 
-export interface ASTScope {
-  declare: Map<string, any>;
-}
-
 export interface ASTBasicProgram {
   scope: { [key: string]: 'function' | 'class' | 'global' | 'static' };
   error: ASTError[];
 }
 
-export interface ASTNodeProgram extends ASTNode, ASTBody, ASTSymbolTable {
+export interface ASTNodeProgram extends ASTNode, ASTBody {
   type: string = 'Program';
   import: ASTNodeImport[];
   table: { [key: string]: ASTSymbol };
@@ -173,6 +177,18 @@ export interface ASTNodeParams extends ASTNode {
 export interface ASTNodeZenClass extends ASTNode {
   type: 'class';
   cName: string;
+}
+
+export interface ASTNodeIfStatement extends ASTNode {
+  type: 'IfStatement';
+  test: ASTNode;
+  consequent: ASTNode;
+  alternate?: ASTNode;
+}
+
+export interface ASTNodeReturnStatement extends ASTNode {
+  type: 'ReturnStatement';
+  argument?: ASTNode;
 }
 
 export interface ASTNodeExpressionStatement extends ASTNode {
@@ -255,7 +271,7 @@ export interface ASTNodeMap extends ASTNode {
 export interface ASTNodeDeclaration extends ASTNode {
   type: 'VariableDeclaration';
   kind: 'let' | 'const';
-  id: string; // TODO: ASTNodeIdentifier
+  id: ASTNodeIdentifier;
   init?: ASTNode;
 }
 

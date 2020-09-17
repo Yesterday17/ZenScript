@@ -2,7 +2,6 @@
 import { CstElement, CstNode, IToken } from 'chevrotain';
 import get from 'get-value';
 import {
-  ASTBody,
   ASTBracketHandlerError,
   ASTError,
   ASTNode,
@@ -15,6 +14,7 @@ import {
   ASTNodeDeclare,
   ASTNodeExpressionStatement,
   ASTNodeFunction,
+  ASTNodeIfStatement,
   ASTNodeImport,
   ASTNodeMap,
   ASTNodePackage,
@@ -22,6 +22,7 @@ import {
   ASTNodePostfixExpression,
   ASTNodePrimaryExpression,
   ASTNodeProgram,
+  ASTNodeReturnStatement,
   ASTNodeUnaryExpression,
   NodeContext,
 } from '.';
@@ -29,16 +30,6 @@ import { ERROR_BRACKET_HANDLER } from '../api/constants';
 import { zGlobal } from '../api/global';
 import { BracketHandlerMap } from '../completion/bracketHandler/bracketHandlers';
 import { ZSParser } from './zsParser';
-
-/**
- * Push a node to a parent.
- * @param node The parent node.
- * @param value The child node
- */
-function pushBody(node: ASTBody, value: ASTNode): ASTNode {
-  node.body.push(value);
-  return node;
-}
 
 /**
  * Interpreter
@@ -133,7 +124,6 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
       start: 0,
       end: 0,
       body: [],
-      subtables: [],
       table: {}, // Scope table
     };
 
@@ -181,7 +171,7 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
     if (ctx.Statement) {
       ctx.Statement.forEach((s: CstNode) => {
         const n = this.visit(s, err);
-        pushBody(node, n);
+        node.body.push(n);
       });
     }
 
@@ -324,24 +314,39 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
    * Level 4: Statements
    * =================================================================================================
    */
-  protected ReturnStatement(ctx: NodeContext, err: ASTError[]): ASTNode {
-    // TODO
-    return {
-      type: 'return',
-      start: 0,
-      end: 0,
+  protected ReturnStatement(
+    ctx: NodeContext,
+    err: ASTError[]
+  ): ASTNodeReturnStatement {
+    const node: ASTNodeReturnStatement = {
+      type: 'ReturnStatement',
+      start: -1, // TODO: position
+      end: -1,
+      argument: null,
     };
+
+    if (ctx.Expression) {
+      node.argument = this.zsVisit(ctx.Expression, err);
+    }
+
+    return node;
   }
 
   protected DeclareStatement(
     ctx: NodeContext,
     err: ASTError[]
   ): ASTNodeDeclaration {
+    const name = ctx.declare_name[0] as IToken;
     const node: ASTNodeDeclaration = {
       type: 'VariableDeclaration',
       start: 0,
       end: 0,
-      id: (ctx.declare_name[0] as IToken).image,
+      id: {
+        type: 'Identifier',
+        start: name.startOffset,
+        end: name.endOffset,
+        name: name.image,
+      },
       kind: (ctx.declare_kind[0] as IToken).image as 'let' | 'const',
     };
 
@@ -352,13 +357,20 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
     return node;
   }
 
-  protected IfStatement(ctx: NodeContext, err: ASTError[]): ASTNode {
-    // TODO
-    return {
-      type: 'if',
-      start: 0,
-      end: 0,
+  protected IfStatement(ctx: NodeContext, err: ASTError[]): ASTNodeIfStatement {
+    const node: ASTNodeIfStatement = {
+      type: 'IfStatement', // TODO: position
+      start: -1,
+      end: -1,
+      test: this.zsVisit(ctx.AssignExpression, err),
+      consequent: this.zsVisit(ctx.Statement[0], err),
     };
+
+    if (ctx.Statement.length === 2) {
+      node.alternate = this.zsVisit(ctx.Statement[1], err);
+    }
+
+    return node;
   }
 
   protected ForStatement(ctx: NodeContext, err: ASTError[]): ASTNode {
