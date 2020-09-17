@@ -100,12 +100,12 @@ export interface ASTNode {
 export interface ASTError {
   start: number;
   end: number;
-  reason: string;
-  detail: string;
+  info: string;
+  message: string;
 }
 
 export interface ASTBracketHandlerError extends ASTError {
-  reason: 'BracketHandler error';
+  info: 'BracketHandler error';
   isItem: boolean;
 }
 
@@ -131,6 +131,7 @@ export interface ASTScope {
 
 export interface ASTBasicProgram {
   scope: { [key: string]: 'function' | 'class' | 'global' | 'static' };
+  error: ASTError[];
 }
 
 export interface ASTNodeProgram extends ASTNode, ASTBody, ASTSymbolTable {

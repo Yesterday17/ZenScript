@@ -56,14 +56,25 @@ export class ZenScriptDocumentContentChange extends ZenScriptActiveService {
       .interprete();
 
     // parse errors
-    [...file.parseErrors, ...file.interpreteErrors].forEach((error) => {
+    file.parseErrors.forEach((error) => {
       const diagnotic: Diagnostic = {
         severity: DiagnosticSeverity.Error,
         range: {
-          start: textDocument.positionAt(
-            error.start ?? error.token.startOffset
-          ),
-          end: textDocument.positionAt(error.end ?? error.token.endOffset + 1),
+          start: textDocument.positionAt(error.token.startOffset),
+          end: textDocument.positionAt(error.token.endOffset + 1),
+        },
+        message: error.message,
+      };
+      diagnostics.push(diagnotic);
+    });
+
+    // interprete error
+    file.interpreteErrors.forEach((error) => {
+      const diagnotic: Diagnostic = {
+        severity: DiagnosticSeverity.Error,
+        range: {
+          start: textDocument.positionAt(error.start),
+          end: textDocument.positionAt(error.end),
         },
         message: error.message,
       };
@@ -73,7 +84,7 @@ export class ZenScriptDocumentContentChange extends ZenScriptActiveService {
     if (file.ast) {
       const setting = await getdocumentSettings(textDocument.uri);
       file.ast.errors.forEach((error) => {
-        if (error.reason === ERROR_BRACKET_HANDLER) {
+        if (error.info === ERROR_BRACKET_HANDLER) {
           if (file.ignoreBracketErrors) {
             return;
           }
@@ -90,7 +101,7 @@ export class ZenScriptDocumentContentChange extends ZenScriptActiveService {
             start: textDocument.positionAt(error.start),
             end: textDocument.positionAt(error.end),
           },
-          message: error.detail,
+          message: error.message,
         };
         diagnostics.push(diagnotic);
       });

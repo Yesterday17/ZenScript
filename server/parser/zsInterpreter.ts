@@ -203,8 +203,8 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
       token.errors.push({
         start: token.start,
         end: ctx.SEMICOLON[0].endOffset,
-        reason: 'Unknown package',
-        detail: 'Unknown package: ' + token.package.join('.'),
+        info: 'Unknown package',
+        message: 'Unknown package: ' + token.package.join('.'),
       });
     }
     return token;
@@ -679,8 +679,8 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
       const error: ASTBracketHandlerError = {
         start: node.start,
         end: node.end,
-        reason: ERROR_BRACKET_HANDLER,
-        detail: `BracketHandler <${node.items.join(':')}> does not exist.`,
+        info: ERROR_BRACKET_HANDLER,
+        message: `BracketHandler <${node.items.join(':')}> does not exist.`,
         isItem: items[0] === 'item',
       };
       node.errors.push(error);

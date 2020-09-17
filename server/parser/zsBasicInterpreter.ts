@@ -24,44 +24,60 @@ class ZenScriptBasicInterpreter extends ZSParser.getBaseCstVisitorConstructorWit
   }
 
   protected Program(ctx: NodeContext): ASTBasicProgram {
-    const node: ASTBasicProgram = {
+    const program: ASTBasicProgram = {
       scope: {},
+      error: [],
     };
 
     if (ctx.GlobalStaticDeclaration) {
       ctx.GlobalStaticDeclaration.forEach((element: CstNode) => {
         const child: ASTNodeGlobalDeclare = this.visit(element);
-        if (child.vName in node.scope) {
-          // TODO: Error
+        if (child.vName in program.scope) {
+          program.error.push({
+            start: child.start,
+            end: child.end,
+            info: 'Duplicated declaration',
+            message: `${child.vName} already exists`,
+          });
           return;
         }
-        node.scope[child.vName] = child.type;
+        program.scope[child.vName] = child.type;
       });
     }
 
     if (ctx.FunctionDeclaration) {
       ctx.FunctionDeclaration.forEach((element: CstNode) => {
         const func: ASTNodeFunction = this.visit(element);
-        if (func.fName in node.scope) {
-          // TODO: Error
+        if (func.fName in program.scope) {
+          program.error.push({
+            start: func.start,
+            end: func.end,
+            info: 'Duplicated declaration',
+            message: `Function ${func.fName} already exists`,
+          });
           return;
         }
-        node.scope[func.fName] = 'function';
+        program.scope[func.fName] = 'function';
       });
     }
 
     if (ctx.ZenClassDeclaration) {
       ctx.ZenClassDeclaration.forEach((element: CstNode) => {
         const clz: ASTNodeZenClass = this.visit(element);
-        if (clz.cName in node.scope) {
-          // TODO: Error
+        if (clz.cName in program.scope) {
+          program.error.push({
+            start: clz.start,
+            end: clz.end,
+            info: 'Duplicated declaration',
+            message: `ZenClass ${clz.cName} already exists`,
+          });
           return;
         }
-        node.scope[clz.cName] = 'class';
+        program.scope[clz.cName] = 'class';
       });
     }
 
-    return node;
+    return program;
   }
 
   /**
@@ -83,12 +99,10 @@ class ZenScriptBasicInterpreter extends ZSParser.getBaseCstVisitorConstructorWit
     declaration.type = ctx.GLOBAL_ZS ? 'global' : 'static';
     declaration.vName = (ctx.vName[0] as IToken).image;
     declaration.vType = ctx.vType ? this.visit(ctx.vType as CstNode[]) : 'any';
-    // declaration.value = this.visit(ctx.value);
 
     declaration.start = ctx.GLOBAL_ZS
       ? (ctx.GLOBAL_ZS[0] as IToken).startOffset
       : (ctx.STATIC[0] as IToken).startOffset;
-    // declaration.end = declaration.value.end;
 
     if (declaration.errors.length === 0) {
       delete declaration.errors;
@@ -114,7 +128,7 @@ class ZenScriptBasicInterpreter extends ZSParser.getBaseCstVisitorConstructorWit
   protected ZenClassDeclaration(ctx: NodeContext): ASTNodeZenClass {
     return {
       type: 'class',
-      start: (ctx.ZEN_CLASS[0] as IToken).startOffset,
+      start: ctx.ZEN_CLASS[0].startOffset,
       end: -1,
       cName: (ctx.name[0] as IToken).image,
       errors: [],

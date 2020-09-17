@@ -1,8 +1,13 @@
-import { ILexingResult, IToken } from 'chevrotain';
+import {
+  CstNode,
+  ILexingResult,
+  IRecognitionException,
+  IToken,
+} from 'chevrotain';
 import set from 'set-value';
 import { Connection } from 'vscode-languageserver';
 import { URI } from 'vscode-uri';
-import { ASTBasicProgram, ASTNodeProgram } from '../parser';
+import { ASTBasicProgram, ASTError, ASTNodeProgram } from '../parser';
 import { ZSBasicInterpreter } from '../parser/zsBasicInterpreter';
 import { ZSInterpreter } from '../parser/zsInterpreter';
 import { ZSLexer } from '../parser/zsLexer';
@@ -40,9 +45,9 @@ export class ZenParsedFile implements IPriority {
   private lexResult: ILexingResult;
   tokens: IToken[];
 
-  parseErrors: any[] = [];
-  interpreteErrors: any[] = [];
-  cst: any;
+  parseErrors: IRecognitionException[] = [];
+  interpreteErrors: ASTError[] = [];
+  cst: CstNode;
   basicAst: ASTBasicProgram;
   ast: ASTNodeProgram;
   bracketHandlers: any;
