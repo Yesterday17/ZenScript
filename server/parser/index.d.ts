@@ -186,6 +186,12 @@ export interface ASTNodeIfStatement extends ASTNode {
   alternate?: ASTNode;
 }
 
+export interface ASTNodeWhileStatement extends ASTNode {
+  type: 'WhileStatement';
+  test: ASTNode;
+  body: ASTNode;
+}
+
 export interface ASTNodeReturnStatement extends ASTNode {
   type: 'ReturnStatement';
   argument?: ASTNode;
@@ -194,6 +200,24 @@ export interface ASTNodeReturnStatement extends ASTNode {
 export interface ASTNodeExpressionStatement extends ASTNode {
   type: 'ExpressionStatement';
   expression: ASTNodeAssignExpression;
+}
+
+export interface ASTNodeBreakStatement extends ASTNode {
+  type: 'BreakStatement';
+}
+
+export interface ASTNodeContinueStatement extends ASTNode {
+  type: 'ContinueStatement';
+}
+
+export interface ASTNodeVersionStatement extends ASTNode {
+  type: 'VersionStatement';
+  version: number;
+}
+
+export interface ASTNodeBlockStatement extends ASTNode {
+  type: 'BlockStatement';
+  body: ASTNode[];
 }
 
 export interface ASTNodeAssignExpression extends ASTNode {
@@ -266,6 +290,12 @@ export interface ASTNodeArray extends ASTNode {
 export interface ASTNodeMap extends ASTNode {
   type: string = 'map';
   map: Map;
+}
+
+export interface ASTNodeMapEntry extends ASTNode {
+  type: 'MapEntry';
+  key: ASTNode;
+  value: ASTNode;
 }
 
 export interface ASTNodeDeclaration extends ASTNode {

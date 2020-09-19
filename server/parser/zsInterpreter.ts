@@ -8,8 +8,11 @@ import {
   ASTNodeArray,
   ASTNodeAssignExpression,
   ASTNodeBinaryExpression,
+  ASTNodeBlockStatement,
   ASTNodeBracketHandler,
+  ASTNodeBreakStatement,
   ASTNodeConditionalExpression,
+  ASTNodeContinueStatement,
   ASTNodeDeclaration,
   ASTNodeDeclare,
   ASTNodeExpressionStatement,
@@ -17,6 +20,7 @@ import {
   ASTNodeIfStatement,
   ASTNodeImport,
   ASTNodeMap,
+  ASTNodeMapEntry,
   ASTNodePackage,
   ASTNodeParams,
   ASTNodePostfixExpression,
@@ -24,6 +28,8 @@ import {
   ASTNodeProgram,
   ASTNodeReturnStatement,
   ASTNodeUnaryExpression,
+  ASTNodeVersionStatement,
+  ASTNodeWhileStatement,
   NodeContext,
 } from '.';
 import { ERROR_BRACKET_HANDLER } from '../api/constants';
@@ -288,19 +294,20 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
    * =================================================================================================
    */
 
-  protected StatementBody(ctx: NodeContext, err: ASTError[]): ASTNode {
-    const node: ASTNode = {
-      type: 'StatementBody',
-      start: 0,
-      end: 0,
-    };
-
-    // TODO
+  protected StatementBody(
+    ctx: NodeContext,
+    err: ASTError[]
+  ): ASTNodeBlockStatement {
     if (ctx.BlockStatement) {
-      const n = this.zsVisit(ctx.BlockStatement, err);
+      return this.zsVisit(ctx.BlockStatement, err);
+    } else {
+      return {
+        type: 'BlockStatement',
+        start: -1,
+        end: -1,
+        body: [],
+      };
     }
-
-    return node;
   }
 
   /**
@@ -382,39 +389,50 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
     };
   }
 
-  protected WhileStatement(ctx: NodeContext, err: ASTError[]): ASTNode {
-    // TODO
+  protected WhileStatement(
+    ctx: NodeContext,
+    err: ASTError[]
+  ): ASTNodeWhileStatement {
     return {
-      type: 'while',
-      start: 0,
-      end: 0,
+      type: 'WhileStatement',
+      start: -1, // TODO: position
+      end: -1,
+      test: this.zsVisit(ctx.Expression, err),
+      body: this.zsVisit(ctx.Statement, err),
     };
   }
 
-  protected VersionStatement(ctx: NodeContext, err: ASTError[]): ASTNode {
-    // TODO
+  protected VersionStatement(
+    ctx: NodeContext,
+    err: ASTError[]
+  ): ASTNodeVersionStatement {
     return {
-      type: 'version',
-      start: 0,
-      end: 0,
+      type: 'VersionStatement',
+      start: -1,
+      end: -1,
+      version: Number(ctx.INT_VALUE[0].image),
     };
   }
 
-  protected BreakStatement(ctx: NodeContext, err: ASTError[]): ASTNode {
-    // TODO
+  protected BreakStatement(
+    ctx: NodeContext,
+    err: ASTError[]
+  ): ASTNodeBreakStatement {
     return {
-      type: 'break',
-      start: 0,
-      end: 0,
+      type: 'BreakStatement',
+      start: -1,
+      end: -1,
     };
   }
 
-  protected ContinueStatement(ctx: NodeContext, err: ASTError[]): ASTNode {
-    // TODO
+  protected ContinueStatement(
+    ctx: NodeContext,
+    err: ASTError[]
+  ): ASTNodeContinueStatement {
     return {
-      type: 'continue',
-      start: 0,
-      end: 0,
+      type: 'ContinueStatement',
+      start: -1,
+      end: -1,
     };
   }
 
@@ -740,12 +758,17 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
     const map = new Map();
 
     if (ctx.ZSMapEntry) {
-      ctx.ZSMapEntry.forEach((entry: CstNode) => {
-        const e = this.visit(entry, err);
-        if (!map.has(e[0])) {
-          map.set(e[0], e[1]);
+      ctx.ZSMapEntry.forEach((entry) => {
+        const e = this.zsVisit<ASTNodeMapEntry>(entry, err);
+        if (!map.has(e.key)) {
+          map.set(e.key, e.value); // FIXME
         } else {
-          // TODO: Error here.
+          err.push({
+            info: 'Duplicate map key',
+            message: 'Duplicated map key ' + e.key,
+            start: -1,
+            end: -1,
+          });
         }
       });
     }
@@ -758,8 +781,14 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
     };
   }
 
-  protected ZSMapEntry(ctx: NodeContext, err: ASTError[]) {
-    return [this.zsVisit(ctx.KEY, err), this.zsVisit(ctx.VALUE, err)];
+  protected ZSMapEntry(ctx: NodeContext, err: ASTError[]): ASTNodeMapEntry {
+    return {
+      type: 'MapEntry',
+      start: -1,
+      end: -1,
+      key: this.zsVisit(ctx.KEY, err),
+      value: this.zsVisit(ctx.VALUE, err),
+    };
   }
 
   protected Package(ctx: NodeContext, err: ASTError[]): ASTNodePackage {
@@ -782,7 +811,7 @@ class ZenScriptInterpreter extends ZSParser.getBaseCstVisitorConstructor() {
   protected ParameterList(ctx: NodeContext, err: ASTError[]): ASTNode {
     return {
       type: 'parameter-list',
-      // item: ctx.Parameter.map((item: any) => this.visit(item)),
+      // item: ctx.Parameter.map((item) => this.zsVisit(item, err)),
       start: 0,
       end: 0,
     };
