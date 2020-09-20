@@ -100,12 +100,12 @@ export class ZenScriptAdvancedCompletion implements ZenScriptService {
       if (!trigger) {
         if (line.match(/import [^\.]*$/)) {
           trigger = 'import';
-        } else if (line.match(/<([^:<]+:)+[^:<]*(>?)/)) {
+        } else if (!token.exist && line.match(/<([^:<]+:)+[^:<]*(>?)/)) {
           trigger = ':';
         } else if (token.exist) {
           if (['#', '.', ':', '<'].includes(token.found.token.image)) {
             trigger = token.found.token.image;
-          } else {
+          } else if (!['>'].includes(token.found.token.image)) {
             const prev = findToken(tokens, token.found.token.startOffset - 1);
             if (
               prev.exist &&
