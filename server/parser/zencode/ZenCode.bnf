@@ -5,7 +5,7 @@ ZenCodeFile                          ::= (Annotation* Modifier* (Import|Definiti
 Modifier                             ::= K_PUBLIC | K_PRIVATE | K_INTERNAL | K_EXTERN | K_ABSTRACT | K_FINAL | K_PROTECTED | K_IMPLICIT | K_VIRTUAL;
 Import                               ::= T_DOT? T_IDENTIFIER (T_DOT T_IDENTIFIER)* (K_AS T_IDENTIFIER)? T_SEMICOLON;
 Annotation                           ::= T_SQOPEN Type AnnotationCallArguments T_SQCLOSE;
-CallArguments                        ::= TypeArgumentForCall (T_BROPEN (Expression (T_COMMA Expression)*)? T_BRCLOSE)?;
+AnnotationCallArguments              ::= TypeArgumentForCall (T_BROPEN (Expression (T_COMMA Expression)*)? T_BRCLOSE)?;
 TypeArgumentsForCall                 ::= T_LESS Type (T_COMMA Type)* T_GREATER
                                        | ;
 # Block TYPE

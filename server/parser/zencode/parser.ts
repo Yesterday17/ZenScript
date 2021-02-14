@@ -1,4 +1,4 @@
-import { CstParser } from 'chevrotain';
+import { CstParser, IToken, CstNode } from 'chevrotain';
 import { ZenCodeAllTokens } from './lexer';
 import * as tokens from './lexer';
 
@@ -8,12 +8,30 @@ class ZenCodeParser extends CstParser {
     this.performSelfAnalysis();
   }
 
+  parse(input: IToken[]): CstNode {
+    this.input = input;
+    return this.ZenCodeFile();
+  }
+
   protected ZenCodeFile = this.RULE('ZenCodeFile', () => {
     this.MANY(() => {
       this.SUBRULE(this.Annotation);
     });
     this.OPTION(() => {
       this.SUBRULE(this.Modifier);
+    });
+    this.MANY2(() => {
+      this.OR([
+        {
+          ALT: () => this.SUBRULE(this.Import),
+        },
+        {
+          ALT: () => this.SUBRULE(this.Definition),
+        },
+        {
+          ALT: () => this.SUBRULE(this.Statement),
+        },
+      ]);
     });
   });
 
@@ -144,7 +162,7 @@ class ZenCodeParser extends CstParser {
             },
             {
               ALT: () => {
-                this.SUBRULE(this.Type, { LABEL: 'associative' });
+                this.SUBRULE2(this.Type, { LABEL: 'associative' });
               },
             },
           ]);
@@ -228,7 +246,7 @@ class ZenCodeParser extends CstParser {
           ERR_MSG: 'identifier expected',
           LABEL: 'namePart',
         });
-        this.CONSUME(this.TypeArguments, { LABEL: 'generic' });
+        this.SUBRULE(this.TypeArguments, { LABEL: 'generic' });
       },
     });
   });
@@ -448,7 +466,7 @@ class ZenCodeParser extends CstParser {
       },
     });
 
-    this.OPTION(() => {
+    this.OPTION2(() => {
       this.CONSUME(tokens.T_SEMICOLON);
       this.MANY2(() => {
         this.SUBRULE(this.DefinitionMember, { LABEL: 'member' });
@@ -567,10 +585,10 @@ class ZenCodeParser extends CstParser {
       this.SUBRULE(this.TypeParameterList);
     });
     this.CONSUME(tokens.T_AOPEN, { LABEL: '{ expected' });
-    this.MANY2(() => {
+    this.MANY(() => {
       this.SUBRULE(this.VariantOption);
     });
-    this.OPTION3(() => {
+    this.OPTION2(() => {
       this.CONSUME(tokens.T_SEMICOLON);
       this.MANY2(() => {
         this.SUBRULE(this.DefinitionMember, { LABEL: 'member' });
@@ -650,7 +668,7 @@ class ZenCodeParser extends CstParser {
       },
       {
         ALT: () => {
-          this.CONSUME(tokens.T_IDENTIFIER);
+          this.CONSUME2(tokens.T_IDENTIFIER);
           this.SUBRULE(this.FunctionMember);
         },
       },
@@ -663,7 +681,7 @@ class ZenCodeParser extends CstParser {
       {
         ALT: () => {
           this.CONSUME(tokens.K_GET);
-          this.SUBRULE(this.GetterSetterMember, { LABEL: 'GetterMember' });
+          this.SUBRULE2(this.GetterSetterMember, { LABEL: 'GetterMember' });
         },
       },
       {
@@ -675,7 +693,7 @@ class ZenCodeParser extends CstParser {
       {
         ALT: () => {
           this.CONSUME(tokens.T_BROPEN);
-          this.SUBRULE(this.FunctionMember, { LABEL: 'CallerMember' });
+          this.SUBRULE2(this.FunctionMember, { LABEL: 'CallerMember' });
         },
       },
       {
@@ -687,14 +705,14 @@ class ZenCodeParser extends CstParser {
       {
         ALT: () => {
           this.CONSUME(tokens.T_CAT);
-          this.CONSUME(tokens.K_THIS);
+          this.CONSUME2(tokens.K_THIS);
           this.SUBRULE(this.FunctionBody, { LABEL: 'DestructorMember' });
         },
       },
       {
         ALT: () => {
           this.SUBRULE(this.Operator);
-          this.SUBRULE(this.FunctionMember, { LABEL: 'OperatorMember' });
+          this.SUBRULE3(this.FunctionMember, { LABEL: 'OperatorMember' });
         },
       },
       {
@@ -705,7 +723,7 @@ class ZenCodeParser extends CstParser {
       },
       {
         ALT: () => {
-          this.OR2([
+          this.OR3([
             {
               ALT: () => this.CONSUME(tokens.K_CLASS),
             },
@@ -728,7 +746,7 @@ class ZenCodeParser extends CstParser {
       {
         ALT: () => {
           this.CONSUME(tokens.K_FOR);
-          this.SUBRULE(this.FunctionMember, { LABEL: 'IteratorMember' });
+          this.SUBRULE4(this.FunctionMember, { LABEL: 'IteratorMember' });
         },
       },
       {
@@ -984,7 +1002,7 @@ class ZenCodeParser extends CstParser {
         {
           ALT: () => {
             this.CONSUME(tokens.K_THROW);
-            this.SUBRULE(this.Expression, { LABEL: 'StatementThrow' });
+            this.SUBRULE2(this.Expression, { LABEL: 'StatementThrow' });
             this.CONSUME(tokens.T_SEMICOLON, { ERR_MSG: '; expected' });
           },
         },
@@ -1012,7 +1030,7 @@ class ZenCodeParser extends CstParser {
         {
           ALT: () => {
             this.CONSUME(tokens.K_BREAK);
-            this.SUBRULE(this.StatementBreakContinue, {
+            this.SUBRULE2(this.StatementBreakContinue, {
               LABEL: 'StatementBreak',
             });
           },
@@ -1025,8 +1043,8 @@ class ZenCodeParser extends CstParser {
         },
         {
           ALT: () => {
-            this.SUBRULE(this.Expression);
-            this.CONSUME(tokens.T_SEMICOLON, { ERR_MSG: '; expected' });
+            this.SUBRULE3(this.Expression);
+            this.CONSUME2(tokens.T_SEMICOLON, { ERR_MSG: '; expected' });
           },
         },
       ],
@@ -1050,7 +1068,7 @@ class ZenCodeParser extends CstParser {
     this.SUBRULE(this.Statement, { LABEL: 'onIf' });
     this.OPTION(() => {
       this.CONSUME(tokens.K_ELSE);
-      this.SUBRULE(this.Statement, { LABEL: 'onElse' });
+      this.SUBRULE2(this.Statement, { LABEL: 'onElse' });
     });
   });
 
@@ -1108,9 +1126,9 @@ class ZenCodeParser extends CstParser {
     this.MANY(() => {
       this.SUBRULE(this.CatchClause);
     });
-    this.OPTION(() => {
+    this.OPTION2(() => {
       this.CONSUME(tokens.K_FINALLY);
-      this.SUBRULE(this.Statement);
+      this.SUBRULE2(this.Statement);
     });
   });
 
@@ -1182,6 +1200,7 @@ class ZenCodeParser extends CstParser {
   // Block Expressions
   protected Expression = this.RULE('Expression', () => {
     //TODO
+    this.CONSUME(tokens.K_STRING);
   });
 }
 
