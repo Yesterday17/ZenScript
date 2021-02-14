@@ -33,6 +33,9 @@ class ZenCodeParser extends CstParser {
             ALT: () => this.SUBRULE(this.Definition),
           },
           {
+            GATE: () =>
+              this.LA(1).tokenType !== tokens.K_FUNCTION ||
+              this.LA(2).tokenType !== tokens.T_IDENTIFIER,
             ALT: () => this.SUBRULE(this.Statement),
           },
         ]);
@@ -1407,6 +1410,10 @@ class ZenCodeParser extends CstParser {
         },
       },
       {
+        GATE: () => {
+          const next = this.LA(1).tokenType;
+          return next !== tokens.T_INCREMENT && next !== tokens.T_DECREMENT;
+        },
         ALT: () => {
           this.SUBRULE(this.ExpressionPostFix);
         },
@@ -1461,6 +1468,7 @@ class ZenCodeParser extends CstParser {
           },
         },
         {
+          GATE: () => this.LA(1).tokenType === tokens.T_INCREMENT,
           ALT: () => {
             this.CONSUME(tokens.T_INCREMENT, { LABEL: 'PostFixIncrement' });
           },
@@ -1633,10 +1641,14 @@ class ZenCodeParser extends CstParser {
           this.CONSUME(tokens.T_GREATER);
         },
       },
-      // Type
-      // {
-      //   ALT: () => this.SUBRULE(this.Type),
-      // },
+      // default: Type
+      {
+        GATE: () => {
+          const next = this.LA(1).tokenType;
+          return next !== tokens.T_IDENTIFIER && next !== tokens.T_SQOPEN;
+        },
+        ALT: () => this.SUBRULE2(this.Type),
+      },
     ]);
   });
 }
