@@ -1,6 +1,6 @@
 import { IToken } from 'chevrotain';
 import { IPreProcessorCompletions } from '../completion/preprocessor/preprocessors';
-import { LINE_COMMENT_PREPROCESSOR } from '../parser/zsLexer';
+import { LINE_COMMENT_PREPROCESSOR } from '../parser/zenscript/zsLexer';
 import { IgnoreBracketErrorsHandler } from './ignoreBracketErrors';
 import { IPreProcessor } from './IPreProcessor';
 import { LoaderHandler } from './loader';

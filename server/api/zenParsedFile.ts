@@ -7,11 +7,11 @@ import {
 import set from 'set-value';
 import { Connection } from 'vscode-languageserver';
 import { URI } from 'vscode-uri';
-import { ASTBasicProgram, ASTError, ASTNodeProgram } from '../parser';
-import { ZSBasicInterpreter } from '../parser/zsBasicInterpreter';
-import { ZSInterpreter } from '../parser/zsInterpreter';
-import { ZSLexer } from '../parser/zsLexer';
-import { ZSParser } from '../parser/zsParser';
+import { ASTBasicProgram, ASTError, ASTNodeProgram } from '../parser/zenscript';
+import { ZSBasicInterpreter } from '../parser/zenscript/zsBasicInterpreter';
+import { ZSInterpreter } from '../parser/zenscript/zsInterpreter';
+import { ZSLexer } from '../parser/zenscript/zsLexer';
+import { ZSParser } from '../parser/zenscript/zsParser';
 import { IPriority } from '../preprocessor/priority';
 import { preparePreprocessors } from '../preprocessor/zsPreProcessor';
 import * as fs from '../utils/fs';

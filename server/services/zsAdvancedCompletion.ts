@@ -14,7 +14,7 @@ import { ItemBracketHandler } from '../completion/bracketHandler/item';
 import { GlobalCompletion } from '../completion/global';
 import { ImportCompletion } from '../completion/import';
 import { PreProcessorCompletions } from '../completion/preprocessor/preprocessors';
-import { DOT, IMPORT } from '../parser/zsLexer';
+import { DOT, IMPORT } from '../parser/zenscript/zsLexer';
 import { SnippetCompletions } from '../snippets/snippets';
 import { findToken } from '../utils/findToken';
 import { getdocumentSettings } from '../utils/setting';

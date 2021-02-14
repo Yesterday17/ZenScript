@@ -3,7 +3,7 @@ import {
   SignatureHelpTriggerKind,
 } from 'vscode-languageserver';
 import { zGlobal } from '../api/global';
-import { IDENTIFIER } from '../parser/zsLexer';
+import { IDENTIFIER } from '../parser/zenscript/zsLexer';
 import { findToken } from '../utils/findToken';
 import { ClientInfo, ZenScriptService } from './zsService';
 

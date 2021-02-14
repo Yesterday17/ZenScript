@@ -8,7 +8,7 @@ import { URI } from 'vscode-uri';
 import { ERROR_BRACKET_HANDLER } from '../api/constants';
 import { zGlobal } from '../api/global';
 import { ZenParsedFile } from '../api/zenParsedFile';
-import { ASTBracketHandlerError } from '../parser';
+import { ASTBracketHandlerError } from '../parser/zenscript';
 import { getdocumentSettings } from '../utils/setting';
 import { ZenScriptActiveService } from './zsService';
 

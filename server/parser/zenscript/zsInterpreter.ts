@@ -32,9 +32,9 @@ import {
   ASTNodeWhileStatement,
   NodeContext,
 } from '.';
-import { ERROR_BRACKET_HANDLER } from '../api/constants';
-import { zGlobal } from '../api/global';
-import { BracketHandlerMap } from '../completion/bracketHandler/bracketHandlers';
+import { ERROR_BRACKET_HANDLER } from '../../api/constants';
+import { zGlobal } from '../../api/global';
+import { BracketHandlerMap } from '../../completion/bracketHandler/bracketHandlers';
 import { ZSParser } from './zsParser';
 
 /**

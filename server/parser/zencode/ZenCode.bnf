@@ -1,4 +1,4 @@
-# Modified by https://gist.github.com/kindlich/2cd722d05915d165cdc607b343e08a92
+# Edited from https://gist.github.com/kindlich/2cd722d05915d165cdc607b343e08a92
 
 ZenCodeFile                          ::= (Annotation* Modifier* (Import|Definition|Statement))*;
 
