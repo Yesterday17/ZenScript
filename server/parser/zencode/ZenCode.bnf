@@ -4,9 +4,10 @@ ZenCodeFile                          ::= (Annotation* Modifier* (Import|Definiti
 
 Modifier                             ::= K_PUBLIC | K_PRIVATE | K_INTERNAL | K_EXTERN | K_ABSTRACT | K_FINAL | K_PROTECTED | K_IMPLICIT | K_VIRTUAL;
 Import                               ::= T_DOT? T_IDENTIFIER (T_DOT T_IDENTIFIER)* (K_AS T_IDENTIFIER)? T_SEMICOLON;
-Annotation                           ::= T_SQOPEN Type AnnotationCallArguments T_SQCLOSE;
-AnnotationCallArguments              ::= TypeArgumentForCall (T_BROPEN (Expression (T_COMMA Expression)*)? T_BRCLOSE)?;
-TypeArgumentsForCall                 ::= T_LESS Type (T_COMMA Type)* T_GREATER
+Annotation                           ::= T_SQOPEN Type CallArgumentsAnnotation T_SQCLOSE;
+CallArguments                        ::= TypeArguments T_BROPEN (Expression (T_COMMA Expression)*)? T_BRCLOSE;
+CallArgumentsAnnotation              ::= TypeArguments (T_BROPEN (Expression (T_COMMA Expression)*)? T_BRCLOSE)?;
+TypeArguments                        ::= T_LESS Type (T_COMMA Type)* T_GREATER
                                        | ;
 # Block TYPE
 Type                                 ::= SingleType TypeSuffix*
@@ -23,8 +24,7 @@ private NamedType                    ::= T_IDENTIFIER (T_DOT T_IDENTIFIER)*;
 FunctionHeader                       ::= TypeParameterList? T_BROPEN FunctionHeaderParameters T_BRCLOSE ((K_AS | T_COLON) Type)? (K_THROWS Type)?;
 private TypeParameterList            ::= T_LESS TypeParameter (T_COMMA TypeParameter)* T_GREATER;
 private TypeParameter                ::= T_IDENTIFIER (T_COLON K_SUPER? Type)*;
-private FunctionHeaderParameters     ::= FunctionHeaderParameter (T_COMMA FunctionHeaderParameter)*
-                                       | ;
+private FunctionHeaderParameters     ::= (FunctionHeaderParameter (T_COMMA FunctionHeaderParameter)*)?;
 private FunctionHeaderParameter      ::= Annotation* T_IDENTIFIER T_DOT3? ((K_AS | T_COLON) Type)? (T_ASSIGN Expression)?;
 
 # Block DEFINITION
@@ -45,9 +45,9 @@ DefinitionStruct                     ::= T_IDENTIFIER TypeParameterList? T_AOPEN
 DefinitionAlias                      ::= T_IDENTIFIER TypeParameterList? K_AS Type T_SEMICOLON;
 DefinitionFunction                   ::= T_IDENTIFIER FunctionHeader FunctionBody;
 private FunctionBody                 ::= FunctionBodyNonEmpty | FunctionEmptyBody ;
-private FunctionBodyNonEmpty         ::= FunctionLambdaBody | FunctionStatementBody;
-private FunctionLambdaBody           ::= T_LAMBDA T_AOPEN Statement* T_ACLOSE
-                                       | T_LAMBDA Expression;
+private FunctionBodyNonEmpty         ::= T_LAMBDA FunctionLambdaBody | FunctionStatementBody;
+private FunctionLambdaBody           ::= T_AOPEN Statement* T_ACLOSE
+                                       | Expression;
 private FunctionEmptyBody            ::= T_SEMICOLON;
 private FunctionStatementBody        ::= StatementBlock;
 DefinitionExpansion                  ::= TypeParameterList? Type T_AOPEN DefinitionMember* T_ACLOSE;
@@ -71,7 +71,7 @@ DefinitionMember                     ::= Annotation* DefinitionModifier* (
                                        | K_AS CasterMember
                                        | (K_CLASS | K_INTERFACE | K_ALIAS | K_STRUCT | K_ENUM) Definition
                                        | K_FOR FunctionMember
-                                       | T_AOPEN StatementBlock
+                                       | StatementBlock
                                      );
 
 
@@ -92,7 +92,7 @@ private CasterMember                 ::= Type FunctionBody;
 
 # Block STATEMENT
 Statement                            ::= Annotation* StatementInner
-StatementInner                       ::= T_AOPEN StatementBlock
+StatementInner                       ::= StatementBlock
                                        | K_RETURN StatementReturn
                                        | (K_VAR | K_VAL) StatementVar
                                        | K_IF StatementIf
@@ -106,7 +106,7 @@ StatementInner                       ::= T_AOPEN StatementBlock
                                        | K_BREAK StatementBreakContinue
                                        | K_SWITCH StatementSwitch
                                        | StatementExpression;
-StatementBlock                       ::= StatementInner* T_ACLOSE;
+StatementBlock                       ::= T_AOPEN StatementInner* T_ACLOSE;
 StatementReturn                      ::= Expression? T_SEMICOLON;
 StatementVar                         ::= T_IDENTIFIER (K_AS Type)? (T_ASSIGN Expression)? T_SEMICOLON;
 StatementIf                          ::= Expression Statement (K_ELSE Statement)?;
@@ -126,18 +126,18 @@ StatementExpression                  ::= Expression T_SEMICOLON;
 
 # Block EXPRESSION
 Expression                           ::= ExpressionAssign;
-ExpressionAssign                     ::= ConditionalExpression ((T_ASSIGN | AssignOperator) ExpressionAssign)?;
+ExpressionAssign                     ::= ExpressionConditional ((T_ASSIGN | AssignOperator) ExpressionAssign)?;
 private AssignOperator               ::= T_ADDASSIGN | T_SUBASSIGN | T_CATASSIGN | T_MULASSIGN | T_DIVASSIGN | T_MODASSIGN | T_ORASSIGN | T_ANDASSIGN | T_XORASSIGN | T_SHLASSIGN | T_SHRASSIGN | T_USHRASSIGN;
-ConditionalExpression                ::= ExpressionOrOr (T_QUEST ExpressionOrOr T_COLON ConditionalExpression)?;
+ExpressionConditional                ::= ExpressionOrOr (T_QUEST ExpressionOrOr T_COLON ExpressionConditional)?;
 ExpressionOrOr                       ::= ExpressionAndAnd (T_OROR ExpressionAndAnd)* (T_COALESCE ExpressionAndAnd)*;
 ExpressionAndAnd                     ::= ExpressionOr (T_ANDAND ExpressionOr)*;
 ExpressionOr                         ::= ExpressionXor (T_OR ExpressionXor)*;
 ExpressionXor                        ::= ExpressionAnd (T_XOR ExpressionAnd)*;
 ExpressionAnd                        ::= ExpressionCompare (T_AND ExpressionCompare)*;
 ExpressionCompare                    ::= ExpressionShift (T_NOT)? K_IS Type
-                                       | ExpressionShift T_NOT K_IN ExpressionShift
+                                       | ExpressionShift (T_NOT)? K_IN ExpressionShift
                                        | ExpressionShift (CompareOperator ExpressionShift)?;
-private CompareOperator              ::= T_EQUAL2 | T_EQUAL3 | T_NOTEQUAL | T_NOTEQUAL2 | T_LESS | T_LESSEQ | T_GREATER | T_GREATEREQ | K_IN;
+private CompareOperator              ::= T_EQUAL2 | T_EQUAL3 | T_NOTEQUAL | T_NOTEQUAL2 | T_LESS | T_LESSEQ | T_GREATER | T_GREATEREQ;
 ExpressionShift                      ::= ExpressionAdd (ShiftOperator ExpressionAdd)*;
 private ShiftOperator                ::= T_SHL | T_SHR | T_USHR;
 ExpressionAdd                        ::= ExpressionMul (AddOperator ExpressionMul)*
@@ -151,10 +151,9 @@ ExpressionUnary                      ::= UnaryOperator ExpressionUnary
 private UnaryOperator                ::= T_NOT | T_SUB | T_CAT | T_INCREMENT | T_DECREMENT;
 private ExpressionTryConvert         ::= ExpressionUnary;
 private ExpressionRethrow            ::= ExpressionUnary;
-ExpressionPostFix                    ::= ExpressionPrimary PostFix?;
+ExpressionPostFix                    ::= ExpressionPrimary PostFix* PostFixRange?;
 private PostFix                      ::= PostFixMemberGet
                                        | PostFixOuter
-                                       | PostFixRange
                                        | PostFixIndex
                                        | PostFixCall
                                        | PostFixCast
@@ -163,13 +162,13 @@ private PostFix                      ::= PostFixMemberGet
                                        | PostFixLambda;
 private PostFixMemberGet            ::= T_DOT (T_IDENTIFIER | T_STRING_SQ | T_STRING_DQ);
 private PostFixOuter                ::= T_DOT T_DOLLAR;
-private PostFixRange                ::= T_DOT2 ExpressionAssign;
 private PostFixIndex                ::= T_SQOPEN ExpressionAssign (T_COMMA ExpressionAssign)* T_SQCLOSE;
-private PostFixCall                 ::= T_BROPEN ExpressionAssign (T_COMMA ExpressionAssign)* T_BRCLOSE;
+private PostFixCall                 ::= T_BROPEN CallArguments;
 private PostFixCast                 ::= K_AS (T_QUEST)? Type;
 private PostFixIncrement            ::= T_INCREMENT;
 private PostFixDecrement            ::= T_DECREMENT;
 private PostFixLambda               ::= T_LAMBDA FunctionLambdaBody;
+private PostFixRange                ::= T_DOT2 ExpressionAssign;
 ExpressionPrimary                   ::= ExpressionLiteral
                                       | ExpressionVariable
                                       | ExpressionLocalVariable
@@ -180,11 +179,12 @@ ExpressionPrimary                   ::= ExpressionLiteral
                                       | ExpressionMap
                                       | ExpressionBool
                                       | ExpressionNull
+                                      | ExpressionBracket
                                       | ExpressionNew
                                       | ExpressionThrow
                                       | ExpressionPanic
                                       | ExpressionMatch
-                                      | ExpressionBracket
+                                      | ExpressionBracketExpression
                                       | Type;
 private ExpressionLiteral           ::= ExpressionInt
                                       | ExpressionFloat
@@ -192,22 +192,23 @@ private ExpressionLiteral           ::= ExpressionInt
 private ExpressionInt               ::= T_INT | T_PREFIXED_INT;
 private ExpressionFloat             ::= T_FLOAT
 private ExpressionString            ::= T_STRING_SQ | T_STRING_DQ;
-private ExpressionVariable          ::= T_IDENTIFIER;
+private ExpressionVariable          ::= T_IDENTIFIER TypeArguments;
 private ExpressionLocalVariable     ::= T_LOCAL_IDENTIFIER;
 private ExpressionThis              ::= K_THIS;
 private ExpressionSuper             ::= K_SUPER;
 private ExpressionDollar            ::= T_DOLLAR;
-private ExpressionArray             ::= T_SQOPEN (ExpressionAssign (T_COMMA ExpressionAssign)*)?;
+private ExpressionArray             ::= T_SQOPEN (ExpressionAssign (T_COMMA ExpressionAssign)*)? T_SQCLOSE;
 private ExpressionMap               ::= T_AOPEN (MapEntry (T_COMMA MapEntry)*)? T_ACLOSE;
 private MapEntry                    ::= ExpressionAssign (T_COLON ExpressionAssign)?;
 private ExpressionBool              ::= K_TRUE | K_FALSE;
 private ExpressionNull              ::= K_NULL;
-private ExpressionNew               ::= K_NEW Type (TypeArgumentForCall? T_BROPEN (Expression (T_COMMA Expression)*)? T_BRCLOSE)?;
+private ExpressionBracket           ::= T_BROPEN ExpressionAssign (T_COMMA ExpressionAssign)* T_BRCLOSE;
+private ExpressionNew               ::= K_NEW Type CallArguments?;
 private ExpressionThrow             ::= K_THROW Expression;
 private ExpressionPanic             ::= K_PANIC Expression;
 private ExpressionMatch             ::= K_MATCH Expression T_AOPEN (MatchClause (T_COMMA MatchClause)*)? T_ACLOSE;
 private MatchClause                 ::= (K_DEFAULT | Expression) T_LAMBDA Expression;
-private ExpressionBracket           ::= T_LESS ValidBracketContent* T_GREATER;
+private ExpressionBracketExpression ::= T_LESS ValidBracketContent* T_GREATER;
 # FIXME
 private ValidBracketContent         ::= T_IDENTIFIER
                                       | T_COLON

@@ -313,303 +313,369 @@ export const T_BACKTICK = createToken({
 export const K_IMPORT = createToken({
   name: 'K_IMPORT',
   pattern: /import/,
+  longer_alt: T_IDENTIFIER,
 });
 export const K_ALIAS = createToken({
   name: 'K_ALIAS',
   pattern: /alias/,
+  longer_alt: T_IDENTIFIER,
 });
 export const K_CLASS = createToken({
   name: 'K_CLASS',
   pattern: /class/,
+  longer_alt: T_IDENTIFIER,
 });
 export const K_FUNCTION = createToken({
   name: 'K_FUNCTION',
   pattern: /function/,
+  longer_alt: T_IDENTIFIER,
 });
 export const K_INTERFACE = createToken({
   name: 'K_INTERFACE',
   pattern: /interface/,
+  longer_alt: T_IDENTIFIER,
 });
 export const K_ENUM = createToken({
   name: 'K_ENUM',
   pattern: /enum/,
+  longer_alt: T_IDENTIFIER,
 });
 export const K_STRUCT = createToken({
   name: 'K_STRUCT',
   pattern: /struct/,
+  longer_alt: T_IDENTIFIER,
 });
 export const K_EXPAND = createToken({
   name: 'K_EXPAND',
   pattern: /expand/,
+  longer_alt: T_IDENTIFIER,
 });
 export const K_VARIANT = createToken({
   name: 'K_VARIANT',
   pattern: /variant/,
+  longer_alt: T_IDENTIFIER,
 });
 
 // Modifier keywords
 export const K_ABSTRACT = createToken({
   name: 'K_ABSTRACT',
   pattern: /abstract/,
+  longer_alt: T_IDENTIFIER,
 });
 export const K_FINAL = createToken({
   name: 'K_FINAL',
   pattern: /final/,
+  longer_alt: T_IDENTIFIER,
 });
 export const K_OVERRIDE = createToken({
   name: 'K_OVERRIDE',
   pattern: /override/,
+  longer_alt: T_IDENTIFIER,
 });
 export const K_CONST = createToken({
   name: 'K_CONST',
   pattern: /const/,
+  longer_alt: T_IDENTIFIER,
 });
 export const K_PRIVATE = createToken({
   name: 'K_PRIVATE',
   pattern: /private/,
+  longer_alt: T_IDENTIFIER,
 });
 export const K_PUBLIC = createToken({
   name: 'K_PUBLIC',
   pattern: /public/,
+  longer_alt: T_IDENTIFIER,
 });
 export const K_EXPORT = createToken({
   name: 'K_EXPORT',
   pattern: /export/,
+  longer_alt: T_IDENTIFIER,
 });
 export const K_INTERNAL = createToken({
   name: 'K_INTERNAL',
   pattern: /internal/,
+  longer_alt: T_IDENTIFIER,
 });
 export const K_STATIC = createToken({
   name: 'K_STATIC',
   pattern: /static/,
+  longer_alt: T_IDENTIFIER,
 });
 export const K_PROTECTED = createToken({
   name: 'K_PROTECTED',
   pattern: /protected/,
+  longer_alt: T_IDENTIFIER,
 });
 export const K_IMPLICIT = createToken({
   name: 'K_IMPLICIT',
   pattern: /implicit/,
+  longer_alt: T_IDENTIFIER,
 });
 export const K_VIRTUAL = createToken({
   name: 'K_VIRTUAL',
   pattern: /virtual/,
+  longer_alt: T_IDENTIFIER,
 });
 export const K_EXTERN = createToken({
   name: 'K_EXTERN',
   pattern: /extern/,
+  longer_alt: T_IDENTIFIER,
 });
 export const K_IMMUTABLE = createToken({
   name: 'K_IMMUTABLE',
   pattern: /immutable/,
+  longer_alt: T_IDENTIFIER,
 });
 
 // Defination Keywords
 export const K_VAL = createToken({
   name: 'K_VAL',
   pattern: /val/,
+  longer_alt: T_IDENTIFIER,
 });
 export const K_VAR = createToken({
   name: 'K_VAR',
   pattern: /var/,
+  longer_alt: T_IDENTIFIER,
 });
 export const K_GET = createToken({
   name: 'K_GET',
   pattern: /get/,
+  longer_alt: T_IDENTIFIER,
 });
 export const K_IMPLEMENTS = createToken({
   name: 'K_IMPLEMENTS',
   pattern: /implements/,
+  longer_alt: T_IDENTIFIER,
 });
 export const K_SET = createToken({
   name: 'K_SET',
   pattern: /set/,
+  longer_alt: T_IDENTIFIER,
 });
 
 // Type keywords
 export const K_VOID = createToken({
   name: 'K_VOID',
   pattern: /void/,
+  longer_alt: T_IDENTIFIER,
 });
 export const K_BOOL = createToken({
   name: 'K_BOOL',
   pattern: /bool/,
+  longer_alt: T_IDENTIFIER,
 });
 export const K_BYTE = createToken({
   name: 'K_BYTE',
   pattern: /byte/,
+  longer_alt: T_IDENTIFIER,
 });
 export const K_SBYTE = createToken({
   name: 'K_SBYTE',
   pattern: /sbyte/,
+  longer_alt: T_IDENTIFIER,
 });
 export const K_SHORT = createToken({
   name: 'K_SHORT',
   pattern: /short/,
+  longer_alt: T_IDENTIFIER,
 });
 export const K_USHORT = createToken({
   name: 'K_USHORT',
   pattern: /ushort/,
+  longer_alt: T_IDENTIFIER,
 });
 export const K_INT = createToken({
   name: 'K_INT',
   pattern: /int/,
+  longer_alt: T_IDENTIFIER,
 });
 export const K_UINT = createToken({
   name: 'K_UINT',
   pattern: /uint/,
+  longer_alt: T_IDENTIFIER,
 });
 export const K_LONG = createToken({
   name: 'K_LONG',
   pattern: /long/,
+  longer_alt: T_IDENTIFIER,
 });
 export const K_ULONG = createToken({
   name: 'K_ULONG',
   pattern: /ulong/,
+  longer_alt: T_IDENTIFIER,
 });
 export const K_USIZE = createToken({
   name: 'K_USIZE',
   pattern: /usize/,
+  longer_alt: T_IDENTIFIER,
 });
 export const K_FLOAT = createToken({
   name: 'K_FLOAT',
   pattern: /float/,
+  longer_alt: T_IDENTIFIER,
 });
 export const K_DOUBLE = createToken({
   name: 'K_DOUBLE',
   pattern: /double/,
+  longer_alt: T_IDENTIFIER,
 });
 export const K_CHAR = createToken({
   name: 'K_CHAR',
   pattern: /char/,
+  longer_alt: T_IDENTIFIER,
 });
 export const K_STRING = createToken({
   name: 'K_STRING',
   pattern: /string/,
+  longer_alt: T_IDENTIFIER,
 });
 
 // Control keywords
 export const K_IF = createToken({
   name: 'K_IF',
   pattern: /if/,
+  longer_alt: T_IDENTIFIER,
 });
 export const K_ELSE = createToken({
   name: 'K_ELSE',
   pattern: /else/,
+  longer_alt: T_IDENTIFIER,
 });
 export const K_DO = createToken({
   name: 'K_DO',
   pattern: /do/,
+  longer_alt: T_IDENTIFIER,
 });
 export const K_WHILE = createToken({
   name: 'K_WHILE',
   pattern: /while/,
+  longer_alt: T_IDENTIFIER,
 });
 export const K_FOR = createToken({
   name: 'K_FOR',
   pattern: /for/,
+  longer_alt: T_IDENTIFIER,
 });
 export const K_THROW = createToken({
   name: 'K_THROW',
   pattern: /throw/,
+  longer_alt: T_IDENTIFIER,
 });
 export const K_PANIC = createToken({
   name: 'K_PANIC',
   pattern: /panic/,
+  longer_alt: T_IDENTIFIER,
 });
 export const K_LOCK = createToken({
   name: 'K_LOCK',
   pattern: /lock/,
+  longer_alt: T_IDENTIFIER,
 });
 export const K_TRY = createToken({
   name: 'K_TRY',
   pattern: /try/,
+  longer_alt: T_IDENTIFIER,
 });
 export const K_CATCH = createToken({
   name: 'K_CATCH',
   pattern: /catch/,
+  longer_alt: T_IDENTIFIER,
 });
 export const K_FINALLY = createToken({
   name: 'K_FINALLY',
   pattern: /finally/,
+  longer_alt: T_IDENTIFIER,
 });
 export const K_RETURN = createToken({
   name: 'K_RETURN',
   pattern: /return/,
+  longer_alt: T_IDENTIFIER,
 });
 export const K_BREAK = createToken({
   name: 'K_BREAK',
   pattern: /break/,
+  longer_alt: T_IDENTIFIER,
 });
 export const K_CONTINUE = createToken({
   name: 'K_CONTINUE',
   pattern: /continue/,
+  longer_alt: T_IDENTIFIER,
 });
 export const K_SWITCH = createToken({
   name: 'K_SWITCH',
   pattern: /switch/,
+  longer_alt: T_IDENTIFIER,
 });
 export const K_CASE = createToken({
   name: 'K_CASE',
   pattern: /case/,
+  longer_alt: T_IDENTIFIER,
 });
 export const K_DEFAULT = createToken({
   name: 'K_DEFAULT',
   pattern: /default/,
+  longer_alt: T_IDENTIFIER,
 });
 
 // Match keywords
 export const K_IN = createToken({
   name: 'K_IN',
   pattern: /in/,
+  longer_alt: T_IDENTIFIER,
 });
 export const K_IS = createToken({
   name: 'K_IS',
   pattern: /is/,
+  longer_alt: T_IDENTIFIER,
 });
 export const K_AS = createToken({
   name: 'K_AS',
   pattern: /as/,
+  longer_alt: T_IDENTIFIER,
 });
 export const K_MATCH = createToken({
   name: 'K_MATCH',
   pattern: /match/,
+  longer_alt: T_IDENTIFIER,
 });
 export const K_THROWS = createToken({
   name: 'K_THROWS',
   pattern: /throws/,
+  longer_alt: T_IDENTIFIER,
 });
 
 // Other keywords
 export const K_SUPER = createToken({
   name: 'K_SUPER',
   pattern: /super/,
+  longer_alt: T_IDENTIFIER,
 });
 export const K_THIS = createToken({
   name: 'K_THIS',
   pattern: /this/,
+  longer_alt: T_IDENTIFIER,
 });
 export const K_NULL = createToken({
   name: 'K_NULL',
   pattern: /null/,
+  longer_alt: T_IDENTIFIER,
 });
 export const K_TRUE = createToken({
   name: 'K_TRUE',
   pattern: /true/,
+  longer_alt: T_IDENTIFIER,
 });
 export const K_FALSE = createToken({
   name: 'K_FALSE',
   pattern: /false/,
+  longer_alt: T_IDENTIFIER,
 });
 export const K_NEW = createToken({
   name: 'K_NEW',
   pattern: /new/,
-});
-
-export const TTT = createToken({
-  name: 'TTT',
-  pattern: /1/,
+  longer_alt: T_IDENTIFIER,
 });
 
 export const ZenCodeAllTokens = [

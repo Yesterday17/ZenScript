@@ -4,7 +4,7 @@ import * as tokens from './lexer';
 
 class ZenCodeParser extends CstParser {
   constructor() {
-    super(ZenCodeAllTokens);
+    super(ZenCodeAllTokens, { maxLookahead: 1 });
     this.performSelfAnalysis();
   }
 
@@ -15,23 +15,28 @@ class ZenCodeParser extends CstParser {
 
   protected ZenCodeFile = this.RULE('ZenCodeFile', () => {
     this.MANY(() => {
-      this.SUBRULE(this.Annotation);
-    });
-    this.OPTION(() => {
-      this.SUBRULE(this.Modifier);
-    });
-    this.MANY2(() => {
-      this.OR([
-        {
-          ALT: () => this.SUBRULE(this.Import),
-        },
-        {
-          ALT: () => this.SUBRULE(this.Definition),
-        },
-        {
-          ALT: () => this.SUBRULE(this.Statement),
-        },
-      ]);
+      this.MANY2(() => {
+        this.SUBRULE(this.Annotation);
+      });
+      this.MANY3(() => {
+        this.SUBRULE(this.Modifier);
+      });
+      this.MANY4(() => {
+        this.OR([
+          {
+            ALT: () => {
+              this.CONSUME(tokens.K_IMPORT);
+              this.SUBRULE(this.Import);
+            },
+          },
+          {
+            ALT: () => this.SUBRULE(this.Definition),
+          },
+          {
+            ALT: () => this.SUBRULE(this.Statement),
+          },
+        ]);
+      });
     });
   });
 
@@ -95,12 +100,24 @@ class ZenCodeParser extends CstParser {
   protected Annotation = this.RULE('Annotation', () => {
     this.CONSUME(tokens.T_SQOPEN);
     this.SUBRULE(this.Type);
-    this.SUBRULE(this.AnnotationCallArguments);
+    this.SUBRULE(this.CallArgumentsAnnotation);
     this.CONSUME(tokens.T_SQCLOSE, { ERR_MSG: '] expected' });
   });
 
-  protected AnnotationCallArguments = this.RULE(
-    'AnnotationCallArguments',
+  protected CallArguments = this.RULE('CallArguments', () => {
+    this.SUBRULE(this.TypeArguments);
+    this.CONSUME(tokens.T_BROPEN, { ERR_MSG: '( expected' });
+    this.MANY_SEP({
+      SEP: tokens.T_COMMA,
+      DEF: () => {
+        this.SUBRULE(this.Expression);
+      },
+    });
+    this.CONSUME(tokens.T_BRCLOSE, { ERR_MSG: ') expected' });
+  });
+
+  protected CallArgumentsAnnotation = this.RULE(
+    'CallArgumentsAnnotation',
     () => {
       this.SUBRULE(this.TypeArguments);
       this.OPTION(() => {
@@ -306,7 +323,7 @@ class ZenCodeParser extends CstParser {
   protected FunctionHeaderParameters = this.RULE(
     'FunctionHeaderParameters',
     () => {
-      this.AT_LEAST_ONE_SEP({
+      this.MANY_SEP({
         SEP: tokens.T_COMMA,
         DEF: () => {
           this.SUBRULE(this.FunctionHeaderParameter);
@@ -527,7 +544,10 @@ class ZenCodeParser extends CstParser {
   protected FunctionBodyNonEmpty = this.RULE('FunctionBodyNonEmpty', () => {
     this.OR([
       {
-        ALT: () => this.SUBRULE(this.FunctionLambdaBody),
+        ALT: () => {
+          this.CONSUME(tokens.T_LAMBDA);
+          this.SUBRULE(this.FunctionLambdaBody);
+        },
       },
       {
         ALT: () => this.SUBRULE(this.FunctionStatementBody),
@@ -536,7 +556,6 @@ class ZenCodeParser extends CstParser {
   });
 
   protected FunctionLambdaBody = this.RULE('FunctionLambdaBody', () => {
-    this.CONSUME(tokens.T_LAMBDA);
     this.OR([
       {
         ALT: () => {
@@ -548,6 +567,7 @@ class ZenCodeParser extends CstParser {
         },
       },
       {
+        GATE: () => this.LA(1).tokenType !== tokens.T_AOPEN,
         ALT: () => {
           this.SUBRULE(this.Expression);
         },
@@ -663,13 +683,10 @@ class ZenCodeParser extends CstParser {
       {
         ALT: () => {
           this.CONSUME(tokens.T_IDENTIFIER);
-          this.SUBRULE(this.ConstMember);
-        },
-      },
-      {
-        ALT: () => {
-          this.CONSUME2(tokens.T_IDENTIFIER);
-          this.SUBRULE(this.FunctionMember);
+          this.OR3([
+            { ALT: () => this.SUBRULE(this.ConstMember) },
+            { ALT: () => this.SUBRULE(this.FunctionMember) },
+          ]);
         },
       },
       {
@@ -723,7 +740,7 @@ class ZenCodeParser extends CstParser {
       },
       {
         ALT: () => {
-          this.OR3([
+          this.OR4([
             {
               ALT: () => this.CONSUME(tokens.K_CLASS),
             },
@@ -751,7 +768,6 @@ class ZenCodeParser extends CstParser {
       },
       {
         ALT: () => {
-          this.CONSUME(tokens.T_AOPEN);
           this.SUBRULE(this.StatementBlock, {
             LABEL: 'StaticInitializerMember',
           });
@@ -828,7 +844,7 @@ class ZenCodeParser extends CstParser {
     ]);
   });
 
-  protected FieldMember = this.RULE('FieldMember', (autoProp = true) => {
+  protected FieldMember = this.RULE('FieldMember', () => {
     this.CONSUME(tokens.T_IDENTIFIER, {
       ERR_MSG: 'identifier expected',
       LABEL: 'name',
@@ -838,7 +854,6 @@ class ZenCodeParser extends CstParser {
       this.SUBRULE(this.Type);
     });
     this.OPTION2({
-      GATE: autoProp,
       DEF: () => {
         this.CONSUME(tokens.T_COLON);
         this.SUBRULE(this.FieldAutoProp);
@@ -946,7 +961,6 @@ class ZenCodeParser extends CstParser {
       DEF: [
         {
           ALT: () => {
-            this.CONSUME(tokens.T_AOPEN);
             this.SUBRULE(this.StatementBlock);
           },
         },
@@ -962,10 +976,7 @@ class ZenCodeParser extends CstParser {
               { ALT: () => this.CONSUME(tokens.K_VAL) },
               { ALT: () => this.CONSUME(tokens.K_VAR) },
             ]);
-            this.SUBRULE(this.FieldMember, {
-              ARGS: ['false'],
-              LABEL: 'StatementVar',
-            });
+            this.SUBRULE(this.FieldMember, { LABEL: 'StatementVar' }); // FIXME: FieldMember is more than its syntax
           },
         },
         {
@@ -1042,6 +1053,7 @@ class ZenCodeParser extends CstParser {
           },
         },
         {
+          GATE: () => this.LA(1).tokenType !== tokens.T_AOPEN,
           ALT: () => {
             this.SUBRULE3(this.Expression);
             this.CONSUME2(tokens.T_SEMICOLON, { ERR_MSG: '; expected' });
@@ -1052,6 +1064,7 @@ class ZenCodeParser extends CstParser {
   });
 
   protected StatementBlock = this.RULE('StatementBlock', () => {
+    this.CONSUME(tokens.T_AOPEN);
     this.MANY(() => {
       this.SUBRULE(this.StatementInner);
     });
@@ -1199,8 +1212,432 @@ class ZenCodeParser extends CstParser {
 
   // Block Expressions
   protected Expression = this.RULE('Expression', () => {
-    //TODO
-    this.CONSUME(tokens.K_STRING);
+    this.SUBRULE(this.ExpressionAssign);
+  });
+
+  protected ExpressionAssign = this.RULE('ExpressionAssign', () => {
+    this.SUBRULE(this.ExpressionConditional);
+    this.OPTION(() => {
+      this.OR([
+        { ALT: () => this.CONSUME(tokens.T_ASSIGN) },
+        { ALT: () => this.CONSUME(tokens.T_ADDASSIGN) },
+        { ALT: () => this.CONSUME(tokens.T_SUBASSIGN) },
+        { ALT: () => this.CONSUME(tokens.T_CATASSIGN) },
+        { ALT: () => this.CONSUME(tokens.T_MULASSIGN) },
+        { ALT: () => this.CONSUME(tokens.T_DIVASSIGN) },
+        { ALT: () => this.CONSUME(tokens.T_MODASSIGN) },
+        { ALT: () => this.CONSUME(tokens.T_ORASSIGN) },
+        { ALT: () => this.CONSUME(tokens.T_ANDASSIGN) },
+        { ALT: () => this.CONSUME(tokens.T_XORASSIGN) },
+        { ALT: () => this.CONSUME(tokens.T_SHLASSIGN) },
+        { ALT: () => this.CONSUME(tokens.T_SHRASSIGN) },
+        { ALT: () => this.CONSUME(tokens.T_USHRASSIGN) },
+      ]);
+      this.SUBRULE(this.ExpressionAssign);
+    });
+  });
+
+  protected ExpressionConditional = this.RULE('ExpressionConditional', () => {
+    this.SUBRULE(this.ExpressionOrOr);
+    this.OPTION(() => {
+      this.CONSUME(tokens.T_QUEST);
+      this.SUBRULE2(this.ExpressionOrOr);
+      this.CONSUME(tokens.T_COLON);
+      this.SUBRULE(this.ExpressionConditional);
+    });
+  });
+
+  protected ExpressionOrOr = this.RULE('ExpressionOrOr', () => {
+    this.SUBRULE(this.ExpressionAndAnd);
+    this.MANY(() => {
+      this.CONSUME(tokens.T_OROR);
+      this.SUBRULE2(this.ExpressionAndAnd);
+    });
+    this.MANY2(() => {
+      this.CONSUME(tokens.T_COALESCE);
+      this.SUBRULE3(this.ExpressionAndAnd);
+    });
+  });
+
+  protected ExpressionAndAnd = this.RULE('ExpressionAndAnd', () => {
+    this.AT_LEAST_ONE_SEP({
+      SEP: tokens.T_ANDAND,
+      DEF: () => {
+        this.SUBRULE(this.ExpressionOr);
+      },
+    });
+  });
+
+  protected ExpressionOr = this.RULE('ExpressionOr', () => {
+    this.AT_LEAST_ONE_SEP({
+      SEP: tokens.T_OR,
+      DEF: () => {
+        this.SUBRULE(this.ExpressionXor);
+      },
+    });
+  });
+
+  protected ExpressionXor = this.RULE('ExpressionXor', () => {
+    this.AT_LEAST_ONE_SEP({
+      SEP: tokens.T_XOR,
+      DEF: () => {
+        this.SUBRULE(this.ExpressionAnd);
+      },
+    });
+  });
+
+  protected ExpressionAnd = this.RULE('ExpressionAnd', () => {
+    this.AT_LEAST_ONE_SEP({
+      SEP: tokens.T_AND,
+      DEF: () => {
+        this.SUBRULE(this.ExpressionCompare);
+      },
+    });
+  });
+
+  protected ExpressionCompare = this.RULE('ExpressionCompare', () => {
+    this.SUBRULE(this.ExpressionShift);
+    this.OR([
+      {
+        ALT: () => {
+          this.OPTION(() => this.CONSUME(tokens.T_NOT));
+          this.OR2([
+            {
+              ALT: () => {
+                this.CONSUME(tokens.K_IS);
+                this.SUBRULE(this.Type);
+              },
+            },
+            {
+              ALT: () => {
+                this.CONSUME(tokens.K_IN);
+                this.SUBRULE2(this.ExpressionShift);
+              },
+            },
+          ]);
+        },
+      },
+      {
+        ALT: () => {
+          this.OPTION2(() => {
+            this.OR3([
+              { ALT: () => this.CONSUME(tokens.T_EQUAL2) },
+              { ALT: () => this.CONSUME(tokens.T_EQUAL3) },
+              { ALT: () => this.CONSUME(tokens.T_NOTEQUAL) },
+              { ALT: () => this.CONSUME(tokens.T_NOTEQUAL2) },
+              { ALT: () => this.CONSUME(tokens.T_LESS) },
+              { ALT: () => this.CONSUME(tokens.T_LESSEQ) },
+              { ALT: () => this.CONSUME(tokens.T_GREATER) },
+              { ALT: () => this.CONSUME(tokens.T_GREATEREQ) },
+            ]);
+            this.SUBRULE3(this.ExpressionShift);
+          });
+        },
+      },
+    ]);
+  });
+
+  protected ExpressionShift = this.RULE('ExpressionShift', () => {
+    this.SUBRULE(this.ExpressionAdd);
+    this.MANY(() => {
+      this.OR([
+        { ALT: () => this.CONSUME(tokens.T_SHL) },
+        { ALT: () => this.CONSUME(tokens.T_SHR) },
+        { ALT: () => this.CONSUME(tokens.T_USHR) },
+      ]);
+      this.SUBRULE2(this.ExpressionAdd);
+    });
+  });
+
+  protected ExpressionAdd = this.RULE('ExpressionAdd', () => {
+    this.SUBRULE(this.ExpressionMul);
+    this.MANY(() => {
+      this.OR([
+        { ALT: () => this.CONSUME(tokens.T_ADD) },
+        { ALT: () => this.CONSUME(tokens.T_SUB) },
+        { ALT: () => this.CONSUME(tokens.T_CAT) },
+      ]);
+      this.SUBRULE2(this.ExpressionMul);
+    });
+  });
+
+  protected ExpressionMul = this.RULE('ExpressionMul', () => {
+    this.SUBRULE(this.ExpressionUnary);
+    this.MANY(() => {
+      this.OR([
+        { ALT: () => this.CONSUME(tokens.T_MUL) },
+        { ALT: () => this.CONSUME(tokens.T_DIV) },
+        { ALT: () => this.CONSUME(tokens.T_MOD) },
+      ]);
+      this.SUBRULE2(this.ExpressionUnary);
+    });
+  });
+
+  protected ExpressionUnary = this.RULE('ExpressionUnary', () => {
+    this.OR([
+      {
+        ALT: () => {
+          this.OR2([
+            { ALT: () => this.CONSUME(tokens.T_NOT) },
+            { ALT: () => this.CONSUME(tokens.T_SUB) },
+            { ALT: () => this.CONSUME(tokens.T_CAT) },
+            { ALT: () => this.CONSUME(tokens.T_INCREMENT) },
+            { ALT: () => this.CONSUME(tokens.T_DECREMENT) },
+          ]);
+          this.SUBRULE(this.ExpressionUnary);
+        },
+      },
+      {
+        ALT: () => {
+          this.CONSUME(tokens.K_TRY);
+          this.OR3([
+            {
+              ALT: () => {
+                this.CONSUME(tokens.T_QUEST);
+                this.SUBRULE2(this.ExpressionUnary);
+              },
+            },
+            {
+              ALT: () => {
+                this.CONSUME2(tokens.T_NOT);
+                this.SUBRULE3(this.ExpressionUnary);
+              },
+            },
+          ]);
+        },
+      },
+      {
+        ALT: () => {
+          this.SUBRULE(this.ExpressionPostFix);
+        },
+      },
+    ]);
+  });
+
+  protected ExpressionPostFix = this.RULE('ExpressionPostFix', () => {
+    this.SUBRULE(this.ExpressionPrimary);
+    this.MANY(() => {
+      this.OR([
+        {
+          ALT: () => {
+            this.CONSUME(tokens.T_DOT);
+            this.OR2([
+              { ALT: () => this.CONSUME(tokens.T_IDENTIFIER) },
+              { ALT: () => this.CONSUME(tokens.T_STRING_SQ) },
+              { ALT: () => this.CONSUME(tokens.T_STRING_DQ) },
+              { ALT: () => this.SUBRULE(this.ConstMember) },
+            ]);
+          },
+        },
+        {
+          ALT: () => {
+            this.CONSUME(tokens.T_SQOPEN);
+            this.AT_LEAST_ONE_SEP({
+              SEP: tokens.T_COMMA,
+              DEF: () => {
+                this.SUBRULE(this.ExpressionAssign, {
+                  LABEL: 'PostFixIndex',
+                });
+              },
+            });
+            this.CONSUME(tokens.T_SQCLOSE);
+          },
+        },
+        {
+          GATE: () => this.LA(1).tokenType === tokens.T_BROPEN,
+          ALT: () => {
+            this.SUBRULE(this.CallArguments, {
+              LABEL: 'PostFixCall',
+            });
+          },
+        },
+        {
+          ALT: () => {
+            this.CONSUME(tokens.K_AS);
+            this.OPTION(() =>
+              this.CONSUME(tokens.T_QUEST, { LABEL: 'optional' })
+            );
+            this.SUBRULE(this.Type, { LABEL: 'PostFixCast' });
+          },
+        },
+        {
+          ALT: () => {
+            this.CONSUME(tokens.T_INCREMENT, { LABEL: 'PostFixIncrement' });
+          },
+        },
+        {
+          ALT: () => {
+            this.CONSUME(tokens.T_DECREMENT, { LABEL: 'PostFixDecrement' });
+          },
+        },
+        {
+          ALT: () => {
+            this.CONSUME(tokens.T_LAMBDA);
+            this.SUBRULE(this.FunctionLambdaBody, { LABEL: 'PostFixLambda' });
+          },
+        },
+      ]);
+    });
+    this.OPTION2(() => {
+      this.CONSUME(tokens.T_DOT2);
+      this.SUBRULE2(this.ExpressionAssign, { LABEL: 'PostFixRange' });
+    });
+  });
+
+  private ExpressionPrimary = this.RULE('ExpressionPrimary', () => {
+    this.OR([
+      // ExpressionLiteral
+      {
+        ALT: () => this.CONSUME(tokens.T_INT),
+      },
+      {
+        ALT: () => this.CONSUME(tokens.T_PREFIXED_INT),
+      },
+      {
+        ALT: () => this.CONSUME(tokens.T_FLOAT),
+      },
+      {
+        ALT: () => this.CONSUME(tokens.T_STRING_SQ),
+      },
+      {
+        ALT: () => this.CONSUME(tokens.T_STRING_DQ),
+      },
+      // ExpressionVariable
+      {
+        ALT: () => {
+          this.CONSUME(tokens.T_IDENTIFIER);
+          this.SUBRULE(this.TypeArguments);
+        },
+      },
+      // ExpressionLocalVariable
+      {
+        ALT: () => {
+          this.CONSUME(tokens.T_LOCAL_IDENTIFIER);
+        },
+      },
+      // ExpressionThis
+      {
+        ALT: () => this.CONSUME(tokens.K_THIS),
+      },
+      // ExpressionSuper
+      {
+        ALT: () => this.CONSUME(tokens.K_SUPER),
+      },
+      // ExpressionDollar
+      {
+        ALT: () => this.CONSUME(tokens.T_DOLLAR),
+      },
+      // ExpressionArray
+      {
+        ALT: () => {
+          this.CONSUME(tokens.T_SQOPEN);
+          this.MANY_SEP({
+            SEP: tokens.T_COMMA,
+            DEF: () => {
+              this.SUBRULE(this.ExpressionAssign);
+            },
+          });
+          this.CONSUME(tokens.T_SQCLOSE);
+        },
+      },
+      // ExpressionMap
+      {
+        ALT: () => {
+          this.CONSUME(tokens.T_AOPEN);
+          this.MANY_SEP2({
+            SEP: tokens.T_COMMA,
+            DEF: () => {
+              this.SUBRULE2(this.ExpressionAssign);
+              this.OPTION(() => {
+                this.CONSUME(tokens.T_COLON);
+                this.SUBRULE3(this.ExpressionAssign);
+              });
+            },
+          });
+          this.CONSUME(tokens.T_ACLOSE);
+        },
+      },
+      // ExpressionBool
+      {
+        ALT: () => this.CONSUME(tokens.K_TRUE),
+      },
+      {
+        ALT: () => this.CONSUME(tokens.K_FALSE),
+      },
+      // ExpressionNull
+      {
+        ALT: () => this.CONSUME(tokens.K_NULL),
+      },
+      // ExpressionBracket
+      {
+        ALT: () => {
+          this.CONSUME(tokens.T_BROPEN);
+          this.AT_LEAST_ONE_SEP({
+            SEP: tokens.T_COMMA,
+            DEF: () => {
+              this.SUBRULE4(this.ExpressionAssign);
+            },
+          });
+          this.CONSUME(tokens.T_BRCLOSE);
+        },
+      },
+      // ExpressionNew
+      {
+        ALT: () => {
+          this.CONSUME(tokens.K_NEW);
+          this.SUBRULE(this.Type);
+          this.OPTION2(() => {
+            this.SUBRULE(this.CallArguments);
+          });
+        },
+      },
+      // ExpressionThrow
+      {
+        ALT: () => {
+          this.CONSUME(tokens.K_THROW);
+          this.SUBRULE(this.Expression, { LABEL: 'ExpressionThrow' });
+        },
+      },
+      // ExpressionPanic
+      {
+        ALT: () => {
+          this.CONSUME(tokens.K_PANIC);
+          this.SUBRULE2(this.Expression, { LABEL: 'ExpressionPanic' });
+        },
+      },
+      // ExpressionMatch
+      {
+        ALT: () => {
+          this.CONSUME(tokens.K_MATCH);
+          this.SUBRULE3(this.Expression);
+          this.CONSUME2(tokens.T_AOPEN);
+          this.MANY_SEP3({
+            SEP: tokens.T_COMMA,
+            DEF: () => {
+              this.OR2([
+                { ALT: () => this.CONSUME(tokens.K_DEFAULT) },
+                { ALT: () => this.SUBRULE4(this.Expression) },
+              ]);
+              this.CONSUME(tokens.T_LAMBDA);
+              this.SUBRULE5(this.Expression);
+            },
+          });
+          this.CONSUME2(tokens.T_ACLOSE);
+        },
+      },
+      // ExpressionBracketExpression
+      {
+        ALT: () => {
+          this.CONSUME(tokens.T_LESS);
+          // TODO
+          this.CONSUME(tokens.T_GREATER);
+        },
+      },
+      // Type
+      // {
+      //   ALT: () => this.SUBRULE(this.Type),
+      // },
+    ]);
   });
 }
 
