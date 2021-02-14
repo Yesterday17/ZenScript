@@ -1,0 +1,218 @@
+# Modified by https://gist.github.com/kindlich/2cd722d05915d165cdc607b343e08a92
+
+ZenCodeFile                          ::= (Annotation* Modifier* (Import|Definition|Statement))*;
+
+Modifier                             ::= K_PUBLIC | K_PRIVATE | K_INTERNAL | K_EXTERN | K_ABSTRACT | K_FINAL | K_PROTECTED | K_IMPLICIT | K_VIRTUAL;
+Import                               ::= T_DOT? T_IDENTIFIER (T_DOT T_IDENTIFIER)* (K_AS T_IDENTIFIER)? T_SEMICOLON;
+Annotation                           ::= T_SQOPEN Type AnnotationCallArguments T_SQCLOSE;
+CallArguments                        ::= TypeArgumentForCall (T_BROPEN (Expression (T_COMMA Expression)*)? T_BRCLOSE)?;
+TypeArgumentsForCall                 ::= T_LESS Type (T_COMMA Type)* T_GREATER
+                                       | ;
+# Block TYPE
+Type                                 ::= SingleType TypeSuffix*
+private TypeSuffix                   ::= T_DOT2 Type
+                                       | T_SQOPEN T_LESS Type T_GREATER T_SQCLOSE
+                                       | T_SQOPEN Type T_SQCLOSE
+                                       | T_SQOPEN T_COMMA* T_SQCLOSE
+                                       | T_QUEST;
+private SingleType                   ::= K_VOID | K_BOOL | K_BYTE | K_SBYTE | K_SHORT | K_USHORT | K_INT | K_UINT | K_LONG | K_ULONG | K_USIZE | K_FLOAT | K_DOUBLE | K_CHAR | K_STRING
+                                       | FunctionType
+                                       | NamedType;
+private FunctionType                 ::= K_FUNCTION FunctionHeader;
+private NamedType                    ::= T_IDENTIFIER (T_DOT T_IDENTIFIER)*;
+FunctionHeader                       ::= TypeParameterList? T_BROPEN FunctionHeaderParameters T_BRCLOSE ((K_AS | T_COLON) Type)? (K_THROWS Type)?;
+private TypeParameterList            ::= T_LESS TypeParameter (T_COMMA TypeParameter)* T_GREATER;
+private TypeParameter                ::= T_IDENTIFIER (T_COLON K_SUPER? Type)*;
+private FunctionHeaderParameters     ::= FunctionHeaderParameter (T_COMMA FunctionHeaderParameter)*
+                                       | ;
+private FunctionHeaderParameter      ::= Annotation* T_IDENTIFIER T_DOT3? ((K_AS | T_COLON) Type)? (T_ASSIGN Expression)?;
+
+# Block DEFINITION
+Definition                           ::= K_CLASS DefinitionClass
+                                       | K_INTERFACE DefinitionInterface
+                                       | K_ENUM DefinitionEnum
+                                       | K_STRUCT DefinitionStruct
+                                       | K_ALIAS DefinitionAlias
+                                       | K_FUNCTION DefinitionFunction
+                                       | K_EXPAND DefinitionExpansion
+                                       | K_VARIANT DefinitionVariant;
+
+DefinitionClass                      ::= T_IDENTIFIER TypeParameterList? (T_COLON Type)? T_AOPEN DefinitionMember* T_ACLOSE;
+DefinitionInterface                  ::= T_IDENTIFIER TypeParameterList? (T_COLON Type (T_COMMA Type)*)? T_AOPEN DefinitionMember* T_ACLOSE;
+DefinitionEnum                       ::= T_IDENTIFIER (K_AS Type)? T_AOPEN (ParsedEnumConstant (T_COMMA ParsedEnumConstant)*)? (T_SEMICOLON DefinitionMember*)? T_ACLOSE;
+private ParsedEnumConstant           ::= T_IDENTIFIER (T_BROPEN Expression (T_COMMA Expression)* T_BRCLOSE)? (T_ASSIGN Expression)?;
+DefinitionStruct                     ::= T_IDENTIFIER TypeParameterList? T_AOPEN DefinitionMember* T_ACLOSE;
+DefinitionAlias                      ::= T_IDENTIFIER TypeParameterList? K_AS Type T_SEMICOLON;
+DefinitionFunction                   ::= T_IDENTIFIER FunctionHeader FunctionBody;
+private FunctionBody                 ::= FunctionBodyNonEmpty | FunctionEmptyBody ;
+private FunctionBodyNonEmpty         ::= FunctionLambdaBody | FunctionStatementBody;
+private FunctionLambdaBody           ::= T_LAMBDA T_AOPEN Statement* T_ACLOSE
+                                       | T_LAMBDA Expression;
+private FunctionEmptyBody            ::= T_SEMICOLON;
+private FunctionStatementBody        ::= StatementBlock;
+DefinitionExpansion                  ::= TypeParameterList? Type T_AOPEN DefinitionMember* T_ACLOSE;
+DefinitionVariant                    ::= T_IDENTIFIER TypeParameterList? T_AOPEN VariantOption* (T_SEMICOLON DefinitionMember*)? T_ACLOSE;
+VariantOption                        ::= T_IDENTIFIER (T_BROPEN Type (T_COMMA Type)* T_BRCLOSE)?
+
+# Block MEMBER
+DefinitionMember                     ::= Annotation* DefinitionModifier* (
+                                         K_VAL FieldMember
+                                       | K_VAR FieldMember
+                                       | K_THIS NonEmptyFunctionMember
+                                       | T_IDENTIFIER ConstMember
+                                       | T_IDENTIFIER FunctionMember
+                                       | K_SET GetterSetterMember
+                                       | K_GET GetterSetterMember
+                                       | K_IMPLEMENTS ImplementationMember
+                                       | T_BROPEN FunctionMember
+                                       | T_SQOPEN IndexMember
+                                       | T_CAT K_THIS FunctionBody
+                                       | Operator FunctionMember
+                                       | K_AS CasterMember
+                                       | (K_CLASS | K_INTERFACE | K_ALIAS | K_STRUCT | K_ENUM) Definition
+                                       | K_FOR FunctionMember
+                                       | T_AOPEN StatementBlock
+                                     );
+
+
+Operator                             ::= T_ADD | T_SUB | T_MUL | T_DIV | T_MOD | T_AND | T_OR | T_XOR | T_NOT | T_ADDASSIGN | T_SUBASSIGN | T_CATASSIGN | T_MULASSIGN | T_DIVASSIGN | T_MODASSIGN | T_ANDASSIGN | T_ORASSIGN | T_XORASSIGN | T_INCREMENT | T_DECREMENT | T_DOT2 | T_SHL | T_SHR | T_USHR | T_SHLASSIGN | T_SHRASSIGN | T_USHRASSIGN | T_CAT
+                                       | T_EQUAL2 | K_IN
+private DefinitionModifier           ::= K_INTERNAL | K_PUBLIC | K_PRIVATE | K_CONST | K_ABSTRACT | K_FINAL | K_STATIC | K_PROTECTED | K_IMPLICIT | K_EXTERN | K_OVERRIDE;
+private FieldMember                  ::= T_IDENTIFIER (K_AS Type)? (T_COLON FieldAutoProp)? (T_ASSIGN Expression)? T_SEMICOLON;
+private FieldAutoProp                ::= (K_PUBLIC | K_PRIVATE)? (K_GET | K_SET) (T_COMMA FieldAutoProp)?;
+private NonEmptyFunctionMember       ::= FunctionHeader FunctionBodyNonEmpty;
+private ConstMember                  ::= (K_AS Type)? T_ASSIGN Expression T_SEMICOLON;
+private FunctionMember               ::= FunctionHeader FunctionBody;
+private GetterSetterMember           ::= T_IDENTIFIER (K_AS Type)? FunctionBody;
+private ImplementationMember         ::= Type T_SEMICOLON
+                                       | Type T_AOPEN DefinitionMember* T_ACLOSE;
+private IndexMember                  ::= T_SQCLOSE T_ASSIGN? FunctionMember;
+private CasterMember                 ::= Type FunctionBody;
+
+
+# Block STATEMENT
+Statement                            ::= Annotation* StatementInner
+StatementInner                       ::= T_AOPEN StatementBlock
+                                       | K_RETURN StatementReturn
+                                       | (K_VAR | K_VAL) StatementVar
+                                       | K_IF StatementIf
+                                       | K_FOR StatementFor
+                                       | K_DO StatementDoWhile
+                                       | K_WHILE StatementWhile
+                                       | K_LOCK StatementLock
+                                       | K_THROW StatementThrow
+                                       | K_TRY StatementTryCatch
+                                       | K_CONTINUE StatementBreakContinue
+                                       | K_BREAK StatementBreakContinue
+                                       | K_SWITCH StatementSwitch
+                                       | StatementExpression;
+StatementBlock                       ::= StatementInner* T_ACLOSE;
+StatementReturn                      ::= Expression? T_SEMICOLON;
+StatementVar                         ::= T_IDENTIFIER (K_AS Type)? (T_ASSIGN Expression)? T_SEMICOLON;
+StatementIf                          ::= Expression Statement (K_ELSE Statement)?;
+StatementFor                         ::= T_IDENTIFIER (T_COMMA T_IDENTIFIER)* K_IN Expression Statement;
+StatementDoWhile                     ::= (T_COLON T_IDENTIFIER)? Statement K_WHILE Expression T_SEMICOLON;
+StatementWhile                       ::= (T_COLON T_IDENTIFIER)? Expression Statement;
+StatementLock                        ::= Expression Statement;
+StatementThrow                       ::= Expression T_SEMICOLON;
+StatementTryCatch                    ::= (T_IDENTIFIER T_ASSIGN Expression)? Statement CatchClause* (K_FINALLY Statement)?
+private CatchClause                  ::= K_CATCH T_IDENTIFIER? (K_AS Type)? Statement;
+StatementBreakContinue               ::= T_IDENTIFIER? T_SEMICOLON;
+StatementSwitch                      ::= (T_COLON T_IDENTIFIER)? T_AOPEN SwitchCase* T_ACLOSE;
+private SwitchCase                   ::= (K_CASE Expression | K_DEFAULT) T_COLON Statement*;
+StatementExpression                  ::= Expression T_SEMICOLON;
+
+
+
+# Block EXPRESSION
+Expression                           ::= ExpressionAssign;
+ExpressionAssign                     ::= ConditionalExpression ((T_ASSIGN | AssignOperator) ExpressionAssign)?;
+private AssignOperator               ::= T_ADDASSIGN | T_SUBASSIGN | T_CATASSIGN | T_MULASSIGN | T_DIVASSIGN | T_MODASSIGN | T_ORASSIGN | T_ANDASSIGN | T_XORASSIGN | T_SHLASSIGN | T_SHRASSIGN | T_USHRASSIGN;
+ConditionalExpression                ::= ExpressionOrOr (T_QUEST ExpressionOrOr T_COLON ConditionalExpression)?;
+ExpressionOrOr                       ::= ExpressionAndAnd (T_OROR ExpressionAndAnd)* (T_COALESCE ExpressionAndAnd)*;
+ExpressionAndAnd                     ::= ExpressionOr (T_ANDAND ExpressionOr)*;
+ExpressionOr                         ::= ExpressionXor (T_OR ExpressionXor)*;
+ExpressionXor                        ::= ExpressionAnd (T_XOR ExpressionAnd)*;
+ExpressionAnd                        ::= ExpressionCompare (T_AND ExpressionCompare)*;
+ExpressionCompare                    ::= ExpressionShift (T_NOT)? K_IS Type
+                                       | ExpressionShift T_NOT K_IN ExpressionShift
+                                       | ExpressionShift (CompareOperator ExpressionShift)?;
+private CompareOperator              ::= T_EQUAL2 | T_EQUAL3 | T_NOTEQUAL | T_NOTEQUAL2 | T_LESS | T_LESSEQ | T_GREATER | T_GREATEREQ | K_IN;
+ExpressionShift                      ::= ExpressionAdd (ShiftOperator ExpressionAdd)*;
+private ShiftOperator                ::= T_SHL | T_SHR | T_USHR;
+ExpressionAdd                        ::= ExpressionMul (AddOperator ExpressionMul)*
+private AddOperator                  ::= T_ADD | T_SUB | T_CAT;
+ExpressionMul                        ::= ExpressionUnary (MulOperator ExpressionUnary)*
+private MulOperator                  ::= T_MUL | T_DIV | T_MOD;
+ExpressionUnary                      ::= UnaryOperator ExpressionUnary
+                                       | K_TRY T_QUEST ExpressionTryConvert
+                                       | K_TRY T_NOT ExpressionRethrow
+                                       | ExpressionPostFix;
+private UnaryOperator                ::= T_NOT | T_SUB | T_CAT | T_INCREMENT | T_DECREMENT;
+private ExpressionTryConvert         ::= ExpressionUnary;
+private ExpressionRethrow            ::= ExpressionUnary;
+ExpressionPostFix                    ::= ExpressionPrimary PostFix?;
+private PostFix                      ::= PostFixMemberGet
+                                       | PostFixOuter
+                                       | PostFixRange
+                                       | PostFixIndex
+                                       | PostFixCall
+                                       | PostFixCast
+                                       | PostFixIncrement
+                                       | PostFixDecrement
+                                       | PostFixLambda;
+private PostFixMemberGet            ::= T_DOT (T_IDENTIFIER | T_STRING_SQ | T_STRING_DQ);
+private PostFixOuter                ::= T_DOT T_DOLLAR;
+private PostFixRange                ::= T_DOT2 ExpressionAssign;
+private PostFixIndex                ::= T_SQOPEN ExpressionAssign (T_COMMA ExpressionAssign)* T_SQCLOSE;
+private PostFixCall                 ::= T_BROPEN ExpressionAssign (T_COMMA ExpressionAssign)* T_BRCLOSE;
+private PostFixCast                 ::= K_AS (T_QUEST)? Type;
+private PostFixIncrement            ::= T_INCREMENT;
+private PostFixDecrement            ::= T_DECREMENT;
+private PostFixLambda               ::= T_LAMBDA FunctionLambdaBody;
+ExpressionPrimary                   ::= ExpressionLiteral
+                                      | ExpressionVariable
+                                      | ExpressionLocalVariable
+                                      | ExpressionThis
+                                      | ExpressionSuper
+                                      | ExpressionDollar
+                                      | ExpressionArray
+                                      | ExpressionMap
+                                      | ExpressionBool
+                                      | ExpressionNull
+                                      | ExpressionNew
+                                      | ExpressionThrow
+                                      | ExpressionPanic
+                                      | ExpressionMatch
+                                      | ExpressionBracket
+                                      | Type;
+private ExpressionLiteral           ::= ExpressionInt
+                                      | ExpressionFloat
+                                      | ExpressionString;
+private ExpressionInt               ::= T_INT | T_PREFIXED_INT;
+private ExpressionFloat             ::= T_FLOAT
+private ExpressionString            ::= T_STRING_SQ | T_STRING_DQ;
+private ExpressionVariable          ::= T_IDENTIFIER;
+private ExpressionLocalVariable     ::= T_LOCAL_IDENTIFIER;
+private ExpressionThis              ::= K_THIS;
+private ExpressionSuper             ::= K_SUPER;
+private ExpressionDollar            ::= T_DOLLAR;
+private ExpressionArray             ::= T_SQOPEN (ExpressionAssign (T_COMMA ExpressionAssign)*)?;
+private ExpressionMap               ::= T_AOPEN (MapEntry (T_COMMA MapEntry)*)? T_ACLOSE;
+private MapEntry                    ::= ExpressionAssign (T_COLON ExpressionAssign)?;
+private ExpressionBool              ::= K_TRUE | K_FALSE;
+private ExpressionNull              ::= K_NULL;
+private ExpressionNew               ::= K_NEW Type (TypeArgumentForCall? T_BROPEN (Expression (T_COMMA Expression)*)? T_BRCLOSE)?;
+private ExpressionThrow             ::= K_THROW Expression;
+private ExpressionPanic             ::= K_PANIC Expression;
+private ExpressionMatch             ::= K_MATCH Expression T_AOPEN (MatchClause (T_COMMA MatchClause)*)? T_ACLOSE;
+private MatchClause                 ::= (K_DEFAULT | Expression) T_LAMBDA Expression;
+private ExpressionBracket           ::= T_LESS ValidBracketContent* T_GREATER;
+# FIXME
+private ValidBracketContent         ::= T_IDENTIFIER
+                                      | T_COLON
+                                      | T_SEMICOLON
+                                      | T_INT
+                                      | T_FLOAT
+                                      | T_STRING_DQ
+                                      | T_DOLLAR (T_AOPEN Expression T_ACLOSE)?;
