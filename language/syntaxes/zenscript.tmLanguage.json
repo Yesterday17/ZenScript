@@ -48,7 +48,7 @@
     },
     "brackethandlers": {
       "name": "variable.language.brackethandler.zenscript",
-      "begin": "\\<(?=[^<>]+:)",
+      "begin": "\\<(?=[^<>]+:[^>]+\\>)",
       "end": "\\>",
       "patterns": [
         {
