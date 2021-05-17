@@ -19,6 +19,9 @@ export class ZenScriptSignatureHelp implements ZenScriptService {
       triggerCharacters: ['('],
     };
     zGlobal.conn.onSignatureHelp((params) => {
+      if (!zGlobal.bus.isFinished('all-zs-parsed')) {
+        return;
+      }
       // 获得当前正在修改的 document
       const document = zGlobal.documents.get(params.textDocument.uri);
       // 当前 Signature 的位置
